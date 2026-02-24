@@ -40,7 +40,6 @@
         .list-container.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(var(--grid-size, 160px), 1fr)); gap: 15px; }
         .list-container.list { display: flex; flex-direction: column; gap: 10px; }
         
-        /* 圖片容器強化 */
         .item-card { background: #fff; border-radius: 2px; overflow: hidden; border: 1px solid var(--m-clay); position: relative; user-select: none; transition: transform 0.2s; }
         .item-card.selected { border: 2px solid var(--m-brown); background: var(--m-clay); transform: scale(0.95); }
         .img-box { width: 100%; aspect-ratio: 1; background: #eee; overflow: hidden; }
@@ -170,31 +169,43 @@
     </nav>
 
 <script>
+    // 資料庫名字絕對路徑
     const STORAGE_KEY = 'archive_master';
     const DICT_KEY = 'archive_dict_master';
     const rates = { RMB: 1.08, JPY: 0.052, HKD: 1.0 };
-    let pieChart = null, barChart = null;
     
-    // 長按與選擇邏輯
+    let merchList = [];
+    let dict = {};
+    let pieChart = null, barChart = null;
     let pressTimer = null;
     let isSelectMode = false;
     let selectedIndices = new Set();
-
-    let merchList = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-    let dict = JSON.parse(localStorage.getItem(DICT_KEY)) || { 
-        works: ["世界計畫", "V家異形舞台"], 
-        roles: ["宵崎奏"], 
-        types: ["徽章", "立牌"] 
-    };
     let filters = { work: 'all', role: 'all', type: 'all' };
     let sortMode = 'date', viewMode = 'grid';
+
+    // 關鍵修正：啟動時立即強制加載
+    function init() {
+        const savedData = localStorage.getItem(STORAGE_KEY);
+        const savedDict = localStorage.getItem(DICT_KEY);
+        
+        merchList = savedData ? JSON.parse(savedData) : [];
+        dict = savedDict ? JSON.parse(savedDict) : { 
+            works: ["世界計畫", "V家異形舞台"], 
+            roles: ["宵崎奏"], 
+            types: ["徽章", "立牌", "V家異形舞台"] 
+        };
+        
+        renderSelects();
+        renderFilters();
+        renderAll();
+        updateSymbolUI();
+    }
 
     function save() { 
         localStorage.setItem(STORAGE_KEY, JSON.stringify(merchList)); 
         localStorage.setItem(DICT_KEY, JSON.stringify(dict)); 
     }
 
-    // 渲染過濾器
     function renderFilters() {
         const build = (list, key) => {
             let html = `<div class="filter-chip ${filters[key]==='all'?'active':''}" onclick="setFilter('${key}','all')">ALL</div>`;
@@ -232,13 +243,11 @@
             const isSel = selectedIndices.has(i.originalIndex);
             return `
             <div class="item-card ${isSel?'selected':''}" 
-                 ontouchstart="handleStart(${i.originalIndex})" ontouchend="handleEnd(${i.originalIndex})"
-                 onmousedown="handleStart(${i.originalIndex})" onmouseup="handleEnd(${i.originalIndex})"
+                 ontouchstart="handleStart(${i.originalIndex})" ontouchend="handleEnd()"
+                 onmousedown="handleStart(${i.originalIndex})" onmouseup="handleEnd()"
                  onclick="handleCardClick(event, ${i.originalIndex})">
                 ${i.status === '非現貨' && !isSelectMode ? `<div class="quick-check" onclick="quickCheckIn(event, ${i.originalIndex})">✓</div>` : ''}
-                <div class="img-box">
-                    <img src="${i.img || 'https://via.placeholder.com/200/f2efeb/888'}" loading="lazy">
-                </div>
+                <div class="img-box"><img src="${i.img || 'https://via.placeholder.com/200/f2efeb/888'}" loading="lazy"></div>
                 <div class="info">
                     <div style="font-size:9px; color:var(--m-brown);">${i.role} · ${i.type}</div>
                     <div style="font-size:11px; margin:2px 0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${i.pattern || 'Untitled'}</div>
@@ -246,131 +255,50 @@
                 </div>
             </div>`;
         };
-
         rList.innerHTML = items.filter(i => i.status === '現貨').map(genHtml).join('');
         wList.innerHTML = items.filter(i => i.status === '非現貨').map(genHtml).join('');
     }
 
-    // 事件處理邏輯
-    function handleStart(idx) {
-        pressTimer = setTimeout(() => {
-            if(!isSelectMode) {
-                isSelectMode = true;
-                selectedIndices.add(idx);
-                document.getElementById('multi-delete-bar').style.display = 'block';
-                renderAll();
-                if(window.navigator.vibrate) window.navigator.vibrate(50);
-            }
-        }, 800);
-    }
+    function handleStart(idx) { pressTimer = setTimeout(() => { if(!isSelectMode) { isSelectMode = true; selectedIndices.add(idx); document.getElementById('multi-delete-bar').style.display = 'block'; renderAll(); if(window.navigator.vibrate) window.navigator.vibrate(50); } }, 800); }
     function handleEnd() { clearTimeout(pressTimer); }
-
     function handleCardClick(e, idx) {
         if(isSelectMode) {
-            if(selectedIndices.has(idx)) selectedIndices.delete(idx);
-            else selectedIndices.add(idx);
-            renderAll();
-            if(selectedIndices.size === 0) exitSelectMode();
-        } else {
-            editItem(idx);
-        }
+            if(selectedIndices.has(idx)) selectedIndices.delete(idx); else selectedIndices.add(idx);
+            renderAll(); if(selectedIndices.size === 0) exitSelectMode();
+        } else { editItem(idx); }
     }
-
-    function exitSelectMode() {
-        if(!isSelectMode) return false;
-        isSelectMode = false;
-        selectedIndices.clear();
-        document.getElementById('multi-delete-bar').style.display = 'none';
-        renderAll();
-        return true;
-    }
-
-    function deleteSelected() {
-        if(confirm(`DELETE ${selectedIndices.size} ITEMS?`)) {
-            merchList = merchList.filter((_, index) => !selectedIndices.has(index));
-            save();
-            exitSelectMode();
-            showToast("DELETED");
-        }
-    }
-
-    function quickCheckIn(e, idx) { 
-        e.stopPropagation(); 
-        merchList[idx].status = '現貨'; 
-        save(); renderAll(); showToast("ARRIVED"); 
-    }
-
+    function exitSelectMode() { if(!isSelectMode) return false; isSelectMode = false; selectedIndices.clear(); document.getElementById('multi-delete-bar').style.display = 'none'; renderAll(); return true; }
+    function deleteSelected() { if(confirm(`DELETE ${selectedIndices.size} ITEMS?`)) { merchList = merchList.filter((_, index) => !selectedIndices.has(index)); save(); exitSelectMode(); showToast("DELETED"); } }
+    function quickCheckIn(e, idx) { e.stopPropagation(); merchList[idx].status = '現貨'; save(); renderAll(); showToast("ARRIVED"); }
     function editItem(idx) {
-        const i = merchList[idx];
-        document.getElementById('editIndex').value = idx;
-        document.getElementById('pattern').value = i.pattern || "";
-        document.getElementById('qty').value = i.qty || 1;
-        document.getElementById('currency').value = i.originalCur || "HKD";
-        document.getElementById('inputPrice').value = i.originalPrice || 0;
-        document.getElementById('status').value = i.status;
-        liveExchange();
-        switchTab('page-recent', document.querySelectorAll('.nav-item')[2]);
+        const i = merchList[idx]; document.getElementById('editIndex').value = idx;
+        document.getElementById('pattern').value = i.pattern || ""; document.getElementById('qty').value = i.qty || 1;
+        document.getElementById('currency').value = i.originalCur || "HKD"; document.getElementById('inputPrice').value = i.originalPrice || 0;
+        document.getElementById('status').value = i.status; liveExchange(); switchTab('page-recent', document.querySelectorAll('.nav-item')[2]);
     }
-
-    // 基礎功能
     function showToast(m) { const t=document.getElementById('toast'); t.innerText=m; t.style.display='block'; setTimeout(()=>t.style.display='none',2000); }
     function toggleInput(s, i) { document.getElementById(i).style.display = (document.getElementById(s).value === 'NEW') ? 'block' : 'none'; }
     function updateGridSize(v) { document.documentElement.style.setProperty('--grid-size', v+'px'); }
     function liveExchange() { 
         const p = parseFloat(document.getElementById('inputPrice').value) || 0, q = parseInt(document.getElementById('qty').value) || 1, cur = document.getElementById('currency').value; 
-        const t = (p * q * rates[cur]).toFixed(2); 
-        document.getElementById('exchangePreview').innerText = `Total: HKD ${t}`; return t; 
+        const t = (p * q * rates[cur]).toFixed(2); document.getElementById('exchangePreview').innerText = `Total: HKD ${t}`; return t; 
     }
-
     function switchTab(id, btn) {
-        exitSelectMode();
-        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        exitSelectMode(); document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
         document.getElementById(id).classList.add('active');
         document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-        if(btn) btn.classList.add('active');
-        if(id === 'page-stats') renderStats();
-        renderAll();
+        if(btn) btn.classList.add('active'); if(id === 'page-stats') renderStats(); renderAll();
     }
-
-    function openPage(id) { 
-        document.getElementById('cover-page').classList.add('open'); 
-        document.getElementById('bottom-nav').style.display='flex'; 
-        switchTab(id, document.querySelectorAll('.nav-item')[['page-gallery','page-pending','page-recent','page-stats','page-settings'].indexOf(id)]); 
-    }
+    function openPage(id) { document.getElementById('cover-page').classList.add('open'); document.getElementById('bottom-nav').style.display='flex'; switchTab(id, document.querySelectorAll('.nav-item')[['page-gallery','page-pending','page-recent','page-stats','page-settings'].indexOf(id)]); }
     function closePage() { document.getElementById('cover-page').classList.remove('open'); document.getElementById('bottom-nav').style.display='none'; }
 
-    // 表單提交
     document.getElementById('merchForm').onsubmit = function(e) {
         e.preventDefault();
         const editIdx = parseInt(document.getElementById('editIndex').value);
-        const getV = (s, i, dk) => { 
-            let v = document.getElementById(s).value; 
-            if(v === 'NEW') { 
-                v = document.getElementById(i).value.trim(); 
-                if(v && !dict[dk].includes(v)) dict[dk].push(v); 
-            } 
-            return v; 
-        };
-        const data = { 
-            work: getV('workSelect', 'workInput', 'works'), 
-            role: getV('roleSelect', 'roleInput', 'roles'), 
-            type: getV('typeSelect', 'typeInput', 'types'), 
-            pattern: document.getElementById('pattern').value, 
-            status: document.getElementById('status').value, 
-            qty: parseInt(document.getElementById('qty').value), 
-            originalPrice: parseFloat(document.getElementById('inputPrice').value), 
-            originalCur: document.getElementById('currency').value, 
-            totalHkd: liveExchange(), 
-            img: null 
-        };
+        const getV = (s, i, dk) => { let v = document.getElementById(s).value; if(v === 'NEW') { v = document.getElementById(i).value.trim(); if(v && !dict[dk].includes(v)) dict[dk].push(v); } return v; };
+        const data = { work: getV('workSelect', 'workInput', 'works'), role: getV('roleSelect', 'roleInput', 'roles'), type: getV('typeSelect', 'typeInput', 'types'), pattern: document.getElementById('pattern').value, status: document.getElementById('status').value, qty: parseInt(document.getElementById('qty').value), originalPrice: parseFloat(document.getElementById('inputPrice').value), originalCur: document.getElementById('currency').value, totalHkd: liveExchange(), img: null };
         const file = document.getElementById('imgFile').files[0];
-        const done = (b64) => { 
-            if(b64) data.img = b64; 
-            else if(editIdx !== -1) data.img = merchList[editIdx].img; 
-            if(editIdx === -1) merchList.unshift(data); 
-            else merchList[editIdx] = data; 
-            save(); renderSelects(); switchTab('page-gallery', document.querySelectorAll('.nav-item')[0]); 
-        };
+        const done = (b64) => { if(b64) data.img = b64; else if(editIdx !== -1) data.img = merchList[editIdx].img; if(editIdx === -1) merchList.unshift(data); else merchList[editIdx] = data; save(); renderSelects(); switchTab('page-gallery', document.querySelectorAll('.nav-item')[0]); };
         if(file) { const fr = new FileReader(); fr.onload = () => done(fr.result); fr.readAsDataURL(file); } else done(null);
     };
 
@@ -392,7 +320,8 @@
     function exportData() { const b = new Blob([JSON.stringify({merchList, dict})], {type: 'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = `archive_master.json`; a.click(); }
     function importData(input) { const fr = new FileReader(); fr.onload = (e) => { const d = JSON.parse(e.target.result); merchList = d.merchList; dict = d.dict; save(); location.reload(); }; fr.readAsText(input.files[0]); }
 
-    window.onload = () => { renderSelects(); renderFilters(); renderAll(); updateSymbolUI(); };
+    // 初始化啟動
+    window.onload = init;
 </script>
 </body>
 </html>
