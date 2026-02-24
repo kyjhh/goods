@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Morandi Archive - V15 Full Fix</title>
+    <title>Morandi Archive - V16 Pro</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
@@ -40,7 +40,7 @@
 
         .list-container.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(var(--grid-size, 160px), 1fr)); gap: 15px; }
         .list-container.list { display: flex; flex-direction: column; gap: 10px; }
-        .item-card { background: #fff; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--m-clay); position: relative; }
+        .item-card { background: #fff; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--m-clay); }
         .list-container.list .item-card { display: flex; height: 80px; align-items: center; }
         .list-container.list .img-box { width: 80px; height: 80px; flex-shrink: 0; }
         .img-box { width: 100%; aspect-ratio: 1; background: #eee; overflow: hidden; }
@@ -48,7 +48,7 @@
         .info { padding: 10px; flex-grow: 1; overflow: hidden; }
 
         .form-label { font-size: 10px; color: var(--m-brown); letter-spacing: 1px; margin-top: 14px; display: block; }
-        .btn-main { background: var(--m-deep-green); color: white; border: none; padding: 14px; width: 100%; font-size: 12px; cursor: pointer; border-radius: var(--radius); margin-top: 25px; }
+        .btn-main { background: var(--m-deep-green); color: white; border: none; padding: 14px; width: 100%; font-size: 12px; cursor: pointer; border-radius: var(--radius); margin-top: 15px; }
         input, select { width: 100%; padding: 12px; border-radius: var(--radius); border: 1px solid var(--m-clay); background: #fafafa; font-size: 13px; margin-top: 6px; box-sizing: border-box; outline: none; }
     </style>
 </head>
@@ -74,10 +74,10 @@
             <div class="control-panel">
                 <div class="symbol-row">
                     <div class="symbol-group">
-                        <span class="symbol-btn sort-date" onclick="setSort('date')">🕒</span>
-                        <span class="symbol-btn sort-price" onclick="setSort('price')">＄</span>
-                        <span class="symbol-btn sort-qty" onclick="setSort('qty')">＃</span>
-                        <span class="symbol-btn sort-name" onclick="setSort('name')">AZ</span>
+                        <span class="symbol-btn sort-date" onclick="toggleSort('date')">🕒</span>
+                        <span class="symbol-btn sort-price" onclick="toggleSort('price')">＄</span>
+                        <span class="symbol-btn sort-qty" onclick="toggleSort('qty')">＃</span>
+                        <span class="symbol-btn sort-name" onclick="toggleSort('name')">AZ</span>
                     </div>
                     <div class="symbol-group">
                         <span class="symbol-btn view-grid" onclick="setView('grid')">田</span>
@@ -100,15 +100,15 @@
                     <input type="hidden" id="editIndex" value="-1">
                     <label class="form-label">作品 WORK</label>
                     <select id="workSelect" onchange="toggleInput('workSelect', 'workInput')"></select>
-                    <input type="text" id="workInput" style="display:none;" placeholder="填寫新作品">
+                    <input type="text" id="workInput" style="display:none;" placeholder="新作品">
                     
                     <label class="form-label">角色 ROLE</label>
                     <select id="roleSelect" onchange="toggleInput('roleSelect', 'roleInput')"></select>
-                    <input type="text" id="roleInput" style="display:none;" placeholder="填寫新角色">
+                    <input type="text" id="roleInput" style="display:none;" placeholder="新角色">
                     
                     <label class="form-label">類別 TYPE</label>
                     <select id="typeSelect" onchange="toggleInput('typeSelect', 'typeInput')"></select>
-                    <input type="text" id="typeInput" style="display:none;" placeholder="填寫新類別">
+                    <input type="text" id="typeInput" style="display:none;" placeholder="新類別">
                     
                     <label class="form-label">款式 PATTERN</label>
                     <input type="text" id="pattern">
@@ -138,9 +138,12 @@
 
         <div id="page-settings" class="page">
             <div style="background:#fff; padding:20px; border-radius:var(--radius); border:1px solid var(--m-clay);">
-                <p style="font-size:11px; color:var(--m-brown);">DATA MANAGEMENT</p>
-                <button onclick="exportData()" class="btn-main" style="margin-top:5px; background:var(--m-brown);">EXPORT JSON BACKUP</button>
-                <button onclick="localStorage.clear(); location.reload();" class="btn-main" style="margin-top:10px; background:#cc9999;">CLEAR ALL DATA</button>
+                <p style="font-size:11px; color:var(--m-brown);">DATA BACKUP</p>
+                <button onclick="exportData()" class="btn-main" style="background:var(--m-brown);">EXPORT JSON</button>
+                <input type="file" id="importFile" style="display:none" onchange="importData(this)">
+                <button onclick="document.getElementById('importFile').click()" class="btn-main" style="background:var(--m-sage);">IMPORT JSON</button>
+                <hr style="border:0.5px solid #eee; margin:20px 0;">
+                <button onclick="if(confirm('DANGER: CLEAR EVERYTHING?')) {localStorage.clear(); location.reload();}" class="btn-main" style="background:#cc9999;">ERASE ALL DATA</button>
             </div>
         </div>
     </div>
@@ -158,7 +161,7 @@
     const DICT_KEY = 'archive_dict_master';
     const rates = { RMB: 1.08, JPY: 0.052, HKD: 1.0 };
     let merchList = [], dict = {}, filters = { work: 'all', role: 'all', type: 'all' };
-    let sortMode = 'date', viewMode = 'grid', chart = null;
+    let sortMode = 'date', sortDesc = true, viewMode = 'grid', chart = null;
 
     function init() {
         merchList = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
@@ -171,11 +174,20 @@
         localStorage.setItem(DICT_KEY, JSON.stringify(dict)); 
     }
 
-    function setSort(s) { sortMode = s; updateToolUI(); renderAll(); }
+    // 排序切換（含倒序邏輯）
+    function toggleSort(s) {
+        if (sortMode === s) { sortDesc = !sortDesc; } 
+        else { sortMode = s; sortDesc = true; }
+        updateToolUI(); renderAll();
+    }
+    
     function setView(v) { viewMode = v; updateToolUI(); renderAll(); }
+    
     function updateToolUI() {
         document.querySelectorAll('.symbol-btn').forEach(b => b.classList.remove('active'));
-        document.querySelector('.sort-' + sortMode).classList.add('active');
+        const activeBtn = document.querySelector('.sort-' + sortMode);
+        activeBtn.classList.add('active');
+        activeBtn.innerText = (sortMode === 'date' ? '🕒' : sortMode === 'price' ? '＄' : sortMode === 'qty' ? '＃' : 'AZ') + (sortDesc ? '↓' : '↑');
         document.querySelector('.view-' + viewMode).classList.add('active');
     }
 
@@ -198,7 +210,8 @@
             originalPrice: parseFloat(document.getElementById('inputPrice').value) || 0,
             originalCur: document.getElementById('currency').value,
             totalHkd: liveExchange(),
-            img: null
+            img: null,
+            timestamp: Date.now()
         };
 
         const done = (b64) => {
@@ -229,8 +242,8 @@
             return row;
         };
         ['lib-filter-box', 'wait-filter-box'].forEach(id => {
-            const box = document.getElementById(id); if(!box) return;
-            box.innerHTML = ''; ['work', 'role', 'type'].forEach(k => box.appendChild(build(dict[k+'s'], k)));
+            const box = document.getElementById(id); if(!box) return; box.innerHTML = '';
+            ['work', 'role', 'type'].forEach(k => box.appendChild(build(dict[k+'s'], k)));
         });
     }
 
@@ -240,10 +253,11 @@
         let items = merchList.map((item, index) => ({...item, originalIndex: index}))
             .filter(i => (filters.work==='all' || i.work===filters.work) && (filters.role==='all' || i.role===filters.role) && (filters.type==='all' || i.type===filters.type));
         
-        if(sortMode==='date') items.sort((a,b)=>b.originalIndex-a.originalIndex);
-        else if(sortMode==='price') items.sort((a,b)=>b.totalHkd-a.totalHkd);
-        else if(sortMode==='qty') items.sort((a,b)=>b.qty-a.qty);
-        else if(sortMode==='name') items.sort((a,b)=>(a.pattern||"").localeCompare(b.pattern||""));
+        const multi = sortDesc ? 1 : -1;
+        if(sortMode==='date') items.sort((a,b)=> (b.timestamp - a.timestamp) * multi);
+        else if(sortMode==='price') items.sort((a,b)=> (b.totalHkd - a.totalHkd) * multi);
+        else if(sortMode==='qty') items.sort((a,b)=> (b.qty - a.qty) * multi);
+        else if(sortMode==='name') items.sort((a,b)=> (a.pattern||"").localeCompare(b.pattern||"") * (sortDesc ? 1 : -1));
 
         rList.className = `list-container ${viewMode}`;
         wList.className = `list-container ${viewMode}`;
@@ -260,10 +274,26 @@
         chart = new Chart(ctx, { type: 'pie', data: { labels: Object.keys(data), datasets: [{ data: Object.values(data), backgroundColor: ['#6b7a63', '#acc1ad', '#a68b7c', '#d5cabd', '#e5ddd5'] }] }, options: { plugins: { legend: { position: 'bottom', labels: { font: { size: 10 } } } } } });
     }
 
+    function exportData() { const blob = new Blob([JSON.stringify({merchList, dict})], {type: 'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `archive_${new Date().toLocaleDateString()}.json`; a.click(); }
+    
+    function importData(input) {
+        const file = input.files[0]; if(!file) return;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const imported = JSON.parse(e.target.result);
+                merchList = imported.merchList || [];
+                dict = imported.dict || { works: [], roles: [], types: [] };
+                save(); init(); showToast("IMPORT SUCCESS");
+            } catch(err) { alert("Invalid File Format"); }
+        };
+        reader.readAsText(file);
+    }
+
     function editItem(idx) {
         const i = merchList[idx]; document.getElementById('editIndex').value = idx;
         document.getElementById('workSelect').value = i.work; document.getElementById('roleSelect').value = i.role; document.getElementById('typeSelect').value = i.type;
-        document.getElementById('pattern').value = i.pattern; document.getElementById('status').value = i.status; document.getElementById('qty').value = i.qty;
+        document.getElementById('pattern').value = i.pattern || ""; document.getElementById('status').value = i.status; document.getElementById('qty').value = i.qty;
         document.getElementById('currency').value = i.originalCur; document.getElementById('inputPrice').value = i.originalPrice;
         switchTab('page-recent', document.querySelectorAll('.nav-item')[2]);
     }
@@ -279,7 +309,6 @@
     function openPage(id) { document.getElementById('cover-page').classList.add('open'); document.getElementById('bottom-nav').style.display='flex'; switchTab(id, document.querySelectorAll('.nav-item')[id==='page-gallery'?0 : id==='page-pending'?1:2]); }
     function closePage() { document.getElementById('cover-page').classList.remove('open'); document.getElementById('bottom-nav').style.display='none'; }
     function showToast(m) { const t=document.getElementById('toast'); t.innerText=m; t.style.display='block'; setTimeout(()=>t.style.display='none',2000); }
-    function exportData() { const blob = new Blob([JSON.stringify(merchList)], {type: 'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'archive_backup.json'; a.click(); }
 
     window.onload = init;
 </script>
