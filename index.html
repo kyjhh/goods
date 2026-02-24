@@ -3,251 +3,244 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sekai Storage Pro+</title>
+    <title>Magical Mirai 2025 Collection</title>
     <style>
-        :root { 
-            --miku-green: #00E5D1; --sekai-purple: #747dff; --deep-purple: #4834d4;
-            --glass: rgba(255, 255, 255, 0.95); --ready-color: #2ecc71; --wait-color: #f0932b;
+        :root {
+            --miku-neon: #00ffcc;
+            --mirai-pink: #ff007a;
+            --mirai-purple: #7000ff;
+            --glass: rgba(10, 10, 25, 0.8);
         }
-        body { font-family: 'PingFang TC', sans-serif; background: #f0f2f5; margin: 0; padding-bottom: 90px; color: #333; }
-        .container { max-width: 800px; margin: 0 auto; padding: 15px; }
 
-        /* Header */
-        header { background: linear-gradient(135deg, var(--miku-green), var(--sekai-purple)); padding: 25px; color: white; text-align: center; border-radius: 0 0 25px 25px; }
+        body, html { margin: 0; padding: 0; height: 100%; font-family: 'PingFang TC', sans-serif; background: #050510; color: white; overflow-x: hidden; }
+
+        /* --- 封面頁面 --- */
+        #cover-page {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-size: cover; background-position: center;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            z-index: 2000; transition: transform 0.8s cubic-bezier(0.65, 0, 0.35, 1);
+        }
         
-        /* 分頁邏輯 */
-        .page { display: none; }
+        #cover-page.open { transform: translateY(-100%); }
+
+        .cover-upload-label {
+            position: absolute; top: 20px; left: 20px; font-size: 12px;
+            background: rgba(255,255,255,0.1); padding: 8px 15px; border-radius: 20px;
+            cursor: pointer; backdrop-filter: blur(5px); border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .cover-menu { display: flex; flex-direction: column; gap: 20px; width: 250px; }
+        .menu-btn {
+            background: var(--glass); border: 1px solid var(--miku-neon);
+            color: var(--miku-neon); padding: 15px; border-radius: 50px;
+            font-size: 16px; font-weight: bold; cursor: pointer; text-align: center;
+            text-transform: uppercase; letter-spacing: 2px; transition: 0.3s;
+            box-shadow: 0 0 15px rgba(0, 255, 204, 0.2);
+        }
+        .menu-btn:hover { background: var(--miku-neon); color: #000; box-shadow: 0 0 30px var(--miku-neon); }
+
+        /* --- 內容區域 --- */
+        .main-content { padding: 20px; padding-bottom: 100px; min-height: 100vh; }
+        .back-to-cover { margin-bottom: 20px; cursor: pointer; color: var(--miku-neon); font-size: 14px; }
+
+        .page { display: none; animation: fadeIn 0.5s ease; }
         .page.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        /* 通用卡片 */
-        .card { background: var(--glass); padding: 20px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 20px; }
-        .stat-val { font-size: 32px; font-weight: bold; color: var(--deep-purple); }
+        /* 卡片與表單 */
+        .glass-card {
+            background: var(--glass); padding: 20px; border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.1); margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+        }
 
-        /* 篩選標籤 (現貨頁專用) */
-        .filter-group { display: flex; gap: 8px; overflow-x: auto; padding: 10px 0; margin-bottom: 15px; white-space: nowrap; -webkit-overflow-scrolling: touch; }
-        .filter-btn { background: #eee; border: none; padding: 6px 15px; border-radius: 20px; font-size: 13px; cursor: pointer; }
-        .filter-btn.active { background: var(--sekai-purple); color: white; }
-
-        /* 表單樣式 */
-        label { display: block; font-size: 12px; font-weight: bold; margin: 12px 0 5px; color: #555; }
-        input, select, textarea { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; font-size: 14px; }
-        .btn-submit { background: var(--deep-purple); color: white; border: none; padding: 15px; border-radius: 12px; width: 100%; margin-top: 20px; font-weight: bold; cursor: pointer; }
-
-        /* 列表樣式 */
         .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 15px; }
-        .item-card { background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); position: relative; }
-        .item-img { width: 100%; height: 160px; object-fit: cover; background: #eee; }
-        .item-info { padding: 10px; position: relative; }
-        .arrival-box { position: absolute; top: 10px; right: 10px; width: 22px; height: 22px; cursor: pointer; }
+        .item-card { 
+            background: rgba(255,255,255,0.05); border-radius: 15px; overflow: hidden; 
+            position: relative; border: 1px solid rgba(255,255,255,0.1);
+        }
+        .item-img { width: 100%; height: 160px; object-fit: cover; }
+        .item-info { padding: 10px; font-size: 13px; }
+        .item-price { color: var(--mirai-pink); font-weight: bold; font-size: 16px; }
 
-        /* 底部導航 */
-        .nav-bar { position: fixed; bottom: 15px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 400px; background: white; display: flex; justify-content: space-around; padding: 12px; border-radius: 25px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); z-index: 1000; }
-        .nav-item { border: none; background: none; color: #aaa; font-size: 11px; display: flex; flex-direction: column; align-items: center; }
-        .nav-item.active { color: var(--deep-purple); font-weight: bold; }
+        .checkbox-arrival { position: absolute; top: 10px; right: 10px; transform: scale(1.5); cursor: pointer; }
+
+        input, select, textarea { 
+            width: 100%; padding: 12px; margin-top: 8px; border-radius: 10px; 
+            border: 1px solid #333; background: #1a1a2e; color: white; 
+        }
+
+        /* 底部導航 (隱藏，只在內頁顯示) */
+        .nav-bar {
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+            width: 85%; max-width: 400px; background: var(--glass);
+            display: flex; justify-content: space-around; padding: 12px;
+            border-radius: 30px; border: 1px solid var(--miku-neon); z-index: 1000;
+        }
+        .nav-item { border: none; background: none; color: #666; font-size: 20px; cursor: pointer; }
+        .nav-item.active { color: var(--miku-neon); }
     </style>
 </head>
 <body>
 
-<header><h2>SEKAI STORAGE</h2></header>
-
-<div class="container">
-    
-    <div id="page-add" class="page active">
-        <div class="card" style="text-align:center">
-            <div class="stat-val">NT$ <span id="totalDisplay">0</span></div>
-            <p style="font-size:12px; color:#888">總經費燃燒紀錄</p>
-        </div>
-
-        <div class="card">
-            <h3 style="margin-top:0">➕ 新增周邊</h3>
-            <form id="merchForm">
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px">
-                    <div>
-                        <label>作品分類</label>
-                        <select id="workName">
-                            <option value="世界計畫">世界計畫</option>
-                            <option value="VOCALOID">VOCALOID</option>
-                            <option value="其他">其他</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label>狀態</label>
-                        <select id="status" onchange="toggleMonthInput()">
-                            <option value="現貨">現貨</option>
-                            <option value="非現貨">非現貨</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px">
-                    <div>
-                        <label>角色 (可自填)</label>
-                        <input type="text" id="roleName" list="roleOptions" placeholder="角色名">
-                    </div>
-                    <div id="monthGroup" style="display:none">
-                        <label>預計到貨月份</label>
-                        <input type="month" id="arrivalMonth">
-                    </div>
-                </div>
-
-                <label>周邊名稱</label>
-                <input type="text" id="itemName" placeholder="例：閃徽、立牌" required>
-
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px">
-                    <div>
-                        <label>周邊類型</label>
-                        <select id="itemType">
-                            <option value="襟章">襟章</option>
-                            <option value="色紙">色紙</option>
-                            <option value="立牌">立牌</option>
-                            <option value="紙類">紙類</option>
-                            <option value="公仔">公仔/趴趴</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label>價格 (NT$)</label>
-                        <input type="number" id="price" required>
-                    </div>
-                </div>
-
-                <label>購買來源</label>
-                <input type="text" id="source" list="sourceOptions" placeholder="來源">
-                
-                <label>上傳照片</label>
-                <input type="file" id="imageFile" accept="image/*">
-
-                <button type="submit" class="btn-submit">存入資料庫 ✨</button>
-            </form>
+    <div id="cover-page">
+        <label class="cover-upload-label">
+            🖼️ 導入封面照片 <input type="file" id="cover-upload" hidden accept="image/*">
+        </label>
+        
+        <div class="cover-menu">
+            <h1 style="text-align: center; font-size: 20px; letter-spacing: 4px; color: var(--miku-neon); margin-bottom: 30px;">MAGICAL MIRAI 2025</h1>
+            <div class="menu-btn" onclick="openDatabase('page-gallery')">進入藏品庫</div>
+            <div class="menu-btn" onclick="openDatabase('page-search')">關鍵字搜索</div>
+            <div class="menu-btn" onclick="openDatabase('page-recent')">近期收納</div>
+            <div class="menu-btn" onclick="openDatabase('page-pending')">將到非現</div>
         </div>
     </div>
 
-    <div id="page-gallery" class="page">
-        <div class="filter-group" id="readyFilters">
-            <button class="filter-btn active" onclick="setFilter('all')">全部</button>
-            <button class="filter-btn" onclick="setFilter('work')">作品分類</button>
-            <button class="filter-btn" onclick="setFilter('role')">角色分類</button>
-            <button class="filter-btn" onclick="setFilter('type')">周邊類型</button>
+    <div class="main-content" id="main-ui">
+        <div class="back-to-cover" onclick="closeDatabase()">◀ 返回封面</div>
+
+        <div id="page-gallery" class="page">
+            <div class="gallery" id="readyList"></div>
         </div>
-        <div id="subFilters" class="filter-group" style="display:none"></div>
-        <div class="gallery" id="readyList"></div>
+
+        <div id="page-search" class="page">
+            <input type="text" id="globalSearch" placeholder="🔍 輸入角色、名稱或備註搜尋..." oninput="renderAll()" class="glass-card">
+            <div class="gallery" id="searchResult"></div>
+        </div>
+
+        <div id="page-recent" class="page">
+            <div class="glass-card">
+                <h3>✨ 新增藏品</h3>
+                <form id="merchForm">
+                    <label>作品分類</label>
+                    <select id="work"><option>世界計畫</option><option>VOCALOID</option></select>
+                    <label>角色</label><input type="text" id="role" list="roleData" placeholder="自填或選取">
+                    <label>周邊名稱</label><input type="text" id="name" required>
+                    <label>狀態</label>
+                    <select id="status" onchange="document.getElementById('mGroup').style.display=this.value=='非現貨'?'block':'none'">
+                        <option value="現貨">現貨</option><option value="非現貨">非現貨</option>
+                    </select>
+                    <div id="mGroup" style="display:none"><label>到貨月份</label><input type="month" id="month"></div>
+                    <label>價格</label><input type="number" id="price" required>
+                    <label>來源</label><input type="text" id="source" list="sourceData">
+                    <label>照片</label><input type="file" id="imgFile">
+                    <button type="submit" class="menu-btn" style="width:100%; margin-top:20px;">存入檔案</button>
+                </form>
+            </div>
+        </div>
+
+        <div id="page-pending" class="page">
+            <h3 style="color:var(--mirai-pink)">🛒 預購待收 (勾選方格標註到貨)</h3>
+            <div class="gallery" id="waitList"></div>
+        </div>
     </div>
 
-    <div id="page-pending" class="page">
-        <h3 style="color:var(--wait-color)">⏳ 待收清單 (勾選小方格代表到貨)</h3>
-        <div class="gallery" id="waitList"></div>
-    </div>
+    <nav class="nav-bar" id="bottom-nav" style="display:none;">
+        <button class="nav-item active" onclick="switchTab('page-gallery', this)">🖼️</button>
+        <button class="nav-item" onclick="switchTab('page-search', this)">🔍</button>
+        <button class="nav-item" onclick="switchTab('page-recent', this)">➕</button>
+        <button class="nav-item" onclick="switchTab('page-pending', this)">📦</button>
+    </nav>
 
-</div>
-
-<nav class="nav-bar">
-    <button class="nav-item active" onclick="showPage('page-add', this)"><span>📊</span><span>管理</span></button>
-    <button class="nav-item" onclick="showPage('page-gallery', this)"><span>✨</span><span>現貨</span></button>
-    <button class="nav-item" onclick="showPage('page-pending', this)"><span>📦</span><span>非現</span></button>
-</nav>
-
-<datalist id="roleOptions"><option value="初音未來"><option value="曉山瑞希"><option value="宵崎奏"></datalist>
-<datalist id="sourceOptions"><option value="Mercari"><option value="安利美特"><option value="代購"></datalist>
+    <datalist id="roleData"><option value="初音未來"><option value="曉山瑞希"><option value="宵崎奏"></datalist>
+    <datalist id="sourceData"><option value="Mercari"><option value="安利美特"></datalist>
 
 <script>
-    let merchList = JSON.parse(localStorage.getItem('sekai_v6')) || [];
-    let currentFilterMode = 'all';
-    let currentSubFilter = '';
+    let merchList = JSON.parse(localStorage.getItem('mm2025_data')) || [];
+    
+    // 封面照片邏輯
+    const coverUpload = document.getElementById('cover-upload');
+    const coverPage = document.getElementById('cover-page');
+    
+    // 讀取存好的封面
+    if(localStorage.getItem('mm2025_cover')) {
+        coverPage.style.backgroundImage = `url(${localStorage.getItem('mm2025_cover')})`;
+    }
 
-    function showPage(id, btn) {
+    coverUpload.onchange = e => {
+        const reader = new FileReader();
+        reader.onload = () => {
+            const b64 = reader.result;
+            coverPage.style.backgroundImage = `url(${b64})`;
+            localStorage.setItem('mm2025_cover', b64);
+        };
+        reader.readAsDataURL(e.target.files[0]);
+    };
+
+    // 切換邏輯
+    function openDatabase(targetPage) {
+        document.getElementById('cover-page').classList.add('open');
+        document.getElementById('bottom-nav').style.display = 'flex';
+        switchTab(targetPage, document.querySelector(`[onclick*="${targetPage}"]`));
+    }
+
+    function closeDatabase() {
+        document.getElementById('cover-page').classList.remove('open');
+        document.getElementById('bottom-nav').style.display = 'none';
+    }
+
+    function switchTab(id, btn) {
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
         document.getElementById(id).classList.add('active');
-        document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
         btn.classList.add('active');
-        renderLists();
+        renderAll();
     }
 
-    function toggleMonthInput() {
-        document.getElementById('monthGroup').style.display = document.getElementById('status').value === '非現貨' ? 'block' : 'none';
-    }
-
-    function setFilter(mode) {
-        currentFilterMode = mode;
-        currentSubFilter = '';
-        const subFilterEl = document.getElementById('subFilters');
-        
-        if (mode === 'all') {
-            subFilterEl.style.display = 'none';
-        } else {
-            subFilterEl.style.display = 'flex';
-            const keys = [...new Set(merchList.filter(i => i.status === '現貨').map(i => i[mode === 'work' ? 'work' : mode === 'role' ? 'role' : 'type']))];
-            subFilterEl.innerHTML = keys.map(k => `<button class="filter-btn" onclick="currentSubFilter='${k}';renderLists()">${k}</button>`).join('');
-        }
-        renderLists();
-    }
-
-    function renderLists() {
-        const readyContainer = document.getElementById('readyList');
-        const waitContainer = document.getElementById('waitList');
-        readyContainer.innerHTML = ''; waitContainer.innerHTML = '';
-        let total = 0;
-
-        merchList.forEach((item, index) => {
-            total += Number(item.price);
-            
-            // 構建卡片 HTML
-            const cardHTML = `
-                <div class="item-card">
-                    <img src="${item.img || 'https://via.placeholder.com/200?text=Wait'}" class="item-img">
-                    <div class="item-info">
-                        ${item.status === '非現貨' ? `<input type="checkbox" class="arrival-box" title="勾選代表到貨" onclick="moveToReady(${index})">` : ''}
-                        <div style="font-size:10px; color:var(--sekai-purple)">${item.role}</div>
-                        <h4 style="margin:5px 0; font-size:13px">${item.name}</h4>
-                        <div style="font-size:11px; color:#888">${item.status === '非現貨' ? '📅 '+item.month : item.type}</div>
-                        <div style="color:red; font-weight:bold; font-size:14px">$${Number(item.price).toLocaleString()}</div>
-                        <button onclick="deleteItem(${index})" style="background:none; border:none; color:#ccc; font-size:9px; padding:0">刪除</button>
-                    </div>
-                </div>`;
-
-            if (item.status === '現貨') {
-                // 現貨過濾邏輯
-                let match = true;
-                if (currentFilterMode === 'work' && currentSubFilter && item.work !== currentSubFilter) match = false;
-                if (currentFilterMode === 'role' && currentSubFilter && item.role !== currentSubFilter) match = false;
-                if (currentFilterMode === 'type' && currentSubFilter && item.type !== currentSubFilter) match = false;
-                if (match) readyContainer.insertAdjacentHTML('beforeend', cardHTML);
-            } else {
-                waitContainer.insertAdjacentHTML('beforeend', cardHTML);
-            }
-        });
-        document.getElementById('totalDisplay').innerText = total.toLocaleString();
-    }
-
-    function moveToReady(index) {
-        merchList[index].status = '現貨';
-        localStorage.setItem('sekai_v6', JSON.stringify(merchList));
-        renderLists();
-    }
-
-    document.getElementById('merchForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        const file = document.getElementById('imageFile').files[0];
-        const save = (img) => {
-            merchList.unshift({
-                work: document.getElementById('workName').value,
-                role: document.getElementById('roleName').value || '未分類',
-                status: document.getElementById('status').value,
-                month: document.getElementById('arrivalMonth').value || '未定',
-                name: document.getElementById('itemName').value,
-                type: document.getElementById('itemType').value,
-                price: document.getElementById('price').value,
-                img: img
-            });
-            localStorage.setItem('sekai_v6', JSON.stringify(merchList));
-            this.reset(); toggleMonthInput(); renderLists();
-            alert('已成功入庫！');
+    function renderAll() {
+        const query = document.getElementById('globalSearch').value.toLowerCase();
+        const containers = {
+            'readyList': merchList.filter(i => i.status === '現貨'),
+            'waitList': merchList.filter(i => i.status === '非現貨'),
+            'searchResult': merchList.filter(i => i.name.toLowerCase().includes(query) || i.role.toLowerCase().includes(query))
         };
-        if (file) { const r = new FileReader(); r.onloadend = () => save(r.result); r.readAsDataURL(file); }
-        else save(null);
-    });
 
-    function deleteItem(i) { if(confirm('確定刪除？')) { merchList.splice(i,1); localStorage.setItem('sekai_v6', JSON.stringify(merchList)); renderLists(); }}
-    
-    renderLists();
+        Object.keys(containers).forEach(id => {
+            const el = document.getElementById(id);
+            if(!el) return;
+            el.innerHTML = containers[id].map((item, idx) => `
+                <div class="item-card">
+                    ${item.status==='非現貨' ? `<input type="checkbox" class="checkbox-arrival" onclick="toReady(${idx})">` : ''}
+                    <img src="${item.img || 'https://via.placeholder.com/200/0a0a19/00ffcc?text=MIRAI'}" class="item-img">
+                    <div class="item-info">
+                        <div style="color:var(--miku-neon); font-size:10px;">${item.role}</div>
+                        <div style="font-weight:bold; margin:3px 0;">${item.name}</div>
+                        <div class="item-price">$${Number(item.price).toLocaleString()}</div>
+                        ${item.month ? `<div style="font-size:10px; opacity:0.6;">到貨: ${item.month}</div>` : ''}
+                    </div>
+                </div>
+            `).join('');
+        });
+    }
+
+    function toReady(idx) {
+        merchList[idx].status = '現貨';
+        localStorage.setItem('mm2025_data', JSON.stringify(merchList));
+        renderAll();
+    }
+
+    document.getElementById('merchForm').onsubmit = function(e) {
+        e.preventDefault();
+        const file = document.getElementById('imgFile').files[0];
+        const save = (b64) => {
+            merchList.unshift({
+                role: document.getElementById('role').value || '未定義',
+                name: document.getElementById('name').value,
+                status: document.getElementById('status').value,
+                month: document.getElementById('month').value,
+                price: document.getElementById('price').value,
+                img: b64
+            });
+            localStorage.setItem('mm2025_data', JSON.stringify(merchList));
+            this.reset(); alert('成功存入典藏集 ✨'); renderAll();
+        };
+        if(file) { const r = new FileReader(); r.onload = () => save(r.result); r.readAsDataURL(file); }
+        else save(null);
+    };
+
+    renderAll();
 </script>
 </body>
 </html>
