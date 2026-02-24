@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Morandi Archive v31 - Full Functional</title>
+    <title>Morandi Archive v32 - Pro View</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
@@ -13,11 +13,8 @@
         }
         body, html { margin: 0; padding: 0; height: 100%; font-family: 'PingFang HK', sans-serif; background: var(--bg); color: var(--text); overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
         
-        #toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: var(--m-deep-green); color: white; padding: 10px 24px; border-radius: 2px; font-size: 12px; z-index: 4000; display: none; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        
-        /* 成功彈窗遮罩 */
+        #toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: var(--m-deep-green); color: white; padding: 10px 24px; border-radius: 2px; font-size: 12px; z-index: 4000; display: none; }
         #success-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.9); display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 5000; backdrop-filter: blur(5px); }
-        .success-circle { width: 60px; height: 60px; border-radius: 50%; border: 2px solid var(--m-deep-green); color: var(--m-deep-green); display: flex; align-items: center; justify-content: center; font-size: 30px; margin-bottom: 15px; }
 
         #cover-page { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #d2cdc1 center/cover; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; z-index: 2000; transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
         #cover-page.open { transform: translateY(-100%); }
@@ -32,12 +29,26 @@
         .page { display: none; }
         .page.active { display: block; }
 
+        /* 排序與佈局面板 */
         .control-panel { background: #fff; padding: 12px; border-radius: 2px; margin-bottom: 20px; border: 1px solid var(--m-clay); }
+        .tool-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid var(--m-clay); padding-bottom: 8px; }
+        .icon-group { display: flex; gap: 12px; color: #b5b5b5; font-size: 14px; }
+        .icon-btn { cursor: pointer; transition: 0.2s; }
+        .icon-btn.active { color: var(--m-deep-green); font-weight: bold; }
+        
         .filter-row { display: flex; overflow-x: auto; white-space: nowrap; gap: 6px; margin-bottom: 8px; scrollbar-width: none; }
-        .filter-chip { background: var(--m-clay); padding: 5px 12px; border-radius: 2px; font-size: 10px; cursor: pointer; color: #8a8a8a; }
+        .filter-chip { background: var(--m-clay); padding: 4px 10px; border-radius: 2px; font-size: 10px; cursor: pointer; color: #8a8a8a; }
         .filter-chip.active { background: var(--m-sage); color: white; }
 
-        .item-card { background: #fff; border-radius: 2px; overflow: hidden; border: 1px solid var(--m-clay); position: relative; user-select: none; }
+        /* 佈局切換 */
+        .list-container.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(var(--grid-size, 160px), 1fr)); gap: 15px; }
+        .list-container.list { display: flex; flex-direction: column; gap: 10px; }
+
+        .item-card { background: #fff; border-radius: 2px; overflow: hidden; border: 1px solid var(--m-clay); position: relative; }
+        .list .item-card { display: flex; height: 80px; }
+        .list .item-card img { width: 80px; height: 80px; }
+        .list .item-card .info { flex: 1; padding: 10px; display: flex; flex-direction: column; justify-content: center; }
+        
         .quick-check { position: absolute; top: 8px; right: 8px; background: rgba(255,255,255,0.9); color: var(--m-deep-green); width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: bold; cursor: pointer; z-index: 5; }
         
         #exchangePreview { margin-top: 10px; background: var(--m-clay); padding: 10px; font-size: 11px; color: var(--m-deep-green); font-weight: bold; border-radius: 2px; }
@@ -47,12 +58,8 @@
 </head>
 <body>
 
-    <div id="toast">ACTION SUCCESS</div>
-    
-    <div id="success-modal">
-        <div class="success-circle">✓</div>
-        <div style="letter-spacing: 3px; font-size: 12px; color: var(--m-deep-green);">ARCHIVED SUCCESS</div>
-    </div>
+    <div id="toast">DONE</div>
+    <div id="success-modal"><div class="success-circle" style="width:50px; height:50px; border:2px solid var(--m-deep-green); border-radius:50%; display:flex; align-items:center; justify-content:center; color:var(--m-deep-green); font-size:24px; margin-bottom:10px;">✓</div><div style="font-size:12px; letter-spacing:2px; color:var(--m-deep-green);">ARCHIVED</div></div>
 
     <div id="cover-page">
         <div class="cover-menu">
@@ -69,13 +76,13 @@
         <div onclick="closePage()" style="font-size:10px; color: var(--m-brown); cursor:pointer; margin-bottom:25px; letter-spacing:2px;">← BACK TO HOME</div>
 
         <div id="page-gallery" class="page">
-            <div class="control-panel" id="lib-filter-box"></div>
-            <div id="readyList" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(var(--grid-size, 160px), 1fr)); gap:15px;"></div>
+            <div class="control-panel" id="lib-ctrl"></div>
+            <div id="readyList" class="list-container grid"></div>
         </div>
 
         <div id="page-pending" class="page">
-            <div class="control-panel" id="wait-filter-box"></div>
-            <div id="waitList" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(var(--grid-size, 160px), 1fr)); gap:15px;"></div>
+            <div class="control-panel" id="wait-ctrl"></div>
+            <div id="waitList" class="list-container grid"></div>
         </div>
 
         <div id="page-stats" class="page">
@@ -89,11 +96,11 @@
         </div>
 
         <div id="page-settings" class="page">
-            <div style="background:#fff; padding:20px; border:1px solid var(--m-clay); margin-bottom:12px;">
+            <div class="control-panel">
                 <span style="font-size:11px;">GRID SCALE</span>
                 <input type="range" min="100" max="300" value="160" oninput="updateGridSize(this.value)">
             </div>
-            <button onclick="exportData()" class="btn-main" style="background:var(--m-brown); margin-top:0;">EXPORT JSON</button>
+            <button onclick="exportData()" class="btn-main" style="background:var(--m-brown);">EXPORT JSON</button>
             <button onclick="document.getElementById('import-file').click()" class="btn-main" style="background:var(--m-sage)">IMPORT JSON</button>
             <input type="file" id="import-file" hidden onchange="importData(this)">
         </div>
@@ -137,38 +144,85 @@
     const STORAGE_KEY = 'archive_master';
     const DICT_KEY = 'archive_dict_master';
     const rates = { RMB: 1.08, JPY: 0.052, HKD: 1.0 };
-    let pieChart = null, barChart = null;
-    let pressTimer;
+    let pieChart, barChart, pressTimer;
 
+    // 狀態管理
     let merchList = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
     let dict = JSON.parse(localStorage.getItem(DICT_KEY)) || { works: ["世界計畫"], roles: ["宵崎奏"], types: ["徽章"] };
     let filters = { work: 'all', role: 'all', type: 'all' };
+    let sortMode = 'date'; // name, date, qty, price
+    let viewMode = 'grid'; // grid, list
 
     function save() { localStorage.setItem(STORAGE_KEY, JSON.stringify(merchList)); localStorage.setItem(DICT_KEY, JSON.stringify(dict)); }
 
-    // 核心渲染與長按功能
-    function renderAll() {
-        const gen = (i, idx, isWait) => `
-            <div class="item-card" 
-                 onmousedown="startPress(${idx})" onmouseup="cancelPress()" 
-                 ontouchstart="startPress(${idx})" ontouchend="cancelPress()">
-                ${isWait ? `<div class="quick-check" onclick="quickCheckIn(event, ${idx})">✓</div>` : ''}
-                <img src="${i.img || 'https://via.placeholder.com/200/f2efeb/888'}" onclick="editItem(${idx})" style="width:100%; aspect-ratio:1; object-fit:cover; cursor:pointer;">
-                <div style="padding:10px;">
-                    <div style="font-size:9px; color:var(--m-brown);">${i.role}</div>
-                    <div style="font-size:11px; margin:2px 0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${i.pattern || 'Untitled'}</div>
-                    <div style="color:var(--m-deep-green); font-weight:bold; font-size:11px;">HK$ ${i.totalHkd}</div>
+    function renderCtrl(targetId) {
+        const html = `
+            <div class="tool-row">
+                <div class="icon-group">
+                    <span class="icon-btn ${sortMode==='name'?'active':''}" onclick="setSort('name')">A-Z</span>
+                    <span class="icon-btn ${sortMode==='date'?'active':''}" onclick="setSort('date')">🕒</span>
+                    <span class="icon-btn ${sortMode==='qty'?'active':''}" onclick="setSort('qty')">#</span>
+                    <span class="icon-btn ${sortMode==='price'?'active':''}" onclick="setSort('price')">＄</span>
                 </div>
-            </div>`;
-        const filtered = merchList.filter(i => (filters.work==='all'||i.work===filters.work) && (filters.role==='all'||i.role===filters.role) && (filters.type==='all'||i.type===filters.type));
-        document.getElementById('readyList').innerHTML = filtered.filter(i => i.status === '現貨').map(i => gen(i, merchList.indexOf(i), false)).join('');
-        document.getElementById('waitList').innerHTML = filtered.filter(i => i.status === '非現貨').map(i => gen(i, merchList.indexOf(i), true)).join('');
+                <div class="icon-group">
+                    <span class="icon-btn ${viewMode==='grid'?'active':''}" onclick="setView('grid')">田</span>
+                    <span class="icon-btn ${viewMode==='list'?'active':''}" onclick="setView('list')">≡</span>
+                </div>
+            </div>
+            ${buildFilterRow(dict.works, 'work')}
+            ${buildFilterRow(dict.roles, 'role')}
+            ${buildFilterRow(dict.types, 'type')}
+        `;
+        document.getElementById(targetId).innerHTML = html;
     }
 
-    function startPress(idx) { pressTimer = setTimeout(() => { if(confirm("確定刪除此藏品？")) { merchList.splice(idx, 1); save(); renderAll(); showToast("DELETED"); } }, 800); }
-    function cancelPress() { clearTimeout(pressTimer); }
+    function buildFilterRow(list, key) {
+        return `<div class="filter-row"><div class="filter-chip ${filters[key]==='all'?'active':''}" onclick="setFilter('${key}','all')">ALL</div>${list.map(i=>`<div class="filter-chip ${filters[key]===i?'active':''}" onclick="setFilter('${key}','${i}')">${i}</div>`).join('')}</div>`;
+    }
 
-    // 匯率與表單
+    function setSort(m) { sortMode = m; renderAll(); }
+    function setView(v) { viewMode = v; renderAll(); }
+    function setFilter(k, v) { filters[k] = v; renderAll(); }
+
+    function renderAll() {
+        renderCtrl('lib-ctrl'); renderCtrl('wait-ctrl');
+        const rList = document.getElementById('readyList');
+        const wList = document.getElementById('waitList');
+        rList.className = `list-container ${viewMode}`;
+        wList.className = `list-container ${viewMode}`;
+
+        let items = merchList.map((item, index) => ({...item, originalIndex: index}));
+
+        // 篩選
+        items = items.filter(i => (filters.work==='all'||i.work===filters.work) && (filters.role==='all'||i.role===filters.role) && (filters.type==='all'||i.type===filters.type));
+
+        // 排序
+        items.sort((a, b) => {
+            if(sortMode === 'name') return (a.pattern||'').localeCompare(b.pattern||'');
+            if(sortMode === 'date') return b.originalIndex - a.originalIndex;
+            if(sortMode === 'qty') return b.qty - a.qty;
+            if(sortMode === 'price') return parseFloat(b.totalHkd) - parseFloat(a.totalHkd);
+        });
+
+        const genItem = (i) => `
+            <div class="item-card" onmousedown="startPress(${i.originalIndex})" onmouseup="cancelPress()" ontouchstart="startPress(${i.originalIndex})" ontouchend="cancelPress()">
+                ${i.status === '非現貨' ? `<div class="quick-check" onclick="quickCheckIn(event, ${i.originalIndex})">✓</div>` : ''}
+                <img src="${i.img || 'https://via.placeholder.com/200/f2efeb/888'}" onclick="editItem(${i.originalIndex})">
+                <div class="info">
+                    <div style="font-size:9px; color:var(--m-brown);">${i.role} · ${i.type}</div>
+                    <div style="font-size:11px; margin:2px 0; font-weight:500;">${i.pattern || 'Untitled'}</div>
+                    <div style="color:var(--m-deep-green); font-weight:bold; font-size:11px;">HK$ ${i.totalHkd} <span style="font-weight:normal; font-size:9px; opacity:0.6;">(x${i.qty})</span></div>
+                </div>
+            </div>`;
+
+        rList.innerHTML = items.filter(i => i.status === '現貨').map(genItem).join('');
+        wList.innerHTML = items.filter(i => i.status === '非現貨').map(genItem).join('');
+    }
+
+    // 長按與基礎功能保持
+    function startPress(idx) { pressTimer = setTimeout(() => { if(confirm("DELETE?")) { merchList.splice(idx, 1); save(); renderAll(); } }, 800); }
+    function cancelPress() { clearTimeout(pressTimer); }
+    function quickCheckIn(e, idx) { e.stopPropagation(); merchList[idx].status = '現貨'; save(); renderAll(); showToast("ARRIVED"); }
     function liveExchange() {
         const p = parseFloat(document.getElementById('inputPrice').value) || 0;
         const q = parseInt(document.getElementById('qty').value) || 1;
@@ -183,32 +237,27 @@
         const editIdx = parseInt(document.getElementById('editIndex').value);
         const getV = (s, i, dk) => { let v = document.getElementById(s).value; if(v === 'NEW') { v = document.getElementById(i).value.trim(); if(v && !dict[dk].includes(v)) dict[dk].push(v); } return v; };
         const data = { 
-            work: getV('workSelect', 'workInput', 'works'), 
-            role: getV('roleSelect', 'roleInput', 'roles'), 
-            type: getV('typeSelect', 'typeInput', 'types'), 
-            pattern: document.getElementById('pattern').value, 
-            status: document.getElementById('status').value, 
-            qty: parseInt(document.getElementById('qty').value), 
-            originalPrice: parseFloat(document.getElementById('inputPrice').value), 
-            originalCur: document.getElementById('currency').value, 
-            totalHkd: liveExchange(), 
-            img: null 
+            work: getV('workSelect', 'workInput', 'works'), role: getV('roleSelect', 'roleInput', 'roles'), type: getV('typeSelect', 'typeInput', 'types'), 
+            pattern: document.getElementById('pattern').value, status: document.getElementById('status').value, qty: parseInt(document.getElementById('qty').value), 
+            originalPrice: parseFloat(document.getElementById('inputPrice').value), originalCur: document.getElementById('currency').value, 
+            totalHkd: liveExchange(), img: null 
         };
         const file = document.getElementById('imgFile').files[0];
         const finish = (b64) => {
             if(b64) data.img = b64; else if(editIdx !== -1) data.img = merchList[editIdx].img;
             if(editIdx === -1) merchList.unshift(data); else merchList[editIdx] = data;
-            save(); 
-            document.getElementById('success-modal').style.display = 'flex';
-            setTimeout(() => {
-                document.getElementById('success-modal').style.display = 'none';
-                renderSelects(); switchTab('page-gallery', document.querySelectorAll('.nav-item')[0]);
-            }, 1000);
+            save(); document.getElementById('success-modal').style.display = 'flex';
+            setTimeout(() => { document.getElementById('success-modal').style.display = 'none'; renderSelects(); switchTab('page-gallery', document.querySelectorAll('.nav-item')[0]); }, 1000);
         };
         if(file) { const fr = new FileReader(); fr.onload = () => finish(fr.result); fr.readAsDataURL(file); } else finish(null);
     };
 
-    // 統計圖表
+    function editItem(idx) { const i=merchList[idx]; document.getElementById('editIndex').value=idx; document.getElementById('pattern').value=i.pattern; document.getElementById('inputPrice').value=i.originalPrice; liveExchange(); switchTab('page-recent', document.querySelectorAll('.nav-item')[2]); }
+    function switchTab(id, btn) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); document.getElementById(id).classList.add('active');
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); if(btn) btn.classList.add('active');
+        if(id === 'page-stats') renderStats(); renderAll();
+    }
     function renderStats() {
         let total = 0, charData = {}, typeData = {};
         merchList.forEach(i => {
@@ -216,35 +265,23 @@
             charData[i.role] = (charData[i.role] || 0) + v;
             typeData[i.type] = (typeData[i.type] || 0) + v;
         });
-        document.getElementById('totalSpend').innerText = `HKD ${total.toLocaleString(undefined, {minimumFractionDigits:2})}`;
+        document.getElementById('totalSpend').innerText = `HKD ${total.toLocaleString()}`;
         if(pieChart) pieChart.destroy();
         pieChart = new Chart(document.getElementById('charPieChart'), { type:'pie', data:{ labels:Object.keys(charData), datasets:[{data:Object.values(charData), backgroundColor:['#6b7a63','#a68b7c','#acc1ad','#d5cabd','#e5ddd5']}]}, options:{ plugins:{legend:{position:'bottom'}}, maintainAspectRatio:false }});
         if(barChart) barChart.destroy();
         const sorted = Object.entries(typeData).sort((a,b)=>b[1]-a[1]);
-        const maxV = sorted[0] ? sorted[0][1] : 1;
-        barChart = new Chart(document.getElementById('typeBarChart'), { type:'bar', data:{ labels:sorted.map(x=>x[0]), datasets:[{data:sorted.map(x=>x[1]), backgroundColor:sorted.map(x=>`rgba(107,122,99,${Math.max(0.2, x[1]/maxV)})`}]}, options:{ indexAxis:'y', plugins:{legend:{display:false}}, maintainAspectRatio:false }});
+        barChart = new Chart(document.getElementById('typeBarChart'), { type:'bar', data:{ labels:sorted.map(x=>x[0]), datasets:[{data:sorted.map(x=>x[1]), backgroundColor:sorted.map((x,idx)=>`rgba(107,122,99,${1-idx*0.15})`}]}, options:{ indexAxis:'y', plugins:{legend:{display:false}}, maintainAspectRatio:false }});
     }
-
-    // 通用功能
-    function switchTab(id, btn) {
-        document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); document.getElementById(id).classList.add('active');
-        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); if(btn) btn.classList.add('active');
-        if(id === 'page-stats') renderStats(); renderFilters(); renderAll();
-    }
-    function openPage(id) { document.getElementById('cover-page').classList.add('open'); document.getElementById('bottom-nav').style.display='flex'; switchTab(id, document.querySelectorAll('.nav-item')[Object.keys({'page-gallery':0,'page-pending':1,'page-recent':2,'page-stats':3,'page-settings':4}).indexOf(id)]); }
+    function openPage(id) { document.getElementById('cover-page').classList.add('open'); document.getElementById('bottom-nav').style.display='flex'; switchTab(id, document.querySelectorAll('.nav-item')[['page-gallery','page-pending','page-recent','page-stats','page-settings'].indexOf(id)]); }
     function closePage() { document.getElementById('cover-page').classList.remove('open'); document.getElementById('bottom-nav').style.display='none'; }
-    function quickCheckIn(e, idx) { e.stopPropagation(); merchList[idx].status = '現貨'; save(); renderAll(); showToast("ARRIVED"); }
     function showToast(m) { const t=document.getElementById('toast'); t.innerText=m; t.style.display='block'; setTimeout(()=>t.style.display='none',2000); }
-    function editItem(idx) { const i=merchList[idx]; document.getElementById('editIndex').value=idx; document.getElementById('pattern').value=i.pattern; document.getElementById('inputPrice').value=i.originalPrice; liveExchange(); switchTab('page-recent', document.querySelectorAll('.nav-item')[2]); }
     function updateGridSize(v) { document.documentElement.style.setProperty('--grid-size', v+'px'); }
     function toggleInput(s, i) { document.getElementById(i).style.display = (document.getElementById(s).value === 'NEW') ? 'block' : 'none'; }
     function renderSelects() { const setup = (id, list) => { document.getElementById(id).innerHTML = list.map(i => `<option value="${i}">${i}</option>`).join('') + `<option value="NEW">+ NEW...</option>`; }; setup('workSelect', dict.works); setup('roleSelect', dict.roles); setup('typeSelect', dict.types); }
-    function renderFilters() { const build = (l, k) => `<div class="filter-row"><div class="filter-chip ${filters[k]==='all'?'active':''}" onclick="setFilter('${k}','all')">ALL</div>${l.map(i=>`<div class="filter-chip ${filters[k]===i?'active':''}" onclick="setFilter('${k}','${i}')">${i}</div>`).join('')}</div>`; const h = build(dict.works, 'work')+build(dict.roles, 'role')+build(dict.types, 'type'); document.getElementById('lib-filter-box').innerHTML = h; document.getElementById('wait-filter-box').innerHTML = h; }
-    function setFilter(k, v) { filters[k] = v; renderFilters(); renderAll(); }
-    function exportData() { const blob = new Blob([JSON.stringify({merchList, dict})], {type: 'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `archive_master_backup.json`; a.click(); }
+    function exportData() { const b = new Blob([JSON.stringify({merchList, dict})], {type: 'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = `archive_master.json`; a.click(); }
     function importData(input) { const fr = new FileReader(); fr.onload = (e) => { const d = JSON.parse(e.target.result); merchList = d.merchList; dict = d.dict; save(); location.reload(); }; fr.readAsText(input.files[0]); }
 
-    renderSelects(); renderFilters(); renderAll();
+    renderSelects(); renderAll();
 </script>
 </body>
 </html>
