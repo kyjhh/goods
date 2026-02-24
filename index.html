@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Morandi Archive - V26 Import Fix</title>
+    <title>Morandi Archive - V27 Stats Pro</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
@@ -39,7 +39,6 @@
 
         .list-container.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(var(--dynamic-grid), 1fr)); gap: 15px; }
         .list-container.list { display: flex; flex-direction: column; gap: 10px; }
-
         .item-card { background: #fff; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--m-clay); user-select: none; -webkit-user-select: none; display: flex; flex-direction: column; }
         .list .item-card { flex-direction: row; align-items: center; height: 90px; }
         .list .img-box { width: 90px; height: 90px; flex-shrink: 0; }
@@ -53,6 +52,10 @@
         input, select, textarea { width: 100%; padding: 12px; border-radius: var(--radius); border: 1px solid var(--m-clay); background: #fafafa; font-size: 13px; margin-top: 6px; box-sizing: border-box; outline: none; }
         textarea { height: 80px; resize: none; font-family: inherit; }
         
+        /* 統計專用樣式 */
+        .stat-card { background:#fff; padding:20px; border-radius:var(--radius); border:1px solid var(--m-clay); margin-bottom: 20px; }
+        .stat-title { font-size: 12px; font-weight: bold; color: var(--m-brown); margin-bottom: 15px; letter-spacing: 1px; border-left: 3px solid var(--m-sage); padding-left: 10px; }
+
         #success-modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 30px; border-radius: 15px; text-align: center; z-index: 4000; box-shadow: 0 10px 40px rgba(0,0,0,0.2); display: none; width: 220px; }
         .overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.4); z-index: 3500; display: none; }
     </style>
@@ -133,8 +136,21 @@
         </div>
 
         <div id="page-stats" class="page">
-            <div style="background:#fff; padding:20px; border-radius:var(--radius); border:1px solid var(--m-clay);">
-                <canvas id="statChart"></canvas>
+            <div class="stat-card">
+                <div class="stat-title">MONTHLY SPENDING (HKD)</div>
+                <canvas id="monthlyChart"></canvas>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title">SPENDING BY WORK</div>
+                <canvas id="workChart"></canvas>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title">SPENDING BY ROLE</div>
+                <canvas id="roleChart"></canvas>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title">TYPE ANALYSIS (PRICE vs QTY)</div>
+                <canvas id="typeChart"></canvas>
             </div>
         </div>
 
@@ -163,7 +179,7 @@
     const DICT_KEY = 'archive_dict_master';
     const rates = { RMB: 1.08, JPY: 0.052, HKD: 1.0 };
     let merchList = [], dict = { works: [], roles: [], types: [] }, filters = { work: 'all', role: 'all', type: 'all' };
-    let sortMode = 'date', sortDesc = true, viewMode = 'grid', chart = null;
+    let sortMode = 'date', sortDesc = true, viewMode = 'grid', charts = {};
 
     function init() {
         merchList = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
@@ -179,26 +195,17 @@
         localStorage.setItem(DICT_KEY, JSON.stringify(dict)); 
     }
 
-    // 導入功能修正版
     function importData(input) {
         const file = input.files[0]; if(!file) return;
         const reader = new FileReader();
         reader.onload = (e) => {
             try {
                 const d = JSON.parse(e.target.result);
-                // 直接更新全局變數
                 merchList = d.merchList || [];
                 dict = d.dict || { works: [], roles: [], types: [] };
-                
-                save(); // 存檔
-                
-                // 強制刷新介面
-                renderSelects();
-                renderFilters();
-                renderAll();
-                input.value = ""; // 清除選取檔案以便下次使用
-                showModal("📥", "IMPORTED SUCCESS");
-            } catch(err) { alert("導入失敗，請檢查檔案格式"); }
+                save(); renderSelects(); renderFilters(); renderAll();
+                input.value = ""; showModal("📥", "IMPORTED SUCCESS");
+            } catch(err) { alert("導入失敗"); }
         };
         reader.readAsText(file);
     }
@@ -282,10 +289,8 @@
             if(b64) data.img = b64; else if(editIdx !== -1) data.img = merchList[editIdx].img;
             if(editIdx === -1) merchList.unshift(data); else merchList[editIdx] = data;
             save(); showModal("✨", "SAVED!");
-            renderSelects();
-            document.getElementById('merchForm').reset();
-            document.getElementById('editIndex').value = "-1";
-            document.getElementById('delBtn').style.display = 'none';
+            renderSelects(); document.getElementById('merchForm').reset();
+            document.getElementById('editIndex').value = "-1"; document.getElementById('delBtn').style.display = 'none';
             switchTab('page-gallery', document.querySelectorAll('.nav-item')[0]);
             renderFilters(); renderAll();
         };
@@ -339,7 +344,7 @@
             const card = document.createElement('div');
             card.className = 'item-card';
             const notePreview = (viewMode==='list' && i.note) ? `<div style="font-size:9px;color:#999;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${i.note}</div>` : '';
-            card.innerHTML = `<div class="img-box"><img src="${i.img || 'https://via.placeholder.com/200/f2efeb/888'}"></div><div class="info"><div style="font-size:9px;color:var(--m-brown);">${i.role} · ${i.type}</div><div style="font-size:11px;font-weight:bold;">${i.pattern || 'Untitled'}</div>${notePreview}<div style="font-size:11px;color:var(--m-deep-green);">HK$ ${i.totalHkd} <small>x${i.qty}</small></div></div>`;
+            card.innerHTML = `<div class="img-box"><img src="${i.img || 'https://via.placeholder.com/200/f2efeb/888'}"></div><div class="info"><div style="font-size:9px;color:var(--m-brown);">${i.role || 'NA'} · ${i.type || 'NA'}</div><div style="font-size:11px;font-weight:bold;">${i.pattern || 'Untitled'}</div>${notePreview}<div style="font-size:11px;color:var(--m-deep-green);">HK$ ${i.totalHkd} <small>x${i.qty}</small></div></div>`;
             card.onclick = () => editItem(i.originalIndex);
             handleLongPress(card, () => confirmDeleteCard(i.originalIndex));
             if(i.status === '現貨') rList.appendChild(card); else wList.appendChild(card);
@@ -347,17 +352,68 @@
     }
 
     function renderStats() {
-        if(chart) chart.destroy();
-        const ctx = document.getElementById('statChart').getContext('2d');
-        const data = {}; merchList.forEach(i => { if(i.work) data[i.work] = (data[i.work] || 0) + parseFloat(i.totalHkd); });
-        chart = new Chart(ctx, { type: 'pie', data: { labels: Object.keys(data), datasets: [{ data: Object.values(data), backgroundColor: ['#6b7a63', '#acc1ad', '#a68b7c', '#d5cabd', '#e5ddd5'] }] }, options: { plugins: { legend: { position: 'bottom', labels: { font: { size: 10 } } } } } });
+        // 清除舊圖表
+        Object.values(charts).forEach(c => c.destroy());
+        const colors = ['#6b7a63', '#acc1ad', '#a68b7c', '#d5cabd', '#e5ddd5', '#c2b2a3', '#96a48b'];
+
+        // 1. 每月支出走勢
+        const monthData = {};
+        merchList.forEach(i => {
+            const date = new Date(i.timestamp);
+            const key = `${date.getFullYear()}/${date.getMonth() + 1}`;
+            monthData[key] = (monthData[key] || 0) + parseFloat(i.totalHkd);
+        });
+        const monthKeys = Object.keys(monthData).sort((a,b) => new Date(a) - new Date(b));
+        charts.monthly = new Chart(document.getElementById('monthlyChart'), {
+            type: 'line',
+            data: { labels: monthKeys, datasets: [{ label: 'HKD', data: monthKeys.map(k => monthData[k]), borderColor: '#6b7a63', tension: 0.3, fill: true, backgroundColor: 'rgba(107, 122, 99, 0.1)' }] },
+            options: { plugins: { legend: { display: false } } }
+        });
+
+        // 2. 作品支出圓餅圖
+        const workData = {};
+        merchList.forEach(i => { if(i.work) workData[i.work] = (workData[i.work] || 0) + parseFloat(i.totalHkd); });
+        charts.work = new Chart(document.getElementById('workChart'), {
+            type: 'pie',
+            data: { labels: Object.keys(workData), datasets: [{ data: Object.values(workData), backgroundColor: colors }] },
+            options: { plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 10 } } } } }
+        });
+
+        // 3. 角色支出排行 (前7名)
+        const roleData = {};
+        merchList.forEach(i => { if(i.role) roleData[i.role] = (roleData[i.role] || 0) + parseFloat(i.totalHkd); });
+        const topRoles = Object.entries(roleData).sort((a,b) => b[1] - a[1]).slice(0, 7);
+        charts.role = new Chart(document.getElementById('roleChart'), {
+            type: 'bar',
+            data: { labels: topRoles.map(r => r[0]), datasets: [{ label: 'HKD', data: topRoles.map(r => r[1]), backgroundColor: '#acc1ad' }] },
+            options: { indexAxis: 'y', plugins: { legend: { display: false } } }
+        });
+
+        // 4. 類型分析 (雙軸：數量 vs 金額)
+        const typeQty = {}, typeAmt = {};
+        merchList.forEach(i => {
+            if(i.type) {
+                typeQty[i.type] = (typeQty[i.type] || 0) + (i.qty || 1);
+                typeAmt[i.type] = (typeAmt[i.type] || 0) + parseFloat(i.totalHkd);
+            }
+        });
+        charts.type = new Chart(document.getElementById('typeChart'), {
+            type: 'bar',
+            data: {
+                labels: Object.keys(typeQty),
+                datasets: [
+                    { label: 'Qty', data: Object.values(typeQty), backgroundColor: '#d5cabd', yAxisID: 'y' },
+                    { label: 'HKD', data: Object.values(typeAmt), backgroundColor: '#6b7a63', yAxisID: 'y1' }
+                ]
+            },
+            options: { scales: { y: { type: 'linear', position: 'left' }, y1: { type: 'linear', position: 'right', grid: { drawOnChartArea: false } } }, plugins: { legend: { position: 'bottom' } } }
+        });
     }
 
     function editItem(idx) {
         const i = merchList[idx]; document.getElementById('editIndex').value = idx;
         document.getElementById('workSelect').value = i.work; document.getElementById('roleSelect').value = i.role; document.getElementById('typeSelect').value = i.type;
-        document.getElementById('pattern').value = i.pattern || ""; 
-        document.getElementById('note').value = i.note || "";
+        document.getElementById('pattern').value = i.pattern || ""; document.getElementById('note').value = i.note || "";
         document.getElementById('status').value = i.status; document.getElementById('qty').value = i.qty;
         document.getElementById('currency').value = i.originalCur; document.getElementById('inputPrice').value = i.originalPrice;
         document.getElementById('delBtn').style.display = 'block';
@@ -385,7 +441,7 @@
 
     function toggleInput(s, i) { document.getElementById(i).style.display = document.getElementById(s).value === 'NEW' ? 'block' : 'none'; }
     function liveExchange() { const p = parseFloat(document.getElementById('inputPrice').value)||0, q = parseInt(document.getElementById('qty').value)||1, cur = document.getElementById('currency').value; const t = (p * q * rates[cur]).toFixed(2); document.getElementById('exchangePreview').innerText = `Total: HKD ${t}`; return t; }
-    function switchTab(id, btn) { document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); document.getElementById(id).classList.add('active'); document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); if(btn) btn.classList.add('active'); if(id==='page-stats') renderStats(); if(id!=='page-recent') { document.getElementById('delBtn').style.display='none'; document.getElementById('merchForm').reset(); document.getElementById('editIndex').value = "-1"; } renderAll(); }
+    function switchTab(id, btn) { document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); document.getElementById(id).classList.add('active'); document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); if(btn) btn.classList.add('active'); if(id==='page-stats') setTimeout(renderStats, 100); if(id!=='page-recent') { document.getElementById('delBtn').style.display='none'; document.getElementById('merchForm').reset(); document.getElementById('editIndex').value = "-1"; } renderAll(); }
     function openPage(id) { document.getElementById('cover-page').classList.add('open'); document.getElementById('bottom-nav').style.display='flex'; switchTab(id, document.querySelectorAll('.nav-item')[id==='page-gallery'?0 : id==='page-pending'?1:2]); }
     function closePage() { document.getElementById('cover-page').classList.remove('open'); document.getElementById('bottom-nav').style.display='none'; }
     function exportData() { const blob = new Blob([JSON.stringify({merchList, dict})], {type: 'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `archive_master.json`; a.click(); }
