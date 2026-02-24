@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Morandi Collection Archive v13</title>
+    <title>Morandi Collection Archive v14</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
@@ -31,16 +31,15 @@
         .page.active { display: block; animation: fadeIn 0.4s; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        /* 控制面板 (搜索與分類) */
+        /* 控制面板 */
         .control-panel { background: #fff; padding: 15px; border-radius: 12px; margin-bottom: 15px; border: 1px solid #eee; }
         .search-box { width: 100%; padding: 10px 15px; border-radius: 20px; border: 1px solid #ddd; margin-bottom: 15px; box-sizing: border-box; font-size: 14px; outline: none; }
-        .filter-label { font-size: 11px; color: var(--m-blue); font-weight: bold; margin-bottom: 5px; display: block; }
-        .filter-group { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 10px; scrollbar-width: none; }
-        .filter-chip { background: #f0f0f0; border: 1px solid #ddd; padding: 6px 14px; border-radius: 20px; font-size: 12px; cursor: pointer; white-space: nowrap; color: #888; }
+        .filter-label { font-size: 11px; color: var(--m-blue); font-weight: bold; margin: 10px 0 5px; display: flex; justify-content: space-between; }
+        .filter-group { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 5px; scrollbar-width: none; align-items: center; }
+        .filter-chip { background: #f0f0f0; border: 1px solid #ddd; padding: 6px 14px; border-radius: 20px; font-size: 12px; cursor: pointer; white-space: nowrap; color: #888; position: relative; }
         .filter-chip.active { background: var(--m-blue); color: white; border-color: var(--m-blue); }
+        .delete-btn { color: #ff6b6b; font-size: 10px; margin-left: 5px; font-weight: bold; }
         
-        .size-slider-container { display: flex; align-items: center; gap: 10px; margin-top: 5px; padding-top: 10px; border-top: 1px dashed #eee; }
-
         /* 列表卡片佈局 */
         .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(var(--grid-size), 1fr)); gap: 12px; }
         .item-card { background: #fff; border-radius: 12px; overflow: hidden; border: 1px solid #eee; position: relative; display: flex; flex-direction: column; }
@@ -81,34 +80,22 @@
             <div class="control-panel">
                 <input type="text" class="search-box" id="keywordSearch" placeholder="🔍 搜索角色、柄圖、種類..." oninput="renderAll()">
                 
-                <span class="filter-label">作品分類</span>
-                <div class="filter-group" id="workFilter">
-                    <div class="filter-chip active" onclick="setWorkFilter('all', this)">全部</div>
-                    <div class="filter-chip" onclick="setWorkFilter('世界計畫', this)">世界計畫</div>
-                    <div class="filter-chip" onclick="setWorkFilter('V家', this)">V家</div>
-                    <div class="filter-chip" onclick="setWorkFilter('異形舞台', this)">異形舞台</div>
+                <div class="filter-label">
+                    <span>作品分類 (點擊篩選 / 長按作品名可刪除)</span>
                 </div>
+                <div class="filter-group" id="workFilter"></div>
                 
                 <div id="roleFilterSection" style="display:none; margin-top:10px;">
                     <span class="filter-label">角色細分</span>
                     <div class="filter-group" id="roleFilter"></div>
                 </div>
 
-                <div class="size-slider-container">
-                    <label style="font-size:11px; color:#999;">格子</label>
-                    <input type="range" id="gridSlider" min="100" max="350" value="160" oninput="updateGridSize(this.value)">
+                <div class="size-slider-container" style="display:flex; align-items:center; gap:10px; margin-top:10px; border-top:1px dashed #eee; padding-top:10px;">
+                    <label style="font-size:11px; color:#999; margin:0;">縮放</label>
+                    <input type="range" id="gridSlider" min="100" max="350" value="160" oninput="updateGridSize(this.value)" style="flex-grow:1; accent-color:var(--m-sage);">
                 </div>
             </div>
             <div class="gallery" id="readyList"></div>
-        </div>
-
-        <div id="page-stats" class="page">
-            <div class="glass-card">
-                <h3 style="color:var(--m-sage)">💰 支出概覽</h3>
-                <div id="totalSpend" style="font-size: 26px; font-weight: bold; color: var(--m-green);">HKD 0</div>
-                <div style="height: 250px;"><canvas id="charPieChart"></canvas></div>
-            </div>
-            <div class="glass-card"><h4 style="color:var(--m-blue)">📅 每月支出</h4><div id="monthlyStats"></div></div>
         </div>
 
         <div id="page-recent" class="page">
@@ -116,17 +103,17 @@
                 <h3 id="formTitle">📝 紀錄周邊</h3>
                 <form id="merchForm">
                     <input type="hidden" id="editIndex" value="-1">
+                    
                     <label>作品名稱</label>
-                    <select id="work">
-                        <option value="世界計畫">世界計畫</option>
-                        <option value="V家">V家</option>
-                        <option value="異形舞台">異形舞台</option>
-                        <option value="其他">其他</option>
-                    </select>
+                    <select id="workSelect" onchange="checkOtherWork(this.value)">
+                        </select>
+                    <div id="otherWorkInput" style="display:none; margin-top:10px;">
+                        <input type="text" id="newWorkName" placeholder="請輸入新作品名稱">
+                    </div>
 
-                    <label>角色</label><input type="text" id="role" required placeholder="例如：宵崎奏 / IVAN">
+                    <label>角色</label><input type="text" id="role" required placeholder="例如：宵崎奏">
                     <label>柄圖名稱</label><input type="text" id="pattern" placeholder="例如：25時三週年">
-                    <label>周邊種類</label><input type="text" id="type" placeholder="例如：徽章 / 立牌">
+                    <label>周邊種類</label><input type="text" id="type" placeholder="例如：徽章">
                     
                     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
                         <div>
@@ -154,6 +141,15 @@
             </div>
         </div>
 
+        <div id="page-stats" class="page">
+            <div class="glass-card">
+                <h3 style="color:var(--m-sage)">💰 支出概覽</h3>
+                <div id="totalSpend" style="font-size: 26px; font-weight: bold; color: var(--m-green);">HKD 0</div>
+                <div style="height: 250px;"><canvas id="charPieChart"></canvas></div>
+            </div>
+            <div class="glass-card"><h4 style="color:var(--m-blue)">📅 每月支出</h4><div id="monthlyStats"></div></div>
+        </div>
+
         <div id="page-pending" class="page">
             <h3 style="color:var(--m-grey)">⌛ 非現貨待收</h3>
             <div class="gallery" id="waitList"></div>
@@ -168,12 +164,75 @@
     </nav>
 
 <script>
-    let merchList = JSON.parse(localStorage.getItem('mm25_morandi_v13')) || [];
+    let merchList = JSON.parse(localStorage.getItem('mm25_morandi_v14')) || [];
+    let customWorks = JSON.parse(localStorage.getItem('mm25_works')) || ["世界計畫", "V家", "異形舞台"];
     const rates = { RMB: 1.08, JPY: 0.052, HKD: 1.0 };
     let myChart = null;
     let currentWork = 'all';
     let currentRole = '';
 
+    // 初始化與存檔
+    function saveAll() {
+        localStorage.setItem('mm25_morandi_v14', JSON.stringify(merchList));
+        localStorage.setItem('mm25_works', JSON.stringify(customWorks));
+    }
+
+    // 作品選單渲染
+    function renderWorkOptions() {
+        const select = document.getElementById('workSelect');
+        let html = customWorks.map(w => `<option value="${w}">${w}</option>`).join('');
+        html += `<option value="other">+ 新增其他作品</option>`;
+        select.innerHTML = html;
+    }
+
+    function checkOtherWork(val) {
+        document.getElementById('otherWorkInput').style.display = (val === 'other') ? 'block' : 'none';
+    }
+
+    // 作品篩選按鈕渲染
+    function renderWorkFilters() {
+        const filterBox = document.getElementById('workFilter');
+        let html = `<div class="filter-chip ${currentWork==='all'?'active':''}" onclick="setWorkFilter('all', this)">全部</div>`;
+        html += customWorks.map(w => `
+            <div class="filter-chip ${currentWork===w?'active':''}" 
+                 onclick="setWorkFilter('${w}', this)" 
+                 oncontextmenu="deleteWorkPrompt('${w}'); return false;">
+                ${w}
+            </div>
+        `).join('');
+        filterBox.innerHTML = html;
+    }
+
+    function deleteWorkPrompt(work) {
+        if (confirm(`確定要從列表中刪除作品名稱「${work}」嗎？\n(這不會刪除已有的藏品，但下次將無法選擇此作品)`)) {
+            customWorks = customWorks.filter(w => w !== work);
+            saveAll();
+            renderWorkFilters();
+            renderWorkOptions();
+        }
+    }
+
+    function setWorkFilter(work, btn) {
+        currentWork = work; currentRole = '';
+        renderWorkFilters();
+        const roleSection = document.getElementById('roleFilterSection');
+        if(work === 'all') {
+            roleSection.style.display = 'none';
+        } else {
+            const roles = [...new Set(merchList.filter(i => i.work === work && i.status === '現貨').map(i => i.role))];
+            if(roles.length > 0) {
+                roleSection.style.display = 'block';
+                document.getElementById('roleFilter').innerHTML = roles.map(r => `<div class="filter-chip" onclick="currentRole='${r}';renderAll();updateRoleUI(this)">${r}</div>`).join('');
+            } else {
+                roleSection.style.display = 'none';
+            }
+        }
+        renderAll();
+    }
+
+    function updateRoleUI(btn) { document.querySelectorAll('#roleFilter .filter-chip').forEach(c => c.classList.remove('active')); btn.classList.add('active'); }
+
+    // 其餘邏輯 (匯率、渲染、表單)
     function liveExchange() {
         const cur = document.getElementById('currency').value;
         const price = parseFloat(document.getElementById('inputPrice').value) || 0;
@@ -183,55 +242,8 @@
         return totalHkd;
     }
 
-    function updateGridSize(val) {
-        document.documentElement.style.setProperty('--grid-size', val + 'px');
-        localStorage.setItem('mm25_grid_size', val);
-    }
-
-    // 初始化格子
-    const savedGridSize = localStorage.getItem('mm25_grid_size') || 160;
-    document.getElementById('gridSlider').value = savedGridSize;
-    updateGridSize(savedGridSize);
-
-    function openPage(id) { document.getElementById('cover-page').classList.add('open'); document.getElementById('bottom-nav').style.display = 'flex'; switchTab(id, document.querySelector(`[onclick*="${id}"]`)); }
-    function closePage() { document.getElementById('cover-page').classList.remove('open'); document.getElementById('bottom-nav').style.display = 'none'; }
-
-    function switchTab(id, btn) {
-        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
-        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-        if(btn) btn.classList.add('active');
-        if(id === 'page-stats') renderStats();
-        renderAll();
-    }
-
-    // 分類過濾邏輯
-    function setWorkFilter(work, btn) {
-        currentWork = work; currentRole = '';
-        document.querySelectorAll('#workFilter .filter-chip').forEach(c => c.classList.remove('active'));
-        btn.classList.add('active');
-        
-        const roleSection = document.getElementById('roleFilterSection');
-        const roleBox = document.getElementById('roleFilter');
-        
-        if(work === 'all') {
-            roleSection.style.display = 'none';
-        } else {
-            const roles = [...new Set(merchList.filter(i => i.work === work && i.status === '現貨').map(i => i.role))];
-            if(roles.length > 0) {
-                roleSection.style.display = 'block';
-                roleBox.innerHTML = roles.map(r => `<div class="filter-chip" onclick="currentRole='${r}';renderAll();updateRoleUI(this)">${r}</div>`).join('');
-            } else {
-                roleSection.style.display = 'none';
-            }
-        }
-        renderAll();
-    }
-    function updateRoleUI(btn) { document.querySelectorAll('#roleFilter .filter-chip').forEach(c => c.classList.remove('active')); btn.classList.add('active'); }
-
     function renderAll() {
         const search = document.getElementById('keywordSearch').value.toLowerCase();
-        
         const genHTML = (item, idx) => `
             <div class="item-card">
                 ${item.status === '非現貨' ? `<input type="checkbox" class="checkbox-arrival" onclick="markArrived(${idx})">` : ''}
@@ -248,33 +260,74 @@
                 </div>
             </div>`;
 
-        // 過濾邏輯
-        const filterFn = (o) => {
-            const matchesWork = (currentWork === 'all' || o.item.work === currentWork);
-            const matchesRole = (!currentRole || o.item.role === currentRole);
-            const matchesSearch = (!search || 
-                o.item.role.toLowerCase().includes(search) || 
-                (o.item.pattern && o.item.pattern.toLowerCase().includes(search)) ||
-                (o.item.type && o.item.type.toLowerCase().includes(search))
-            );
-            return matchesWork && matchesRole && matchesSearch;
-        };
-
         document.getElementById('readyList').innerHTML = merchList.map((item, index) => ({item, index}))
-            .filter(o => o.item.status === '現貨' && filterFn(o))
-            .map(o => genHTML(o.item, o.index)).join('');
+            .filter(o => o.item.status === '現貨' && 
+                (currentWork === 'all' || o.item.work === currentWork) && 
+                (!currentRole || o.item.role === currentRole) &&
+                (!search || o.item.role.toLowerCase().includes(search) || (o.item.pattern && o.item.pattern.toLowerCase().includes(search)))
+            ).map(o => genHTML(o.item, o.index)).join('');
 
         document.getElementById('waitList').innerHTML = merchList.map((item, index) => ({item, index}))
-            .filter(o => o.item.status === '非現貨')
-            .map(o => genHTML(o.item, o.index)).join('');
+            .filter(o => o.item.status === '非現貨').map(o => genHTML(o.item, o.index)).join('');
     }
 
-    function markArrived(idx) { merchList[idx].status = '現貨'; save(); renderAll(); }
-    
+    document.getElementById('merchForm').onsubmit = function(e) {
+        e.preventDefault();
+        const editIdx = parseInt(document.getElementById('editIndex').value);
+        let workName = document.getElementById('workSelect').value;
+        
+        if(workName === 'other') {
+            workName = document.getElementById('newWorkName').value.trim();
+            if(!workName) { alert("請輸入作品名稱"); return; }
+            if(!customWorks.includes(workName)) {
+                customWorks.push(workName);
+                renderWorkOptions();
+                renderWorkFilters();
+            }
+        }
+
+        const doSave = (b64) => {
+            const data = {
+                work: workName,
+                role: document.getElementById('role').value,
+                pattern: document.getElementById('pattern').value,
+                type: document.getElementById('type').value,
+                status: document.getElementById('status').value,
+                qty: parseInt(document.getElementById('qty').value),
+                originalPrice: parseFloat(document.getElementById('inputPrice').value),
+                originalCur: document.getElementById('currency').value,
+                totalHkd: liveExchange(),
+                buyDate: document.getElementById('buyDate').value,
+                arrivalDate: document.getElementById('arrivalDate').value,
+                img: b64 || (editIdx !== -1 ? merchList[editIdx].img : null)
+            };
+            if(editIdx === -1) merchList.unshift(data); else merchList[editIdx] = data;
+            saveAll(); resetForm(); renderAll(); switchTab('page-gallery', document.querySelector(`[onclick*="page-gallery"]`));
+        };
+
+        const file = document.getElementById('imgFile').files[0];
+        if(file) { const r = new FileReader(); r.onload = () => doSave(r.result); r.readAsDataURL(file); }
+        else doSave(null);
+    };
+
+    // 其他基礎功能
+    function updateGridSize(val) { document.documentElement.style.setProperty('--grid-size', val + 'px'); localStorage.setItem('mm25_grid_size', val); }
+    function markArrived(idx) { merchList[idx].status = '現貨'; saveAll(); renderAll(); }
+    function deleteItem(idx) { if(confirm('確定刪除？')) { merchList.splice(idx,1); saveAll(); renderAll(); } }
+    function resetForm() {
+        document.getElementById('merchForm').reset();
+        document.getElementById('editIndex').value = "-1";
+        document.getElementById('otherWorkInput').style.display = 'none';
+        document.getElementById('formTitle').innerText = "📝 紀錄周邊";
+        document.getElementById('submitBtn').innerText = "確認存檔";
+        document.getElementById('cancelBtn').style.display = "none";
+        document.getElementById('arrivalGroup').style.display = "none";
+        document.getElementById('exchangePreview').innerText = "總額換算: HKD 0.00";
+    }
     function editItem(idx) {
         const item = merchList[idx];
         document.getElementById('editIndex').value = idx;
-        document.getElementById('work').value = item.work;
+        document.getElementById('workSelect').value = item.work;
         document.getElementById('role').value = item.role;
         document.getElementById('pattern').value = item.pattern || '';
         document.getElementById('type').value = item.type || '';
@@ -284,7 +337,6 @@
         document.getElementById('inputPrice').value = item.originalPrice;
         document.getElementById('buyDate').value = item.buyDate || '';
         document.getElementById('arrivalDate').value = item.arrivalDate || '';
-        
         toggleArrivalDate(item.status);
         liveExchange();
         document.getElementById('formTitle').innerText = "✏️ 編輯藏品";
@@ -292,48 +344,17 @@
         document.getElementById('cancelBtn').style.display = "block";
         switchTab('page-recent', document.querySelector(`[onclick*="page-recent"]`));
     }
-
-    function resetForm() {
-        document.getElementById('merchForm').reset();
-        document.getElementById('editIndex').value = "-1";
-        document.getElementById('formTitle').innerText = "📝 紀錄周邊";
-        document.getElementById('submitBtn').innerText = "確認存檔";
-        document.getElementById('cancelBtn').style.display = "none";
-        document.getElementById('arrivalGroup').style.display = "none";
-        document.getElementById('exchangePreview').innerText = "總額換算: HKD 0.00";
+    function toggleArrivalDate(val) { document.getElementById('arrivalGroup').style.display = (val === '非現貨') ? 'block' : 'none'; }
+    function switchTab(id, btn) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        if(btn) btn.classList.add('active');
+        if(id === 'page-stats') renderStats();
+        renderAll();
     }
-
-    function deleteItem(idx) { if(confirm('確定刪除？')) { merchList.splice(idx,1); save(); renderAll(); } }
-    function save() { localStorage.setItem('mm25_morandi_v13', JSON.stringify(merchList)); }
-
-    document.getElementById('merchForm').onsubmit = function(e) {
-        e.preventDefault();
-        const editIdx = parseInt(document.getElementById('editIndex').value);
-        const totalHkd = liveExchange();
-        const file = document.getElementById('imgFile').files[0];
-
-        const doSave = (b64) => {
-            const data = {
-                work: document.getElementById('work').value,
-                role: document.getElementById('role').value,
-                pattern: document.getElementById('pattern').value,
-                type: document.getElementById('type').value,
-                status: document.getElementById('status').value,
-                qty: parseInt(document.getElementById('qty').value),
-                originalPrice: parseFloat(document.getElementById('inputPrice').value),
-                originalCur: document.getElementById('currency').value,
-                totalHkd: totalHkd,
-                buyDate: document.getElementById('buyDate').value,
-                arrivalDate: document.getElementById('arrivalDate').value,
-                img: b64 || (editIdx !== -1 ? merchList[editIdx].img : null)
-            };
-            if(editIdx === -1) merchList.unshift(data); else merchList[editIdx] = data;
-            save(); resetForm(); renderAll(); switchTab('page-gallery', document.querySelector(`[onclick*="page-gallery"]`));
-        };
-        if(file) { const r = new FileReader(); r.onload = () => doSave(r.result); r.readAsDataURL(file); }
-        else doSave(null);
-    };
-
+    function openPage(id) { document.getElementById('cover-page').classList.add('open'); document.getElementById('bottom-nav').style.display = 'flex'; switchTab(id, document.querySelector(`[onclick*="${id}"]`)); }
+    function closePage() { document.getElementById('cover-page').classList.remove('open'); document.getElementById('bottom-nav').style.display = 'none'; }
     function renderStats() {
         let total = 0, charData = {}, monthData = {};
         merchList.forEach(i => {
@@ -352,9 +373,7 @@
             <div style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px dashed #eee;"><span>${m}</span><b>HK$ ${monthData[m].toLocaleString()}</b></div>`).join('');
     }
 
-    function toggleArrivalDate(val) { document.getElementById('arrivalGroup').style.display = (val === '非現貨') ? 'block' : 'none'; }
-    
-    // 高清封面背景初始化
+    // 初始化封面
     const coverPage = document.getElementById('cover-page');
     const storedCover = localStorage.getItem('mm25_hd_cover');
     if(storedCover) coverPage.style.backgroundImage = `url(${storedCover})`;
@@ -364,6 +383,10 @@
         r.readAsDataURL(e.target.files[0]);
     };
 
+    // 啟動渲染
+    renderWorkOptions();
+    renderWorkFilters();
+    updateGridSize(savedGridSize);
     renderAll();
 </script>
 </body>
