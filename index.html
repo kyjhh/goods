@@ -288,7 +288,6 @@
         const libSearch = document.getElementById('lib-search').value.toLowerCase();
         const waitSearch = document.getElementById('wait-search').value.toLowerCase();
         const wishSearch = document.getElementById('wish-search').value.toLowerCase();
-        
         const processList = (targetStatus, searchVal) => {
             let filtered = merchList.map((item, index) => ({...item, originalIndex: index}))
                 .filter(i => i.status === targetStatus)
@@ -300,7 +299,6 @@
             else if(sortMode==='qty') filtered.sort((a,b)=> (b.qty - a.qty) * multi);
             return filtered;
         };
-
         const renderItems = (items, container) => {
             container.innerHTML = ''; container.className = `list-container ${viewMode}`;
             items.forEach(i => {
@@ -313,7 +311,6 @@
                 container.appendChild(card);
             });
         };
-
         const readyItems = processList('現貨', libSearch); const waitItems = processList('非現貨', waitSearch); const wishItems = processList('願望', wishSearch);
         document.getElementById('lib-count').innerText = `顯示: ${readyItems.length} / ${merchList.filter(i=>i.status==='現貨').length}`;
         document.getElementById('wait-count').innerText = `顯示: ${waitItems.length} / ${merchList.filter(i=>i.status==='非現貨').length}`;
@@ -360,20 +357,13 @@
     function showModal(icon, text) { document.getElementById('modal-icon').innerText = icon; document.getElementById('modal-text').innerText = text; document.getElementById('overlay').style.display='block'; document.getElementById('success-modal').style.display='block'; }
     function closeModal() { document.getElementById('overlay').style.display='none'; document.getElementById('success-modal').style.display='none'; }
     function exportData() { const blob = new Blob([JSON.stringify({merchList, dict})], {type: 'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `archive_master.json`; a.click(); }
-    
     function importData(input) {
         const file = input.files[0]; if(!file) return;
         const reader = new FileReader();
         reader.onload = (e) => {
             try {
                 const d = JSON.parse(e.target.result);
-                if(d.merchList) {
-                    merchList = d.merchList; dict = d.dict || { works: [], roles: [], types: [] };
-                    save(); 
-                    renderSelects(); renderFilters(); renderAll(); 
-                    showModal("✓", "導入成功");
-                    input.value = ""; // 清除輸入以便下次選擇
-                } else { alert("JSON 格式不正確"); }
+                if(d.merchList) { merchList = d.merchList; dict = d.dict || { works: [], roles: [], types: [] }; save(); renderSelects(); renderFilters(); renderAll(); showModal("✓", "導入成功"); input.value = ""; } else { alert("JSON 格式不正確"); }
             } catch(err) { alert("讀取檔案失敗：" + err); }
         };
         reader.readAsText(file);
@@ -396,7 +386,13 @@
         const done = (b64) => {
             if(b64) data.img = b64; else if(editIdx !== -1) data.img = merchList[editIdx].img;
             if(editIdx === -1) merchList.unshift(data); else merchList[editIdx] = data;
-            save(); showModal("✓", "已儲存"); document.getElementById('merchForm').reset(); document.getElementById('editIndex').value = "-1"; renderSelects(); renderFilters(); renderAll(); switchTab('page-gallery', document.querySelectorAll('.nav-item')[0]);
+            save(); 
+            showModal("✓", "已儲存"); 
+            document.getElementById('merchForm').reset(); 
+            document.getElementById('editIndex').value = "-1"; 
+            document.getElementById('delBtn').style.display = 'none';
+            renderSelects(); renderFilters(); renderAll(); 
+            switchTab('page-gallery', document.querySelectorAll('.nav-item')[0]);
         };
         const f = document.getElementById('imgFile').files[0];
         if(f) { const fr = new FileReader(); fr.onload = () => done(fr.result); fr.readAsDataURL(f); } else done(null);
