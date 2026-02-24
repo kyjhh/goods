@@ -2,236 +2,252 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>世界計畫 & 初音周邊收藏庫</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>PJSK 周邊收藏庫 Pro</title>
     <style>
         :root { 
             --miku-green: #00C2B3; 
             --sekai-purple: #6c5ce7; 
-            --sekai-pink: #ff79c6;
-            --bg: #f0f4f8; 
-            --card: #ffffff; 
+            --bg: #f8f9fa; 
+            --nav-bg: #ffffff;
         }
-        body { font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif; background: var(--bg); margin: 0; padding: 15px; color: #2d3436; }
-        .container { max-width: 1100px; margin: 0 auto; }
-        
-        /* 漸層標題與背景 */
-        header { 
-            background: linear-gradient(135deg, var(--miku-green), var(--sekai-purple)); 
-            padding: 30px; border-radius: 20px; color: white; text-align: center; margin-bottom: 25px;
-            box-shadow: 0 10px 20px rgba(108, 92, 231, 0.2);
-        }
+        body { font-family: 'PingFang TC', sans-serif; background: var(--bg); margin: 0; padding-bottom: 80px; color: #333; }
+        .container { max-width: 1000px; margin: 0 auto; padding: 15px; }
 
-        /* 統計與搜尋 */
-        .stats-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
-        .stat-box { background: white; padding: 15px; border-radius: 15px; text-align: center; border-bottom: 4px solid var(--miku-green); }
-        .stat-box h3 { margin: 0; font-size: 14px; color: #666; }
-        .stat-val { font-size: 24px; font-weight: bold; margin-top: 5px; color: var(--sekai-purple); }
+        /* 分頁切換邏輯 */
+        .page { display: none; }
+        .page.active { display: block; }
 
-        .search-area { display: flex; gap: 10px; margin-bottom: 25px; }
-        input.search-bar { flex: 1; padding: 12px; border-radius: 10px; border: 1px solid #ddd; outline: none; }
+        /* 頂部標題 */
+        header { background: linear-gradient(135deg, var(--miku-green), var(--sekai-purple)); padding: 20px; border-radius: 0 0 20px 20px; color: white; text-align: center; margin-bottom: 20px; }
 
-        /* 表單區域 */
-        .form-card { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); margin-bottom: 30px; }
-        .grid-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; }
-        label { display: block; font-size: 13px; font-weight: bold; margin-bottom: 5px; color: #444; }
-        input, select, textarea { width: 100%; padding: 10px; border: 1px solid #eee; border-radius: 8px; box-sizing: border-box; background: #fafafa; }
-        
-        .btn-submit { background: linear-gradient(to right, var(--miku-green), var(--sekai-purple)); color: white; border: none; padding: 15px; border-radius: 10px; width: 100%; margin-top: 20px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; }
-        .btn-submit:hover { opacity: 0.9; transform: scale(1.01); }
+        /* 卡片設計 */
+        .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        .stat-val { font-size: 28px; font-weight: bold; color: var(--sekai-purple); margin: 10px 0; }
 
-        /* 畫廊卡片 */
-        .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
-        .item-card { background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.08); position: relative; border: 1px solid #f0f0f0; }
-        .item-img { width: 100%; height: 220px; object-fit: cover; background: #eee; }
-        .item-content { padding: 15px; }
-        .tag-work { background: var(--sekai-purple); color: white; padding: 2px 8px; border-radius: 5px; font-size: 11px; margin-right: 5px; }
-        .tag-type { background: var(--miku-green); color: white; padding: 2px 8px; border-radius: 5px; font-size: 11px; }
-        .price-text { color: #ff4757; font-size: 20px; font-weight: bold; margin: 10px 0; }
-        .info-row { font-size: 12px; color: #777; line-height: 1.6; }
-        .del-btn { position: absolute; top: 10px; right: 10px; background: rgba(255,255,255,0.9); border: none; padding: 5px 8px; border-radius: 5px; color: #ff4757; cursor: pointer; font-weight: bold; }
+        /* 表單樣式 */
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        label { display: block; font-size: 12px; font-weight: bold; margin: 10px 0 5px; color: #666; }
+        input, select, textarea { width: 100%; padding: 12px; border: 1px solid #eee; border-radius: 10px; box-sizing: border-box; background: #fdfdfd; font-size: 14px; }
+        .btn-add { background: var(--miku-green); color: white; border: none; padding: 15px; border-radius: 10px; width: 100%; margin-top: 20px; font-weight: bold; font-size: 16px; cursor: pointer; }
+
+        /* 畫廊樣式 */
+        .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 15px; }
+        .item-card { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); position: relative; }
+        .item-img { width: 100%; height: 160px; object-fit: cover; background: #eee; }
+        .item-info { padding: 10px; }
+        .item-info h4 { margin: 5px 0; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .price { color: #ff4757; font-weight: bold; font-size: 14px; }
+        .status-badge { font-size: 10px; padding: 2px 6px; border-radius: 4px; color: white; position: absolute; top: 8px; left: 8px; }
+        .bg-ready { background: #2ecc71; } /* 現貨 */
+        .bg-wait { background: #f39c12; }  /* 非現貨 */
+
+        /* 底部導航列 */
+        .nav-bar { position: fixed; bottom: 0; width: 100%; background: var(--nav-bg); display: flex; justify-content: space-around; padding: 10px 0; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); z-index: 1000; }
+        .nav-item { border: none; background: none; color: #999; font-size: 12px; cursor: pointer; display: flex; flex-direction: column; align-items: center; }
+        .nav-item.active { color: var(--sekai-purple); font-weight: bold; }
+        .nav-icon { font-size: 20px; margin-bottom: 4px; }
+
+        /* 搜索框 */
+        .search-box { margin-bottom: 15px; }
     </style>
 </head>
 <body>
 
+<header>
+    <h2 style="margin:0">Sekai Collection</h2>
+</header>
+
 <div class="container">
-    <header>
-        <h1>VOCALOID & Project SEKAI</h1>
-        <p>我的周邊敗家與開箱紀錄倉庫</p>
-    </header>
-
-    <div class="stats-row">
-        <div class="stat-box">
-            <h3>總收藏數量</h3>
-            <div class="stat-val" id="countDisplay">0</div>
+    
+    <div id="page-add" class="page active">
+        <div class="card" style="text-align: center;">
+            <h3>經費燃燒統計</h3>
+            <div class="stat-val">NT$ <span id="totalDisplay">0</span></div>
+            <p style="font-size:12px; color:#999;">目前共有 <span id="countDisplay">0</span> 件周邊</p>
         </div>
-        <div class="stat-box">
-            <h3>總燃燒經費</h3>
-            <div class="stat-val" id="totalDisplay">0</div>
+
+        <div class="card">
+            <h3>📝 新增紀錄</h3>
+            <form id="merchForm">
+                <div class="form-grid">
+                    <div>
+                        <label>作品分類</label>
+                        <select id="workName">
+                            <option value="世界計畫 (PJSK)">世界計畫 (PJSK)</option>
+                            <option value="VOCALOID / 初音未來">VOCALOID / 初音未來</option>
+                            <option value="其他">其他</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>現貨狀態</label>
+                        <select id="status">
+                            <option value="現貨">現貨 (已拿到)</option>
+                            <option value="非現貨">非現貨 (預購/代購中)</option>
+                        </select>
+                    </div>
+                </div>
+                <label>周邊名稱</label>
+                <input type="text" id="itemName" placeholder="例：宵崎奏 閃徽" required>
+                
+                <div class="form-grid">
+                    <div>
+                        <label>周邊類別</label>
+                        <select id="itemType">
+                            <option value="襟章">襟章/徽章</option>
+                            <option value="色紙">色紙</option>
+                            <option value="拍立得">拍立得/小卡</option>
+                            <option value="立牌">立牌</option>
+                            <option value="公仔">公仔/趴趴</option>
+                            <option value="其他">其他</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>價格 (NTD)</label>
+                        <input type="number" id="price" placeholder="0" required>
+                    </div>
+                </div>
+
+                <label>上傳圖片</label>
+                <input type="file" id="imageFile" accept="image/*">
+
+                <label>備註/購買來源</label>
+                <textarea id="note" rows="2"></textarea>
+
+                <button type="submit" class="btn-add">確認存檔</button>
+            </form>
         </div>
     </div>
 
-    <div class="search-area">
-        <input type="text" id="searchInput" class="search-bar" placeholder="🔍 搜尋角色、周邊名稱或關鍵字..." oninput="renderGallery()">
-        <select id="filterWork" onchange="renderGallery()" style="width: auto; border-radius: 10px;">
-            <option value="">所有作品</option>
-            <option value="世界計畫 (PJSK)">世界計畫 (PJSK)</option>
-            <option value="VOCALOID / 初音未來">VOCALOID / 初音未來</option>
-        </select>
+    <div id="page-gallery" class="page">
+        <div class="search-box">
+            <input type="text" id="searchReady" placeholder="🔍 搜尋現貨收藏..." oninput="renderLists()">
+        </div>
+        <h3 style="color:var(--miku-green)">✅ 已入手的寶貝</h3>
+        <div class="gallery" id="readyList"></div>
     </div>
 
-    <div class="form-card">
-        <form id="merchForm">
-            <div class="grid-form">
-                <div>
-                    <label>作品分類</label>
-                    <select id="workName">
-                        <option value="世界計畫 (PJSK)">世界計畫 (PJSK)</option>
-                        <option value="VOCALOID / 初音未來">VOCALOID / 初音未來</option>
-                        <option value="其他">其他</option>
-                    </select>
-                </div>
-                <div>
-                    <label>周邊名稱 (含角色)</label>
-                    <input type="text" id="itemName" placeholder="例：25時 曉山瑞希 閃徽" required>
-                </div>
-                <div>
-                    <label>周邊類別</label>
-                    <select id="itemType">
-                        <option value="襟章 (徽章/缶バッジ)">襟章 (徽章/缶バッジ)</option>
-                        <option value="色紙 (Shikishi)">色紙 (Shikishi)</option>
-                        <option value="拍立得/Pera-pachi">拍立得/Pera-pachi</option>
-                        <option value="立牌 (Acrylic Stand)">立牌 (Acrylic Stand)</option>
-                        <option value="吊飾/掛件">吊飾/掛件</option>
-                        <option value="公仔/景品/黏土人">公仔/景品/黏土人</option>
-                        <option value="醜娃/填充玩偶/趴趴">醜娃/填充玩偶/趴趴</option>
-                        <option value="紙類/小卡/明信片">紙類/小卡/明信片</option>
-                        <option value="CD/專輯/藍光BD">CD/專輯/藍光BD</option>
-                        <option value="服飾/痛包配件">服飾/痛包配件</option>
-                    </select>
-                </div>
-                <div>
-                    <label>價錢 (NTD)</label>
-                    <input type="number" id="price" placeholder="0" required>
-                </div>
-                <div>
-                    <label>購買來源</label>
-                    <input type="text" id="source" placeholder="例：Mercari、安利美特">
-                </div>
-                <div>
-                    <label>購買日期</label>
-                    <input type="date" id="buyDate">
-                </div>
-            </div>
-            
-            <div style="margin-top: 15px; display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                <div>
-                    <label>購買網址</label>
-                    <input type="url" id="buyUrl" placeholder="https://...">
-                </div>
-                <div>
-                    <label>上傳照片</label>
-                    <input type="file" id="imageFile" accept="image/*">
-                </div>
-            </div>
-
-            <div style="margin-top: 15px;">
-                <label>備註</label>
-                <textarea id="note" rows="2" placeholder="詳細規格、收單日期或包裹狀態..."></textarea>
-            </div>
-
-            <button type="submit" class="btn-submit">✨ 記錄這一筆戰利品</button>
-        </form>
+    <div id="page-pending" class="page">
+        <div class="search-box">
+            <input type="text" id="searchWait" placeholder="🔍 搜尋待收清單..." oninput="renderLists()">
+        </div>
+        <h3 style="color:#f39c12">⏳ 運送/預購中</h3>
+        <div class="gallery" id="waitList"></div>
     </div>
 
-    <div class="gallery" id="merchGallery"></div>
 </div>
 
-<script>
-    let merchList = JSON.parse(localStorage.getItem('miku_sekai_data')) || [];
+<nav class="nav-bar">
+    <button class="nav-item active" onclick="showPage('page-add', this)">
+        <span class="nav-icon">📊</span>
+        <span>總覽/新增</span>
+    </button>
+    <button class="nav-item" onclick="showPage('page-gallery', this)">
+        <span class="nav-icon">✨</span>
+        <span>收藏 (現貨)</span>
+    </button>
+    <button class="nav-item" onclick="showPage('page-pending', this)">
+        <span class="nav-icon">🛒</span>
+        <span>待收 (非現)</span>
+    </button>
+</nav>
 
-    function renderGallery() {
-        const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-        const workFilter = document.getElementById('filterWork').value;
-        const gallery = document.getElementById('merchGallery');
-        gallery.innerHTML = '';
+<script>
+    let merchList = JSON.parse(localStorage.getItem('miku_sekai_v4')) || [];
+
+    // 分頁切換功能
+    function showPage(pageId, btn) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.getElementById(pageId).classList.add('active');
+        
+        document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        window.scrollTo(0, 0);
+    }
+
+    // 渲染清單
+    function renderLists() {
+        const readyContainer = document.getElementById('readyList');
+        const waitContainer = document.getElementById('waitList');
+        const searchReady = document.getElementById('searchReady').value.toLowerCase();
+        const searchWait = document.getElementById('searchWait').value.toLowerCase();
+        
+        readyContainer.innerHTML = '';
+        waitContainer.innerHTML = '';
 
         let total = 0;
-        let count = 0;
-
-        const filtered = merchList.filter(item => {
-            const matchSearch = item.name.toLowerCase().includes(searchTerm) || 
-                               item.note.toLowerCase().includes(searchTerm);
-            const matchWork = workFilter === "" || item.work === workFilter;
-            return matchSearch && matchWork;
-        });
-
-        filtered.forEach((item, index) => {
+        
+        merchList.forEach((item, index) => {
             total += Number(item.price);
-            count++;
+            const isMatch = item.name.toLowerCase().includes(item.status === '現貨' ? searchReady : searchWait);
+            if (!isMatch) return;
+
             const card = document.createElement('div');
             card.className = 'item-card';
+            const statusClass = item.status === '現貨' ? 'bg-ready' : 'bg-wait';
+            
             card.innerHTML = `
-                <img src="${item.img || 'https://via.placeholder.com/300x200?text=Wait+for+Photo'}" class="item-img">
-                <button class="del-btn" onclick="deleteItem(${index})">✕</button>
-                <div class="item-content">
-                    <div><span class="tag-work">${item.work}</span><span class="tag-type">${item.type}</span></div>
-                    <h3 style="margin:10px 0 5px 0; font-size:18px;">${item.name}</h3>
-                    <div class="price-text">$ ${Number(item.price).toLocaleString()}</div>
-                    <div class="info-row">
-                        🏪 來源：${item.source || '-'}<br>
-                        📅 日期：${item.date || '-'}<br>
-                        💬 備註：${item.note || '無'}
-                    </div>
-                    ${item.url ? `<a href="${item.url}" target="_blank" style="color:var(--sekai-purple); font-size:12px; text-decoration:none; display:block; margin-top:10px;">➜ 點我前往購買網址</a>` : ''}
+                <span class="status-badge ${statusClass}">${item.status}</span>
+                <img src="${item.img || 'https://via.placeholder.com/200?text=Wait+Photo'}" class="item-img">
+                <div class="item-info">
+                    <h4>${item.name}</h4>
+                    <div class="price">$${Number(item.price).toLocaleString()}</div>
+                    <div style="font-size:10px; color:#999; margin-top:5px;">${item.type} | ${item.work}</div>
+                    <button onclick="deleteItem(${index})" style="background:none; border:none; color:#ff4757; font-size:10px; padding:0; margin-top:5px; cursor:pointer;">[刪除]</button>
                 </div>
             `;
-            gallery.appendChild(card);
+
+            if (item.status === '現貨') {
+                readyContainer.appendChild(card);
+            } else {
+                waitContainer.appendChild(card);
+            }
         });
 
         document.getElementById('totalDisplay').innerText = total.toLocaleString();
-        document.getElementById('countDisplay').innerText = count;
+        document.getElementById('countDisplay').innerText = merchList.length;
     }
 
+    // 表單提交
     document.getElementById('merchForm').addEventListener('submit', function(e) {
         e.preventDefault();
         const file = document.getElementById('imageFile').files[0];
-        const processSave = (imgBase64) => {
+        
+        const saveData = (imgBase64) => {
             const newItem = {
                 work: document.getElementById('workName').value,
+                status: document.getElementById('status').value,
                 name: document.getElementById('itemName').value,
                 type: document.getElementById('itemType').value,
                 price: document.getElementById('price').value,
-                source: document.getElementById('source').value,
-                date: document.getElementById('buyDate').value,
-                url: document.getElementById('buyUrl').value,
                 note: document.getElementById('note').value,
                 img: imgBase64
             };
             merchList.unshift(newItem);
-            localStorage.setItem('miku_sekai_data', JSON.stringify(merchList));
+            localStorage.setItem('miku_sekai_v4', JSON.stringify(merchList));
             this.reset();
-            renderGallery();
+            alert('紀錄成功！');
+            renderLists();
         };
 
         if (file) {
             const reader = new FileReader();
-            reader.onloadend = () => processSave(reader.result);
+            reader.onloadend = () => saveData(reader.result);
             reader.readAsDataURL(file);
         } else {
-            processSave(null);
+            saveData(null);
         }
     });
 
     function deleteItem(index) {
-        if(confirm('要忍痛刪除這筆收藏紀錄嗎？')) {
+        if (confirm('確定要刪除這筆紀錄嗎？')) {
             merchList.splice(index, 1);
-            localStorage.setItem('miku_sekai_data', JSON.stringify(merchList));
-            renderGallery();
+            localStorage.setItem('miku_sekai_v4', JSON.stringify(merchList));
+            renderLists();
         }
     }
 
-    renderGallery();
+    renderLists();
 </script>
 </body>
 </html>
