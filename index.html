@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Morandi Archive - V32 Custom Cover</title>
+    <title>Morandi Archive - V32 Complete</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
@@ -14,26 +14,25 @@
         }
         body, html { margin: 0; padding: 0; height: 100%; font-family: 'PingFang HK', 'Microsoft JhengHei', sans-serif; background: var(--bg); color: var(--text); overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
         
-        /* 封面頁樣式優化 */
+        /* 封面樣式 */
         #cover-page { 
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
             background: #d2cdc1; 
-            background-size: cover; 
-            background-position: center; 
+            background-size: cover; background-position: center;
             display: flex; flex-direction: column; justify-content: flex-end; align-items: center; 
             z-index: 2000; transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); 
         }
         #cover-page.open { transform: translateY(-100%); }
 
         /* 左上角更換封面按鈕 */
-        .cover-upload-btn {
+        .change-cover-btn {
             position: absolute; top: 20px; left: 20px;
-            width: 36px; height: 36px;
-            background: rgba(255, 255, 255, 0.3);
-            backdrop-filter: blur(8px);
+            width: 38px; height: 38px;
+            background: rgba(255, 255, 255, 0.35);
+            backdrop-filter: blur(10px);
             border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
-            cursor: pointer; font-size: 16px;
+            cursor: pointer; font-size: 18px;
             border: 1px solid rgba(255,255,255,0.2);
             z-index: 2100;
         }
@@ -41,15 +40,15 @@
         .cover-menu { width: 160px; margin-bottom: 70px; display: flex; flex-direction: column; gap: 8px; z-index: 2005; }
         .menu-btn { background: rgba(255, 255, 255, 0.65); backdrop-filter: blur(12px); padding: 14px; text-align: center; cursor: pointer; border-radius: var(--radius); font-size: 11px; letter-spacing: 2px; border: 1px solid rgba(255,255,255,0.2); }
         
-        .nav-bar { position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%); width: 92%; max-width: 450px; background: rgba(255,255,255,0.9); backdrop-filter: blur(10px); display: flex; justify-content: space-around; padding: 12px 5px; border-radius: 15px; box-shadow: 0 8px 30px rgba(0,0,0,0.05); z-index: 1000; }
-        .nav-item { border: none; background: none; color: #b5b5b5; font-size: 10px; font-weight: 600; cursor: pointer; padding: 10px; }
+        .nav-bar { position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%); width: 94%; max-width: 500px; background: rgba(255,255,255,0.9); backdrop-filter: blur(10px); display: flex; justify-content: space-around; padding: 12px 2px; border-radius: 15px; box-shadow: 0 8px 30px rgba(0,0,0,0.05); z-index: 1000; }
+        .nav-item { border: none; background: none; color: #b5b5b5; font-size: 9px; font-weight: 600; cursor: pointer; padding: 10px 4px; flex: 1; text-align: center; }
         .nav-item.active { color: var(--m-deep-green); }
 
-        .main-content { padding: 25px; padding-bottom: 120px; max-width: 800px; margin: 0 auto; }
+        .main-content { padding: 25px; padding-bottom: 140px; max-width: 800px; margin: 0 auto; }
         .page { display: none; }
         .page.active { display: block; }
 
-        /* 引導標籤樣式 */
+        /* 引導標籤 */
         .field-label { font-size: 11px; font-weight: bold; color: var(--m-brown); margin: 12px 0 2px 2px; display: block; letter-spacing: 1px; }
 
         .control-panel { background: #fff; padding: 12px; border-radius: var(--radius); margin-bottom: 20px; border: 1px solid var(--m-clay); }
@@ -59,6 +58,7 @@
         .symbol-btn.active { color: var(--m-deep-green); }
 
         .search-input { margin-bottom: 10px; padding: 8px 12px; font-size: 12px; border: 1px solid #eee; background: #fafafa; border-radius: 6px; width: 100%; box-sizing: border-box; }
+
         .filter-row { display: flex; overflow-x: auto; white-space: nowrap; gap: 6px; margin-bottom: 8px; scrollbar-width: none; }
         .filter-chip { background: var(--m-clay); padding: 5px 12px; border-radius: 12px; font-size: 10px; cursor: pointer; color: #8a8a8a; user-select: none; }
         .filter-chip.active { background: var(--m-sage); color: white; }
@@ -75,6 +75,9 @@
         input, select, textarea { width: 100%; padding: 12px; border-radius: var(--radius); border: 1px solid var(--m-clay); background: #fafafa; font-size: 13px; margin-top: 4px; box-sizing: border-box; outline: none; }
         textarea { height: 80px; resize: none; font-family: inherit; }
         
+        .stat-card { background:#fff; padding:20px; border-radius:var(--radius); border:1px solid var(--m-clay); margin-bottom: 20px; }
+        .stat-title { font-size: 12px; font-weight: bold; color: var(--m-brown); margin-bottom: 15px; border-left: 3px solid var(--m-sage); padding-left: 10px; }
+
         #success-modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 30px; border-radius: 15px; text-align: center; z-index: 4000; box-shadow: 0 10px 40px rgba(0,0,0,0.2); display: none; width: 220px; }
         .overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.4); z-index: 3500; display: none; }
     </style>
@@ -89,13 +92,14 @@
     </div>
 
     <div id="cover-page">
-        <div class="cover-upload-btn" onclick="document.getElementById('coverInput').click()">📷</div>
+        <div class="change-cover-btn" onclick="document.getElementById('coverInput').click()">📷</div>
         <input type="file" id="coverInput" style="display:none;" accept="image/*" onchange="updateCover(this)">
 
         <div class="cover-menu">
             <h4 style="text-align:center; font-weight:400; letter-spacing:5px; margin-bottom:25px; color: var(--m-deep-green);">M.ARCHIVE</h4>
             <div class="menu-btn" onclick="openPage('page-gallery')">圖書館</div>
             <div class="menu-btn" onclick="openPage('page-pending')">等候區</div>
+            <div class="menu-btn" onclick="openPage('page-wish')">願望清單</div>
             <div class="menu-btn" onclick="openPage('page-stats')">數據統計</div>
             <div class="menu-btn" onclick="openPage('page-recent')">新增藏品</div>
             <div class="menu-btn" onclick="openPage('page-settings')">系統設定</div>
@@ -105,80 +109,115 @@
     <div class="main-content">
         <div id="back-btn" onclick="closePage()" style="font-size:10px; color: var(--m-brown); cursor:pointer; margin-bottom:25px; letter-spacing:2px;">← 返回首頁</div>
 
+        <div id="page-gallery" class="page">
+            <div class="control-panel">
+                <input type="text" class="search-input" id="lib-search" placeholder="搜尋現貨..." oninput="renderAll()">
+                <div id="lib-filter-box"></div>
+                <div id="lib-count" class="count-tag"></div>
+            </div>
+            <div id="readyList" class="list-container grid"></div>
+        </div>
+
+        <div id="page-pending" class="page">
+            <div class="control-panel">
+                <input type="text" class="search-input" id="wait-search" placeholder="搜尋等候中..." oninput="renderAll()">
+                <div id="wait-filter-box"></div>
+                <div id="wait-count" class="count-tag"></div>
+            </div>
+            <div id="waitList" class="list-container grid"></div>
+        </div>
+
+        <div id="page-wish" class="page">
+            <div class="control-panel">
+                <input type="text" class="search-input" id="wish-search" placeholder="搜尋想要的東西..." oninput="renderAll()">
+                <div id="wish-filter-box"></div>
+                <div id="wish-count" class="count-tag"></div>
+            </div>
+            <div id="wishList" class="list-container grid"></div>
+        </div>
+
         <div id="page-recent" class="page">
             <div style="background:#fff; padding:25px; border-radius: var(--radius); border:1px solid var(--m-clay);">
                 <form id="merchForm">
                     <input type="hidden" id="editIndex" value="-1">
                     
-                    <span class="field-label">作品名稱 / IP</span>
+                    <span class="field-label">1. 作品名稱 / IP</span>
                     <select id="workSelect" onchange="toggleInput('workSelect', 'workInput')"></select>
                     <input type="text" id="workInput" style="display:none;" placeholder="新作品">
                     
-                    <span class="field-label">角色人物 / 組合</span>
+                    <span class="field-label">2. 角色人物 / 組合</span>
                     <select id="roleSelect" onchange="toggleInput('roleSelect', 'roleInput')"></select>
                     <input type="text" id="roleInput" style="display:none;" placeholder="新角色">
                     
-                    <span class="field-label">藏品類別</span>
+                    <span class="field-label">3. 藏品類別</span>
                     <select id="typeSelect" onchange="toggleInput('typeSelect', 'typeInput')"></select>
-                    <input type="text" id="typeInput" style="display:none;" placeholder="新類別 (如:徽章)">
+                    <input type="text" id="typeInput" style="display:none;" placeholder="新類別">
                     
-                    <span class="field-label">款式 / 柄圖名稱</span>
+                    <span class="field-label">4. 款式 / 柄圖款式名稱</span>
                     <input type="text" id="pattern" placeholder="例如: 4週年限定款">
                     
-                    <span class="field-label">文字備註</span>
-                    <textarea id="note" placeholder="購入管道或藏品細節..."></textarea>
+                    <span class="field-label">5. 文字備註</span>
+                    <textarea id="note" placeholder="記錄購入管道或瑕疵狀況..."></textarea>
                     
                     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
                         <div>
-                            <span class="field-label">目前狀態</span>
-                            <select id="status"><option value="現貨">現貨</option><option value="非現貨">非現貨</option></select>
+                            <span class="field-label">6. 目前狀態</span>
+                            <select id="status">
+                                <option value="現貨">現貨</option>
+                                <option value="非現貨">非現貨</option>
+                                <option value="願望清單">願望清單</option>
+                            </select>
                         </div>
                         <div>
-                            <span class="field-label">數量</span>
+                            <span class="field-label">7. 數量</span>
                             <input type="number" id="qty" value="1">
                         </div>
                     </div>
                     
-                    <span class="field-label">購入價格</span>
+                    <span class="field-label">8. 購入價格</span>
                     <div style="display:grid; grid-template-columns: 1fr 2fr; gap:12px;">
                         <select id="currency" onchange="liveExchange()"><option value="HKD">HKD</option><option value="RMB">RMB</option><option value="JPY">JPY</option></select>
                         <input type="number" id="inputPrice" step="0.01" oninput="liveExchange()" placeholder="單價">
                     </div>
-                    <div id="exchangePreview" style="margin:8px 0; font-size:12px; color:var(--m-deep-green); font-weight:bold;">總額: HKD 0.00</div>
+                    <div id="exchangePreview" style="margin-top:5px; font-size:12px; font-weight:bold; color:var(--m-deep-green);">總額: HKD 0.00</div>
                     
-                    <span class="field-label">上傳相片</span>
-                    <input type="file" id="imgFile">
+                    <span class="field-label">9. 實物相片</span>
+                    <input type="file" id="imgFile" accept="image/*">
                     
-                    <button type="submit" class="btn-main">儲存藏品</button>
-                    <button type="button" id="delBtn" class="btn-main" style="background:#cc9999; display:none;" onclick="deleteCurrentItem()">刪除</button>
+                    <button type="submit" class="btn-main">儲存至資料庫</button>
+                    <button type="button" id="delBtn" class="btn-main" style="background:#cc9999; display:none;" onclick="deleteCurrentItem()">刪除此項目</button>
                 </form>
             </div>
         </div>
 
-        <div id="page-gallery" class="page">
-            <div class="control-panel">
-                <input type="text" class="search-input" id="lib-search" placeholder="搜尋..." oninput="renderAll()">
-                <div id="lib-count" class="count-tag"></div>
-            </div>
-            <div id="readyList" class="list-container grid"></div>
+        <div id="page-stats" class="page">
+            <div class="stat-card"><div class="stat-title">每月支出 (HKD)</div><canvas id="monthlyChart"></canvas></div>
+            <div class="stat-card"><div class="stat-title">作品佔比</div><canvas id="workChart"></canvas></div>
         </div>
-        <div id="page-pending" class="page">
-            <div id="waitList" class="list-container grid"></div>
+
+        <div id="page-settings" class="page">
+            <div style="background:#fff; padding:20px; border-radius:var(--radius); border:1px solid var(--m-clay);">
+                <button onclick="exportData()" class="btn-main" style="background:var(--m-brown);">匯出備份 (JSON)</button>
+                <button onclick="localStorage.removeItem('archive_cover_bg'); location.reload();" class="btn-main" style="background:var(--m-sage); margin-top:10px;">恢復預設封面</button>
+            </div>
         </div>
     </div>
 
     <nav class="nav-bar" id="bottom-nav" style="display:none;">
         <button class="nav-item active" onclick="switchTab('page-gallery', this)">館藏</button>
         <button class="nav-item" onclick="switchTab('page-pending', this)">等候</button>
+        <button class="nav-item" onclick="switchTab('page-wish', this)">願望</button>
         <button class="nav-item" onclick="switchTab('page-recent', this)">新增</button>
+        <button class="nav-item" onclick="switchTab('page-stats', this)">數據</button>
+        <button class="nav-item" onclick="switchTab('page-settings', this)">設定</button>
     </nav>
 
 <script>
     const STORAGE_KEY = 'archive_master';
     const DICT_KEY = 'archive_dict_master';
-    const COVER_KEY = 'archive_cover_bg'; // 新增：封面圖片儲存鍵
+    const COVER_KEY = 'archive_cover_bg';
     const rates = { RMB: 1.08, JPY: 0.052, HKD: 1.0 };
-    let merchList = [], dict = { works: [], roles: [], types: [] };
+    let merchList = [], dict = { works: [], roles: [], types: [] }, filters = { work: 'all' };
 
     function init() {
         merchList = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
@@ -186,14 +225,11 @@
         
         // 載入自定義封面
         const savedCover = localStorage.getItem(COVER_KEY);
-        if (savedCover) {
-            document.getElementById('cover-page').style.backgroundImage = `url(${savedCover})`;
-        }
+        if (savedCover) document.getElementById('cover-page').style.backgroundImage = `url(${savedCover})`;
         
-        renderAll(); renderSelects();
+        renderAll(); renderSelects(); renderFilters();
     }
 
-    // 更新封面功能
     function updateCover(input) {
         const file = input.files[0];
         if (!file) return;
@@ -202,31 +238,98 @@
             const b64 = e.target.result;
             document.getElementById('cover-page').style.backgroundImage = `url(${b64})`;
             localStorage.setItem(COVER_KEY, b64);
-            showModal("🖼️", "封面更新成功");
+            showModal("🖼️", "封面已更新");
         };
         reader.readAsDataURL(file);
     }
 
     function save() { localStorage.setItem(STORAGE_KEY, JSON.stringify(merchList)); localStorage.setItem(DICT_KEY, JSON.stringify(dict)); }
 
-    // 基礎渲染與分頁邏輯保持不變
-    function switchTab(id, btn) {
-        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
-        if(btn) {
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            btn.classList.add('active');
-        }
+    function renderAll() {
+        const containers = { '現貨': 'readyList', '非現貨': 'waitList', '願望清單': 'wishList' };
+        const countIds = { '現貨': 'lib-count', '非現貨': 'wait-count', '願望清單': 'wish-count' };
+        const searchIds = { '現貨': 'lib-search', '非現貨': 'wait-search', '願望清單': 'wish-search' };
+
+        Object.keys(containers).forEach(status => {
+            const listEl = document.getElementById(containers[status]);
+            if (!listEl) return;
+            const searchTerm = document.getElementById(searchIds[status]).value.toLowerCase();
+            
+            let filtered = merchList.map((item, index) => ({...item, originalIndex: index}))
+                .filter(i => i.status === status)
+                .filter(i => (filters.work === 'all' || i.work === filters.work))
+                .filter(i => (i.pattern.toLowerCase().includes(searchTerm) || i.note.toLowerCase().includes(searchTerm)));
+            
+            document.getElementById(countIds[status]).innerText = `顯示: ${filtered.length} / ${merchList.filter(i=>i.status===status).length}`;
+            listEl.innerHTML = '';
+            filtered.forEach(i => {
+                const card = document.createElement('div'); card.className = 'item-card';
+                card.innerHTML = `<div class="img-box"><img src="${i.img || 'https://via.placeholder.com/150'}"></div><div class="info"><div style="font-size:9px;color:var(--m-brown);">${i.work} / ${i.role}</div><div style="font-size:11px;font-weight:bold;">${i.pattern}</div></div>`;
+                card.onclick = () => editItem(i.originalIndex);
+                listEl.appendChild(card);
+            });
+        });
     }
 
+    document.getElementById('merchForm').onsubmit = function(e) {
+        e.preventDefault();
+        const editIdx = parseInt(document.getElementById('editIndex').value);
+        const getV = (sid, iid, dk) => {
+            let sVal = document.getElementById(sid).value;
+            if(sVal === 'NEW') { 
+                let inputVal = document.getElementById(iid).value.trim(); 
+                if(inputVal) {
+                    if(!dict[dk].includes(inputVal)) { dict[dk].push(inputVal); dict[dk].sort(); }
+                    return inputVal;
+                }
+            }
+            return sVal;
+        };
+        const data = {
+            work: getV('workSelect', 'workInput', 'works'), role: getV('roleSelect', 'roleInput', 'roles'), type: getV('typeSelect', 'typeInput', 'types'),
+            pattern: document.getElementById('pattern').value, note: document.getElementById('note').value,
+            status: document.getElementById('status').value, qty: parseInt(document.getElementById('qty').value) || 1,
+            originalPrice: parseFloat(document.getElementById('inputPrice').value) || 0, originalCur: document.getElementById('currency').value,
+            totalHkd: liveExchange(), img: null, timestamp: editIdx === -1 ? Date.now() : merchList[editIdx].timestamp
+        };
+        const done = (b64) => {
+            if(b64) data.img = b64; else if(editIdx !== -1) data.img = merchList[editIdx].img;
+            if(editIdx === -1) merchList.unshift(data); else merchList[editIdx] = data;
+            save(); showModal("✨", "已儲存");
+            renderSelects(); document.getElementById('merchForm').reset();
+            document.getElementById('editIndex').value = "-1";
+            const target = data.status === '現貨' ? 'page-gallery' : (data.status === '願望清單' ? 'page-wish' : 'page-pending');
+            switchTab(target, document.querySelector(`button[onclick*="${target}"]`));
+        };
+        const file = document.getElementById('imgFile').files[0];
+        if(file) { const fr = new FileReader(); fr.onload = () => done(fr.result); fr.readAsDataURL(file); } else done(null);
+    };
+
+    function editItem(idx) {
+        const i = merchList[idx]; document.getElementById('editIndex').value = idx;
+        document.getElementById('workSelect').value = i.work; document.getElementById('roleSelect').value = i.role; document.getElementById('typeSelect').value = i.type;
+        document.getElementById('pattern').value = i.pattern; document.getElementById('note').value = i.note;
+        document.getElementById('status').value = i.status; document.getElementById('qty').value = i.qty;
+        document.getElementById('inputPrice').value = i.originalPrice; document.getElementById('currency').value = i.originalCur;
+        document.getElementById('delBtn').style.display = 'block';
+        switchTab('page-recent', document.querySelectorAll('.nav-item')[3]);
+    }
+
+    function deleteCurrentItem() {
+        const idx = parseInt(document.getElementById('editIndex').value);
+        if(confirm("確定刪除？")) { merchList.splice(idx, 1); save(); renderAll(); showModal("🗑️", "已刪除"); closePage(); }
+    }
+
+    function toggleInput(s, i) { document.getElementById(i).style.display = document.getElementById(s).value === 'NEW' ? 'block' : 'none'; }
+    function liveExchange() { const p = parseFloat(document.getElementById('inputPrice').value)||0, q = parseInt(document.getElementById('qty').value)||1, cur = document.getElementById('currency').value; const t = (p * q * rates[cur]).toFixed(2); document.getElementById('exchangePreview').innerText = `總額: HKD ${t}`; return t; }
+    function renderSelects() { const setup = (id, list) => { document.getElementById(id).innerHTML = `<option value="">選擇...</option>` + list.map(i => `<option value="${i}">${i}</option>`).join('') + `<option value="NEW">+ 新增...</option>`; }; setup('workSelect', dict.works); setup('roleSelect', dict.roles); setup('typeSelect', dict.types); }
+    function renderFilters() { /* 簡化版過濾渲染 */ const box = document.getElementById('lib-filter-box'); if(!box) return; box.innerHTML = `<div class="filter-chip ${filters.work==='all'?'active':''}" onclick="filters.work='all';renderFilters();renderAll()">全部</div>` + dict.works.map(w => `<div class="filter-chip ${filters.work===w?'active':''}" onclick="filters.work='${w}';renderFilters();renderAll()">${w}</div>`).join(''); }
+    function switchTab(id, btn) { document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); document.getElementById(id).classList.add('active'); if(btn) { document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); btn.classList.add('active'); } renderAll(); }
     function openPage(id) { document.getElementById('cover-page').classList.add('open'); document.getElementById('bottom-nav').style.display='flex'; switchTab(id, document.querySelector(`button[onclick*="${id}"]`)); }
     function closePage() { document.getElementById('cover-page').classList.remove('open'); document.getElementById('bottom-nav').style.display='none'; }
     function showModal(icon, text) { document.getElementById('modal-icon').innerText = icon; document.getElementById('modal-text').innerText = text; document.getElementById('overlay').style.display='block'; document.getElementById('success-modal').style.display='block'; }
     function closeModal() { document.getElementById('overlay').style.display='none'; document.getElementById('success-modal').style.display='none'; }
-    function toggleInput(s, i) { document.getElementById(i).style.display = document.getElementById(s).value === 'NEW' ? 'block' : 'none'; }
-    function liveExchange() { const p = parseFloat(document.getElementById('inputPrice').value)||0, q = parseInt(document.getElementById('qty').value)||1, cur = document.getElementById('currency').value; const t = (p * q * rates[cur]).toFixed(2); document.getElementById('exchangePreview').innerText = `總額: HKD ${t}`; return t; }
-    function renderSelects() { const setup = (id, list) => { document.getElementById(id).innerHTML = `<option value="">選擇...</option>` + list.map(i => `<option value="${i}">${i}</option>`).join('') + `<option value="NEW">+ 新增...</option>`; }; setup('workSelect', dict.works); setup('roleSelect', dict.roles); setup('typeSelect', dict.types); }
-    function updateGridSize(v) { document.documentElement.style.setProperty('--dynamic-grid', v + 'px'); }
+    function exportData() { const blob = new Blob([JSON.stringify({merchList, dict})], {type: 'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `archive_master.json`; a.click(); }
 
     window.onload = init;
 </script>
