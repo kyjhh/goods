@@ -333,4 +333,128 @@
         };
         ['lib-filter-box', 'wait-filter-box'].forEach(id => {
             const box = document.getElementById(id); if(!box) return; box.innerHTML = '';
-    
+            ['work', 'role', 'type'].forEach(k => box.appendChild(build(dict[k+'s'], k)));
+        });
+    }
+
+    function renderAll() {
+        const rList = document.getElementById('readyList'); const wList = document.getElementById('waitList');
+        const libSearch = document.getElementById('lib-search').value.toLowerCase();
+        const waitSearch = document.getElementById('wait-search').value.toLowerCase();
+
+        const processList = (isReady) => {
+            const searchVal = isReady ? libSearch : waitSearch;
+            const targetStatus = isReady ? '現貨' : '非現貨';
+            let filtered = merchList.map((item, index) => ({...item, originalIndex: index}))
+                .filter(i => i.status === targetStatus)
+                .filter(i => (filters.work==='all' || i.work===filters.work) && (filters.role==='all' || i.role===filters.role) && (filters.type==='all' || i.type===filters.type))
+                .filter(i => (i.pattern + (i.note || "")).toLowerCase().includes(searchVal));
+            const multi = sortDesc ? 1 : -1;
+            if(sortMode==='date') filtered.sort((a,b)=> (b.timestamp - a.timestamp) * multi);
+            else if(sortMode==='price') filtered.sort((a,b)=> (b.totalHkd - a.totalHkd) * multi);
+            else if(sortMode==='qty') filtered.sort((a,b)=> (b.qty - a.qty) * multi);
+            else if(sortMode==='name') filtered.sort((a,b)=> (a.pattern||"").localeCompare(b.pattern||"") * (sortDesc ? 1 : -1));
+            return filtered;
+        };
+
+        const readyItems = processList(true);
+        const waitItems = processList(false);
+        document.getElementById('lib-count').innerText = `顯示: ${readyItems.length} / ${merchList.filter(i=>i.status==='現貨').length}`;
+        document.getElementById('wait-count').innerText = `顯示: ${waitItems.length} / ${merchList.filter(i=>i.status==='非現貨').length}`;
+
+        const renderItems = (items, container) => {
+            container.innerHTML = ''; container.className = `list-container ${viewMode}`;
+            items.forEach(i => {
+                const card = document.createElement('div');
+                card.className = 'item-card';
+                const notePreview = (viewMode==='list' && i.note) ? `<div style="font-size:9px;color:#999;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${i.note}</div>` : '';
+                card.innerHTML = `<div class="img-box"><img src="${i.img || 'https://via.placeholder.com/200/f2efeb/888'}"></div><div class="info"><div style="font-size:9px;color:var(--m-brown);">${i.role || '未分類'} · ${i.type || '未分類'}</div><div style="font-size:11px;font-weight:bold;">${i.pattern || '無標題'}</div>${notePreview}<div style="font-size:11px;color:var(--m-deep-green);">HK$ ${i.totalHkd} <small>x${i.qty}</small></div></div>`;
+                card.onclick = () => editItem(i.originalIndex);
+                handleLongPress(card, () => confirmDeleteCard(i.originalIndex));
+                container.appendChild(card);
+            });
+        };
+        renderItems(readyItems, rList); renderItems(waitItems, wList);
+    }
+
+    function renderStats() {
+        Object.values(charts).forEach(c => c.destroy());
+        const colors = ['#6b7a63', '#acc1ad', '#a68b7c', '#d5cabd', '#e5ddd5', '#c2b2a3', '#96a48b'];
+
+        // 1. 每月支出
+        const monthData = {};
+        merchList.forEach(i => {
+            const date = new Date(i.timestamp);
+            const key = `${date.getFullYear()}/${date.getMonth() + 1}月`;
+            monthData[key] = (monthData[key] || 0) + parseFloat(i.totalHkd);
+        });
+        const monthKeys = Object.keys(monthData).sort((a,b) => new Date(a.replace('月','')) - new Date(b.replace('月','')));
+        charts.monthly = new Chart(document.getElementById('monthlyChart'), { type: 'line', data: { labels: monthKeys, datasets: [{ label: '金額 (HKD)', data: monthKeys.map(k => monthData[k]), borderColor: '#6b7a63', tension: 0.3, fill: true, backgroundColor: 'rgba(107, 122, 99, 0.1)' }] }, options: { plugins: { legend: { display: false } } } });
+
+        // 2. 作品佔比
+        const workData = {};
+        merchList.forEach(i => { if(i.work) workData[i.work] = (workData[i.work] || 0) + parseFloat(i.totalHkd); });
+        charts.work = new Chart(document.getElementById('workChart'), { type: 'pie', data: { labels: Object.keys(workData), datasets: [{ data: Object.values(workData), backgroundColor: colors }] }, options: { plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 10 } } } } } });
+
+        // 3. 角色排行
+        const roleData = {};
+        merchList.forEach(i => { if(i.role) roleData[i.role] = (roleData[i.role] || 0) + parseFloat(i.totalHkd); });
+        const topRoles = Object.entries(roleData).sort((a,b) => b[1] - a[1]).slice(0, 7);
+        charts.role = new Chart(document.getElementById('roleChart'), { type: 'bar', data: { labels: topRoles.map(r => r[0]), datasets: [{ label: '總金額 (HKD)', data: topRoles.map(r => r[1]), backgroundColor: '#acc1ad' }] }, options: { indexAxis: 'y', plugins: { legend: { display: false } } } });
+
+        // 4. 類別分析
+        const typeQty = {}, typeAmt = {};
+        merchList.forEach(i => { if(i.type) { typeQty[i.type] = (typeQty[i.type] || 0) + (i.qty || 1); typeAmt[i.type] = (typeAmt[i.type] || 0) + parseFloat(i.totalHkd); } });
+        charts.type = new Chart(document.getElementById('typeChart'), { 
+            type: 'bar', 
+            data: { 
+                labels: Object.keys(typeQty), 
+                datasets: [
+                    { label: '持有數量', data: Object.values(typeQty), backgroundColor: '#d5cabd', yAxisID: 'y' }, 
+                    { label: '支出金額', data: Object.values(typeAmt), backgroundColor: '#6b7a63', yAxisID: 'y1' }
+                ] 
+            }, 
+            options: { scales: { y: { type: 'linear', position: 'left', title: {display: true, text: '數量'} }, y1: { type: 'linear', position: 'right', title: {display: true, text: '金額'}, grid: { drawOnChartArea: false } } }, plugins: { legend: { position: 'bottom' } } } 
+        });
+    }
+
+    function editItem(idx) {
+        const i = merchList[idx]; document.getElementById('editIndex').value = idx;
+        document.getElementById('workSelect').value = i.work; document.getElementById('roleSelect').value = i.role; document.getElementById('typeSelect').value = i.type;
+        document.getElementById('pattern').value = i.pattern || ""; document.getElementById('note').value = i.note || "";
+        document.getElementById('status').value = i.status; document.getElementById('qty').value = i.qty;
+        document.getElementById('currency').value = i.originalCur; document.getElementById('inputPrice').value = i.originalPrice;
+        document.getElementById('delBtn').style.display = 'block';
+        switchTab('page-recent', document.querySelectorAll('.nav-item')[2]);
+        liveExchange();
+    }
+
+    function deleteCurrentItem() {
+        const idx = parseInt(document.getElementById('editIndex').value);
+        if(idx !== -1 && confirm("確定刪除此藏品？")) {
+            merchList.splice(idx, 1); save(); showModal("🗑️", "項目已刪除");
+            document.getElementById('editIndex').value = "-1"; document.getElementById('delBtn').style.display = 'none';
+            switchTab('page-gallery', document.querySelectorAll('.nav-item')[0]); renderAll();
+        }
+    }
+
+    function renderSelects() {
+        const setup = (id, list) => { 
+            const s = document.getElementById(id); const cur = s.value; 
+            s.innerHTML = `<option value="">選擇標籤...</option>` + list.map(i => `<option value="${i}">${i}</option>`).join('') + `<option value="NEW">+ 新增...</option>`; 
+            if(list.includes(cur)) s.value = cur; 
+        };
+        setup('workSelect', dict.works); setup('roleSelect', dict.roles); setup('typeSelect', dict.types);
+    }
+
+    function toggleInput(s, i) { document.getElementById(i).style.display = document.getElementById(s).value === 'NEW' ? 'block' : 'none'; }
+    function liveExchange() { const p = parseFloat(document.getElementById('inputPrice').value)||0, q = parseInt(document.getElementById('qty').value)||1, cur = document.getElementById('currency').value; const t = (p * q * rates[cur]).toFixed(2); document.getElementById('exchangePreview').innerText = `總額: HKD ${t}`; return t; }
+    function switchTab(id, btn) { document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); document.getElementById(id).classList.add('active'); document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); if(btn) btn.classList.add('active'); if(id==='page-stats') setTimeout(renderStats, 100); if(id!=='page-recent') { document.getElementById('delBtn').style.display='none'; document.getElementById('merchForm').reset(); document.getElementById('editIndex').value = "-1"; } renderAll(); }
+    function openPage(id) { document.getElementById('cover-page').classList.add('open'); document.getElementById('bottom-nav').style.display='flex'; switchTab(id, document.querySelectorAll('.nav-item')[id==='page-gallery'?0 : id==='page-pending'?1:2]); }
+    function closePage() { document.getElementById('cover-page').classList.remove('open'); document.getElementById('bottom-nav').style.display='none'; }
+    function exportData() { const blob = new Blob([JSON.stringify({merchList, dict})], {type: 'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `archive_master.json`; a.click(); }
+
+    window.onload = init;
+</script>
+</body>
+</html>
