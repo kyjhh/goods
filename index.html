@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Morandi Archive v17 - Animated</title>
+    <title>Morandi Archive v19 - Minimalist</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
@@ -12,131 +12,142 @@
             --text: #555; --card-bg: #ffffff;
             --grid-size: 160px;
         }
-        body, html { margin: 0; padding: 0; height: 100%; font-family: 'PingFang HK', sans-serif; background: var(--bg); color: var(--text); overflow-x: hidden; }
+        body, html { margin: 0; padding: 0; height: 100%; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background: var(--bg); color: var(--text); overflow-x: hidden; }
 
-        /* 動畫定義 */
-        @keyframes slideInUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes toastIn { from { transform: translate(-50%, -50px); opacity: 0; } to { transform: translate(-50%, 20px); opacity: 1; } }
-        
-        /* 浮動提示框 (Toast) */
-        #toast {
-            position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
-            background: rgba(146, 168, 209, 0.95); color: white;
-            padding: 12px 25px; border-radius: 25px; font-size: 14px; font-weight: bold;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1); z-index: 3000;
-            display: none; pointer-events: none; animation: toastIn 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+        #toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: rgba(80, 80, 80, 0.9); color: white; padding: 10px 20px; border-radius: 8px; font-size: 13px; z-index: 3000; display: none; animation: toastIn 0.4s ease; }
+
+        /* 封面頁：按鈕縮小與靠下 */
+        #cover-page { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background-color: #eee; background-size: cover; background-position: center; 
+            display: flex; flex-direction: column; justify-content: flex-end; align-items: center; 
+            z-index: 2000; transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); 
+        }
+        #cover-page.open { transform: translateY(-100%); }
+        .cover-menu { width: 180px; margin-bottom: 60px; display: flex; flex-direction: column; gap: 10px; }
+        .menu-btn { 
+            background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(10px);
+            padding: 12px; text-align: center; cursor: pointer; border-radius: 6px; 
+            font-size: 13px; color: #444; letter-spacing: 2px; transition: all 0.2s;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+        .menu-btn:active { transform: scale(0.95); background: #fff; }
+
+        /* 內容區 */
+        .main-content { padding: 20px; padding-bottom: 120px; max-width: 800px; margin: 0 auto; min-height: 100vh; }
+        .page { display: none; animation: fadeIn 0.4s ease; }
+        .page.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* 導覽列：去 Emoji 極簡風格 */
+        .nav-bar { 
+            position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%); 
+            width: 85%; max-width: 350px; background: rgba(255,255,255,0.95); 
+            display: flex; justify-content: space-around; padding: 12px 10px; 
+            border-radius: 50px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); z-index: 1000;
+        }
+        .nav-item { 
+            border: none; background: none; color: #999; font-size: 12px; 
+            font-weight: 500; cursor: pointer; position: relative; padding: 5px 10px;
+        }
+        .nav-item.active { color: var(--m-blue); }
+        .nav-item.active::after { 
+            content: ''; position: absolute; bottom: -2px; left: 50%; 
+            transform: translateX(-50%); width: 4px; height: 4px; 
+            background: var(--m-blue); border-radius: 50%; 
         }
 
-        /* 介面交互 */
-        #cover-page { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: #eee; background-size: cover; background-position: center; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 2000; transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
-        #cover-page.open { transform: translateY(-100%); }
-        
-        .menu-btn { transition: transform 0.2s; }
-        .menu-btn:active { transform: scale(0.95); }
+        /* 設定頁面樣式 */
+        .setting-item { background: #fff; padding: 15px; border-radius: 10px; margin-bottom: 10px; border: 1px solid #eee; }
+        .setting-label { font-size: 14px; font-weight: bold; margin-bottom: 10px; display: block; }
+        .danger-btn { color: #d9534f; border: 1px solid #d9534f; background: none; padding: 8px; border-radius: 6px; width: 100%; cursor: pointer; margin-top: 20px; font-size: 12px; }
 
-        .main-content { padding: 20px; padding-bottom: 120px; max-width: 800px; margin: 0 auto; min-height: 100vh; }
-        .page { display: none; animation: fadeIn 0.5s ease; }
-        .page.active { display: block; }
-
-        /* 卡片與容器 */
-        .control-panel { background: #fff; padding: 15px; border-radius: 12px; margin-bottom: 15px; border: 1px solid #eee; box-shadow: 0 2px 10px rgba(0,0,0,0.02); }
-        .filter-chip { background: #f0f0f0; border: 1px solid #ddd; padding: 6px 14px; border-radius: 20px; font-size: 12px; cursor: pointer; white-space: nowrap; color: #888; transition: all 0.2s; }
-        .filter-chip.active { background: var(--m-blue); color: white; border-color: var(--m-blue); transform: scale(1.05); }
-        
-        .item-card { background: #fff; border-radius: 12px; overflow: hidden; border: 1px solid #eee; position: relative; animation: slideInUp 0.4s ease; transition: transform 0.2s; }
-        .item-card:hover { transform: translateY(-3px); }
-
-        .btn-main { background: var(--m-sage); color: white; border: none; padding: 15px; border-radius: 8px; width: 100%; font-size: 15px; font-weight: bold; cursor: pointer; margin-top: 15px; transition: background 0.3s, transform 0.1s; }
-        .btn-main:active { transform: scale(0.98); background: #9bb09c; }
-
-        .nav-bar { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 400px; background: rgba(255,255,255,0.9); backdrop-filter: blur(10px); display: flex; justify-content: space-around; padding: 15px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); z-index: 1000; border: 1px solid #eee; }
-        .nav-item { border: none; background: none; color: #bbb; font-size: 22px; cursor: pointer; transition: color 0.3s, transform 0.2s; }
-        .nav-item.active { color: var(--m-blue); transform: translateY(-5px); }
+        /* 通用組件 */
+        .control-panel { background: #fff; padding: 15px; border-radius: 12px; margin-bottom: 15px; border: 1px solid #eee; }
+        .filter-chip { background: #f0f0f0; padding: 6px 14px; border-radius: 20px; font-size: 11px; cursor: pointer; white-space: nowrap; color: #888; display: inline-block; margin-right: 5px; }
+        .filter-chip.active { background: var(--m-blue); color: white; }
+        .item-card { background: #fff; border-radius: 12px; overflow: hidden; border: 1px solid #eee; }
+        .btn-main { background: var(--m-sage); color: white; border: none; padding: 15px; border-radius: 8px; width: 100%; font-size: 14px; cursor: pointer; margin-top: 15px; }
+        input, select { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ddd; box-sizing: border-box; font-size: 14px; margin-top: 5px; }
     </style>
 </head>
 <body>
 
-    <div id="toast">✨ 已成功加入藏品庫</div>
+    <div id="toast">已更新</div>
 
     <div id="cover-page">
-        <label style="position:absolute; top:30px; left:30px; background:rgba(255,255,255,0.8); padding:8px; border-radius:4px; font-size:12px; cursor:pointer;">📸 換封面 <input type="file" id="cover-upload" hidden accept="image/*"></label>
-        <div class="cover-menu" style="display:flex; flex-direction:column; gap:12px; width:250px;">
-            <h2 style="text-align:center; font-weight:300; letter-spacing:3px; margin-bottom:20px; color:#555;">MORANDI ARCHIVE</h2>
-            <div class="menu-btn" style="background:#fff; border:1px solid #ddd; padding:15px; text-align:center; cursor:pointer; border-radius:8px;" onclick="openPage('page-gallery')">進入藏品庫</div>
-            <div class="menu-btn" style="background:#fff; border:1px solid #ddd; padding:15px; text-align:center; cursor:pointer; border-radius:8px;" onclick="openPage('page-stats')">數據管理</div>
-            <div class="menu-btn" style="background:#fff; border:1px solid #ddd; padding:15px; text-align:center; cursor:pointer; border-radius:8px;" onclick="openPage('page-recent')">新增周邊</div>
-            <div class="menu-btn" style="background:#fff; border:1px solid #ddd; padding:15px; text-align:center; cursor:pointer; border-radius:8px;" onclick="openPage('page-pending')">待收清單</div>
+        <label style="position:absolute; top:40px; right:30px; font-size:11px; color:rgba(0,0,0,0.4); cursor:pointer;">Set Wallpaper <input type="file" id="cover-upload" hidden></label>
+        <div class="cover-menu">
+            <h3 style="text-align:center; font-weight:300; letter-spacing:5px; margin-bottom:20px; color:#444;">ARCHIVE</h3>
+            <div class="menu-btn" onclick="openPage('page-gallery')">COLLECTION</div>
+            <div class="menu-btn" onclick="openPage('page-stats')">ANALYSIS</div>
+            <div class="menu-btn" onclick="openPage('page-recent')">NEW ITEM</div>
+            <div class="menu-btn" onclick="openPage('page-settings')">SETTINGS</div>
         </div>
     </div>
 
     <div class="main-content">
-        <div class="back-to-cover" onclick="closePage()" style="margin-bottom:20px; display:inline-block;">◀ 返回封面</div>
+        <div onclick="closePage()" style="font-size:12px; color:#bbb; cursor:pointer; margin-bottom:20px; letter-spacing:1px;">← BACK TO HOME</div>
 
         <div id="page-gallery" class="page">
             <div class="control-panel">
-                <input type="text" class="search-box" id="keywordSearch" placeholder="🔍 搜尋柄圖..." oninput="renderAll()">
-                <span style="font-size:11px; color:var(--m-blue); font-weight:bold;">作品分類</span><div class="filter-group" id="workFilterBox" style="margin-top:5px;"></div>
-                <span style="font-size:11px; color:var(--m-blue); font-weight:bold;">角色</span><div class="filter-group" id="roleFilterBox" style="margin-top:5px;"></div>
-                <span style="font-size:11px; color:var(--m-blue); font-weight:bold;">種類</span><div class="filter-group" id="typeFilterBox" style="margin-top:5px;"></div>
+                <input type="text" id="keywordSearch" placeholder="Search patterns..." oninput="renderAll()" style="margin-bottom:15px; border-radius:20px;">
+                <div id="workFilterBox" style="overflow-x:auto; white-space:nowrap; margin-bottom:8px;"></div>
+                <div id="roleFilterBox" style="overflow-x:auto; white-space:nowrap; margin-bottom:8px;"></div>
+                <div id="typeFilterBox" style="overflow-x:auto; white-space:nowrap;"></div>
             </div>
             <div class="gallery" id="readyList" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(var(--grid-size, 160px), 1fr)); gap:12px;"></div>
         </div>
 
         <div id="page-stats" class="page">
             <div style="background:#fff; padding:20px; border-radius:15px; border:1px solid #eee; margin-bottom:20px;">
-                <h3 style="color:var(--m-sage); margin-top:0;">💰 支出概覽</h3>
-                <div id="totalSpend" style="font-size: 28px; font-weight: bold; color: var(--m-green);">HKD 0</div>
-                <div style="height: 220px; margin-top:10px;"><canvas id="charPieChart"></canvas></div>
+                <div id="totalSpend" style="font-size: 24px; font-weight: bold; color: var(--m-blue);">HKD 0</div>
+                <div style="height: 200px; margin-top:15px;"><canvas id="charPieChart"></canvas></div>
             </div>
-            
-            <div style="background:#fff; padding:20px; border-radius:15px; border:1px solid #eee;">
-                <h4 style="color:var(--m-blue); margin-top:0;">⚙️ 數據備份</h4>
-                <div style="display:flex; gap:10px;">
-                    <button style="flex:1; padding:12px; border:1px solid var(--m-sage); color:var(--m-sage); background:none; border-radius:8px; cursor:pointer;" onclick="exportData()">📤 導出檔案</button>
-                    <button style="flex:1; padding:12px; border:1px solid var(--m-sage); color:var(--m-sage); background:none; border-radius:8px; cursor:pointer;" onclick="document.getElementById('importFile').click()">📥 導入檔案</button>
-                </div>
+        </div>
+
+        <div id="page-settings" class="page">
+            <div class="setting-item">
+                <span class="setting-label">網格大小 (Grid Size)</span>
+                <input type="range" min="100" max="300" value="160" oninput="updateGridSize(this.value)">
+            </div>
+            <div class="setting-item">
+                <span class="setting-label">數據備份 (Data Management)</span>
+                <button onclick="exportData()" style="width:48%; padding:10px; font-size:12px; background:#f9f9f9; border:1px solid #ddd; border-radius:5px;">匯出備份</button>
+                <button onclick="document.getElementById('importFile').click()" style="width:48%; padding:10px; font-size:12px; background:#f9f9f9; border:1px solid #ddd; border-radius:5px;">導入備份</button>
                 <input type="file" id="importFile" hidden onchange="importData(event)">
             </div>
+            <button class="danger-btn" onclick="clearAllData()">⚠️ 清空所有數據 (Dangerous)</button>
         </div>
 
         <div id="page-recent" class="page">
             <div style="background:#fff; padding:20px; border-radius:15px; border:1px solid #eee;">
-                <h3 id="formTitle" style="margin-top:0;">📝 紀錄周邊</h3>
+                <h4 id="formTitle" style="margin-top:0;">ADD NEW ITEM</h4>
                 <form id="merchForm">
                     <input type="hidden" id="editIndex" value="-1">
-                    <label style="display:block; font-size:13px; color:var(--m-blue); font-weight:bold; margin-top:15px;">作品名稱</label>
-                    <select id="workSelect" style="width:100%; padding:12px; border-radius:8px; border:1px solid #ddd; margin-top:5px;" onchange="toggleInput('workSelect', 'workInput')"></select>
-                    <input type="text" id="workInput" style="display:none; width:100%; padding:12px; border-radius:8px; border:1px solid #ddd; margin-top:8px;" placeholder="輸入新作品">
-
-                    <label style="display:block; font-size:13px; color:var(--m-blue); font-weight:bold; margin-top:15px;">角色</label>
-                    <select id="roleSelect" style="width:100%; padding:12px; border-radius:8px; border:1px solid #ddd; margin-top:5px;" onchange="toggleInput('roleSelect', 'roleInput')"></select>
-                    <input type="text" id="roleInput" style="display:none; width:100%; padding:12px; border-radius:8px; border:1px solid #ddd; margin-top:8px;" placeholder="輸入新角色">
-
-                    <label style="display:block; font-size:13px; color:var(--m-blue); font-weight:bold; margin-top:15px;">周邊類別</label>
-                    <select id="typeSelect" style="width:100%; padding:12px; border-radius:8px; border:1px solid #ddd; margin-top:5px;" onchange="toggleInput('typeSelect', 'typeInput')"></select>
-                    <input type="text" id="typeInput" style="display:none; width:100%; padding:12px; border-radius:8px; border:1px solid #ddd; margin-top:8px;" placeholder="例如：徽章">
-
-                    <label style="display:block; font-size:13px; color:var(--m-blue); font-weight:bold; margin-top:15px;">柄圖名稱</label>
-                    <input type="text" id="pattern" style="width:100%; padding:12px; border-radius:8px; border:1px solid #ddd; margin-top:5px;">
+                    <select id="workSelect" onchange="toggleInput('workSelect', 'workInput')"></select>
+                    <input type="text" id="workInput" style="display:none;" placeholder="New Work Name">
                     
-                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:15px;">
-                        <div><label style="font-size:13px; color:var(--m-blue); font-weight:bold;">狀態</label><select id="status" style="width:100%; padding:12px; border-radius:8px; border:1px solid #ddd; margin-top:5px;" onchange="toggleArrivalDate(this.value)"><option value="現貨">現貨</option><option value="非現貨">非現貨</option></select></div>
-                        <div><label style="font-size:13px; color:var(--m-blue); font-weight:bold;">數量</label><input type="number" id="qty" value="1" min="1" style="width:100%; padding:12px; border-radius:8px; border:1px solid #ddd; margin-top:5px;" oninput="liveExchange()"></div>
+                    <select id="roleSelect" onchange="toggleInput('roleSelect', 'roleInput')"></select>
+                    <input type="text" id="roleInput" style="display:none;" placeholder="New Role Name">
+
+                    <select id="typeSelect" onchange="toggleInput('typeSelect', 'typeInput')"></select>
+                    <input type="text" id="typeInput" style="display:none;" placeholder="Item Category">
+
+                    <input type="text" id="pattern" placeholder="Pattern Name">
+                    
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                        <select id="status"><option value="現貨">現貨</option><option value="非現貨">待收</option></select>
+                        <input type="number" id="qty" value="1" oninput="liveExchange()">
                     </div>
-                    <div id="arrivalGroup" style="display:none; margin-top:15px;"><label style="font-size:13px; color:var(--m-blue); font-weight:bold;">預計到貨</label><input type="text" id="arrivalDate" style="width:100%; padding:12px; border-radius:8px; border:1px solid #ddd; margin-top:5px;"></div>
-                    
-                    <div style="display:grid; grid-template-columns: 1fr 2fr; gap:10px; margin-top:15px;">
-                        <div><label style="font-size:13px; color:var(--m-blue); font-weight:bold;">幣種</label><select id="currency" style="width:100%; padding:12px; border-radius:8px; border:1px solid #ddd; margin-top:5px;" onchange="liveExchange()"><option value="HKD">HKD</option><option value="RMB">RMB</option><option value="JPY">JPY</option></select></div>
-                        <div><label style="font-size:13px; color:var(--m-blue); font-weight:bold;">單價</label><input type="number" id="inputPrice" step="0.01" required style="width:100%; padding:12px; border-radius:8px; border:1px solid #ddd; margin-top:5px;" oninput="liveExchange()"></div>
+                    <div style="display:grid; grid-template-columns: 1fr 2fr; gap:10px;">
+                        <select id="currency" onchange="liveExchange()"><option value="HKD">HKD</option><option value="RMB">RMB</option><option value="JPY">JPY</option></select>
+                        <input type="number" id="inputPrice" step="0.01" required oninput="liveExchange()">
                     </div>
-                    <div id="exchangePreview" style="margin-top:10px; font-size:14px; color:var(--m-green); font-weight:bold;">總額: HKD 0.00</div>
-                    
-                    <label style="display:block; font-size:13px; color:var(--m-blue); font-weight:bold; margin-top:15px;">照片</label>
-                    <input type="file" id="imgFile" style="width:100%; margin-top:5px;">
-                    
-                    <button type="submit" id="submitBtn" class="btn-main">確認存檔</button>
-                    <button type="button" id="cancelBtn" onclick="resetForm()" style="width:100%; border:none; background:none; color:#999; margin-top:10px; display:none; cursor:pointer;">取消編輯</button>
+                    <div id="exchangePreview" style="margin:10px 0; font-size:12px; color:var(--m-blue);">Total: HKD 0.00</div>
+                    <input type="file" id="imgFile">
+                    <button type="submit" id="submitBtn" class="btn-main">SAVE DATA</button>
                 </form>
             </div>
         </div>
@@ -145,10 +156,10 @@
     </div>
 
     <nav class="nav-bar" id="bottom-nav" style="display:none;">
-        <button class="nav-item active" onclick="switchTab('page-gallery', this)">🖼️</button>
-        <button class="nav-item" onclick="switchTab('page-stats', this)">📊</button>
-        <button class="nav-item" onclick="switchTab('page-recent', this)">➕</button>
-        <button class="nav-item" onclick="switchTab('page-pending', this)">📦</button>
+        <button class="nav-item active" onclick="switchTab('page-gallery', this)">COLLECTION</button>
+        <button class="nav-item" onclick="switchTab('page-stats', this)">ANALYSIS</button>
+        <button class="nav-item" onclick="switchTab('page-recent', this)">ADD</button>
+        <button class="nav-item" onclick="switchTab('page-pending', this)">PENDING</button>
     </nav>
 
 <script>
@@ -157,9 +168,7 @@
 
     let merchList = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
     let dict = JSON.parse(localStorage.getItem(DICT_KEY)) || {
-        works: ["世界計畫", "V家", "異形舞台"],
-        roles: ["宵崎奏", "朝比奈真冬"],
-        types: ["徽章", "立牌"]
+        works: ["世界計畫", "V家"], roles: ["宵崎奏", "朝比奈真冬"], types: ["徽章", "立牌"]
     };
 
     let filters = { work: 'all', role: 'all', type: 'all' };
@@ -168,9 +177,8 @@
 
     function showToast(msg) {
         const t = document.getElementById('toast');
-        t.innerText = msg;
-        t.style.display = 'block';
-        setTimeout(() => { t.style.opacity = '0'; setTimeout(() => { t.style.display = 'none'; t.style.opacity = '1'; }, 500); }, 2000);
+        t.innerText = msg; t.style.display = 'block';
+        setTimeout(() => { t.style.display = 'none'; }, 2000);
     }
 
     function save() {
@@ -178,10 +186,23 @@
         localStorage.setItem(DICT_KEY, JSON.stringify(dict));
     }
 
+    function updateGridSize(val) {
+        document.documentElement.style.setProperty('--grid-size', val + 'px');
+        localStorage.setItem('mm25_grid_pref', val);
+    }
+
+    function clearAllData() {
+        if(confirm("⚠️ 此操作將永久刪除所有藏品！確定嗎？")) {
+            localStorage.clear();
+            location.reload();
+        }
+    }
+
+    // --- 核心邏輯 (與 V18 相同，微調頁面跳轉) ---
     function renderSelects() {
         const setup = (id, list) => {
             let html = list.map(item => `<option value="${item}">${item}</option>`).join('');
-            html += `<option value="NEW">+ 新增...</option>`;
+            html += `<option value="NEW">+ Add New...</option>`;
             document.getElementById(id).innerHTML = html;
         };
         setup('workSelect', dict.works); setup('roleSelect', dict.roles); setup('typeSelect', dict.types);
@@ -189,8 +210,8 @@
 
     function renderFilterChips() {
         const build = (boxId, list, key) => {
-            let html = `<div class="filter-chip ${filters[key]==='all'?'active':''}" onclick="setFilter('${key}','all')">全部</div>`;
-            html += list.map(item => `<div class="filter-chip ${filters[key]===item?'active':''}" onclick="setFilter('${key}','${item}')" oncontextmenu="deleteDictItem('${key}','${item}'); return false;">${item}</div>`).join('');
+            let html = `<div class="filter-chip ${filters[key]==='all'?'active':''}" onclick="setFilter('${key}','all')">ALL</div>`;
+            html += list.map(item => `<div class="filter-chip ${filters[key]===item?'active':''}" onclick="setFilter('${key}','${item}')">${item}</div>`).join('');
             document.getElementById(boxId).innerHTML = html;
         };
         build('workFilterBox', dict.works, 'work'); build('roleFilterBox', dict.roles, 'role'); build('typeFilterBox', dict.types, 'type');
@@ -198,20 +219,12 @@
 
     function setFilter(k, v) { filters[k] = v; renderFilterChips(); renderAll(); }
 
-    function deleteDictItem(key, val) {
-        if(confirm(`刪除「${val}」選項？`)) {
-            const dk = key === 'work' ? 'works' : (key === 'role' ? 'roles' : 'types');
-            dict[dk] = dict[dk].filter(i => i !== val);
-            save(); renderFilterChips(); renderSelects();
-        }
-    }
-
     function liveExchange() {
         const p = parseFloat(document.getElementById('inputPrice').value) || 0;
         const q = parseInt(document.getElementById('qty').value) || 1;
         const r = rates[document.getElementById('currency').value];
         const total = (p * q * r).toFixed(2);
-        document.getElementById('exchangePreview').innerText = `總額: HKD ${total}`;
+        document.getElementById('exchangePreview').innerText = `Total: HKD ${total}`;
         return total;
     }
 
@@ -219,14 +232,14 @@
         const search = document.getElementById('keywordSearch').value.toLowerCase();
         const genHTML = (item, idx) => `
             <div class="item-card">
-                <img src="${item.img || 'https://via.placeholder.com/200/efefef/999999?text=Photo'}" class="item-img" style="width:100%; aspect-ratio:1; object-fit:cover;">
+                <img src="${item.img || 'https://via.placeholder.com/200'}" style="width:100%; aspect-ratio:1; object-fit:cover;">
                 <div style="padding:10px;">
-                    <div style="font-size:10px; color:var(--m-blue)">${item.role} | ${item.type}</div>
-                    <div style="font-weight:bold; font-size:13px; margin:2px 0;">${item.pattern || '未命名'}</div>
-                    <div style="color:var(--m-green); font-weight:bold;">HK$ ${Number(item.totalHkd).toLocaleString()}</div>
-                    <div style="display:flex; justify-content:space-between; margin-top:8px; font-size:11px;">
-                        <span onclick="editItem(${idx})" style="color:var(--m-blue); cursor:pointer;">編輯</span>
-                        <span onclick="deleteItem(${idx})" style="color:#ff6b6b; cursor:pointer;">刪除</span>
+                    <div style="font-size:9px; color:#999;">${item.role}</div>
+                    <div style="font-weight:bold; font-size:12px; margin:2px 0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${item.pattern || 'Untitled'}</div>
+                    <div style="color:var(--m-blue); font-weight:bold; font-size:12px;">HK$ ${item.totalHkd}</div>
+                    <div style="display:flex; justify-content:space-between; margin-top:8px; font-size:10px;">
+                        <span onclick="editItem(${idx})" style="color:#bbb;">Edit</span>
+                        <span onclick="deleteItem(${idx})" style="color:#ffb3b3;">Del</span>
                     </div>
                 </div>
             </div>`;
@@ -250,7 +263,6 @@
             if(v === 'NEW') { v = document.getElementById(iId).value.trim(); if(v && !dict[dk].includes(v)) dict[dk].push(v); }
             return v;
         };
-
         const w = getVal('workSelect', 'workInput', 'works');
         const r = getVal('roleSelect', 'roleInput', 'roles');
         const t = getVal('typeSelect', 'typeInput', 'types');
@@ -262,14 +274,9 @@
                 originalPrice: parseFloat(document.getElementById('inputPrice').value), originalCur: document.getElementById('currency').value,
                 totalHkd: liveExchange(), img: b64 || (editIdx !== -1 ? merchList[editIdx].img : null)
             };
-            if(editIdx === -1) {
-                merchList.unshift(data);
-                showToast("✨ 已成功加入藏品庫");
-            } else {
-                merchList[editIdx] = data;
-                showToast("📝 資料已更新");
-            }
+            if(editIdx === -1) merchList.unshift(data); else merchList[editIdx] = data;
             save(); resetForm(); renderSelects(); renderFilterChips(); renderAll();
+            showToast("Saved Successfully");
             setTimeout(() => switchTab('page-gallery', document.querySelector(`[onclick*="page-gallery"]`)), 500);
         };
 
@@ -279,8 +286,7 @@
     };
 
     function toggleInput(sId, iId) { document.getElementById(iId).style.display = (document.getElementById(sId).value === 'NEW') ? 'block' : 'none'; }
-    function toggleArrivalDate(v) { document.getElementById('arrivalGroup').style.display = (v === '非現貨') ? 'block' : 'none'; }
-    function deleteItem(idx) { if(confirm('刪除周邊？')) { merchList.splice(idx,1); save(); renderAll(); showToast("🗑️ 已刪除藏品"); } }
+    function deleteItem(idx) { if(confirm('Delete?')) { merchList.splice(idx,1); save(); renderAll(); showToast("Deleted"); } }
     
     function editItem(idx) {
         const item = merchList[idx];
@@ -293,20 +299,15 @@
         document.getElementById('qty').value = item.qty;
         document.getElementById('currency').value = item.originalCur;
         document.getElementById('inputPrice').value = item.originalPrice;
-        toggleArrivalDate(item.status); liveExchange();
-        document.getElementById('formTitle').innerText = "✏️ 編輯藏品";
-        document.getElementById('submitBtn').innerText = "更新資料";
-        document.getElementById('cancelBtn').style.display = "block";
+        liveExchange();
+        document.getElementById('formTitle').innerText = "EDIT ITEM";
         switchTab('page-recent', document.querySelector(`[onclick*="page-recent"]`));
     }
 
     function resetForm() { 
         document.getElementById('merchForm').reset(); 
         document.getElementById('editIndex').value = "-1"; 
-        document.getElementById('formTitle').innerText = "📝 紀錄周邊";
-        document.getElementById('submitBtn').innerText = "確認存檔";
-        document.getElementById('cancelBtn').style.display = "none"; 
-        document.getElementById('exchangePreview').innerText = "總額: HKD 0.00";
+        document.getElementById('formTitle').innerText = "ADD NEW ITEM";
     }
 
     function switchTab(id, btn) {
@@ -323,15 +324,12 @@
 
     function exportData() {
         const blob = new Blob([JSON.stringify({merchList, dict})], {type:'application/json'});
-        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `Backup_${new Date().getTime()}.json`; a.click();
+        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `Archive_Backup.json`; a.click();
     }
 
     function importData(e) {
         const r = new FileReader();
-        r.onload = (evt) => { 
-            const d = JSON.parse(evt.target.result); 
-            merchList = d.merchList; dict = d.dict; save(); location.reload(); 
-        };
+        r.onload = (evt) => { const d = JSON.parse(evt.target.result); merchList = d.merchList; dict = d.dict; save(); location.reload(); };
         r.readAsText(e.target.files[0]);
     }
 
@@ -341,10 +339,14 @@
         document.getElementById('totalSpend').innerText = `HKD ${total.toLocaleString()}`;
         if(myChart) myChart.destroy();
         myChart = new Chart(document.getElementById('charPieChart').getContext('2d'), {
-            type: 'pie', data: { labels: Object.keys(charData), datasets: [{ data: Object.values(charData), backgroundColor: ['#92a8d1', '#acc1ad', '#d5cabd', '#b5b5b5', '#88b04b'] }] }
+            type: 'pie', data: { labels: Object.keys(charData), datasets: [{ data: Object.values(charData), backgroundColor: ['#92a8d1', '#acc1ad', '#d5cabd', '#b5b5b5', '#88b04b'] }] },
+            options: { plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } } } }
         });
     }
 
+    // 初始化與背景載入
+    const prefGrid = localStorage.getItem('mm25_grid_pref');
+    if(prefGrid) updateGridSize(prefGrid);
     const storedCover = localStorage.getItem('mm25_hd_cover');
     if(storedCover) document.getElementById('cover-page').style.backgroundImage = `url(${storedCover})`;
     document.getElementById('cover-upload').onchange = e => {
