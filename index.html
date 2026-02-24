@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Morandi Archive - V19 Safe Tag Delete</title>
+    <title>Morandi Archive - V20 Tag Auto-Sync</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
@@ -88,7 +88,6 @@
                     </div>
                 </div>
                 <div id="lib-filter-box"></div>
-                <div style="font-size:9px; color:#ccc; margin-top:5px;">* 長按標籤從清單隱藏</div>
             </div>
             <div id="readyList" class="list-container grid"></div>
         </div>
@@ -102,23 +101,36 @@
             <div style="background:#fff; padding:25px; border-radius: var(--radius); border:1px solid var(--m-clay);">
                 <form id="merchForm">
                     <input type="hidden" id="editIndex" value="-1">
+                    
+                    <label class="form-label">作品 WORK</label>
                     <select id="workSelect" onchange="toggleInput('workSelect', 'workInput')"></select>
-                    <input type="text" id="workInput" style="display:none;" placeholder="新作品">
+                    <input type="text" id="workInput" style="display:none;" placeholder="填寫新作品名稱">
+                    
+                    <label class="form-label">角色 ROLE</label>
                     <select id="roleSelect" onchange="toggleInput('roleSelect', 'roleInput')"></select>
-                    <input type="text" id="roleInput" style="display:none;" placeholder="新角色">
+                    <input type="text" id="roleInput" style="display:none;" placeholder="填寫新角色名稱">
+                    
+                    <label class="form-label">類別 TYPE</label>
                     <select id="typeSelect" onchange="toggleInput('typeSelect', 'typeInput')"></select>
-                    <input type="text" id="typeInput" style="display:none;" placeholder="新類別">
-                    <input type="text" id="pattern" placeholder="款式名稱 PATTERN">
+                    <input type="text" id="typeInput" style="display:none;" placeholder="填寫新類別名稱">
+                    
+                    <label class="form-label">款式 PATTERN</label>
+                    <input type="text" id="pattern" placeholder="例如：生日限定徽章">
+                    
                     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
-                        <select id="status"><option value="現貨">現貨</option><option value="非現貨">非現</option></select>
-                        <input type="number" id="qty" value="1">
+                        <div><label class="form-label">狀態</label><select id="status"><option value="現貨">現貨</option><option value="非現貨">非現</option></select></div>
+                        <div><label class="form-label">數量</label><input type="number" id="qty" value="1"></div>
                     </div>
+                    
                     <div style="display:grid; grid-template-columns: 1fr 2fr; gap:12px;">
-                        <select id="currency" onchange="liveExchange()"><option value="HKD">HKD</option><option value="RMB">RMB</option><option value="JPY">JPY</option></select>
-                        <input type="number" id="inputPrice" step="0.01" placeholder="單價" oninput="liveExchange()">
+                        <div><label class="form-label">幣種</label><select id="currency" onchange="liveExchange()"><option value="HKD">HKD</option><option value="RMB">RMB</option><option value="JPY">JPY</option></select></div>
+                        <div><label class="form-label">單價</label><input type="number" id="inputPrice" step="0.01" oninput="liveExchange()"></div>
                     </div>
                     <div id="exchangePreview" style="margin:10px 0; font-size:12px; color:var(--m-deep-green); font-weight:bold;">Total: HKD 0.00</div>
+                    
+                    <label class="form-label">圖片</label>
                     <input type="file" id="imgFile">
+                    
                     <button type="submit" class="btn-main">SAVE TO ARCHIVE</button>
                     <button type="button" id="delBtn" class="btn-main" style="background:#cc9999; display:none;" onclick="deleteCurrentItem()">DELETE ITEM</button>
                 </form>
@@ -172,12 +184,10 @@
         localStorage.setItem(DICT_KEY, JSON.stringify(dict)); 
     }
 
-    // 修改後的安全刪除標籤：不影響藏品資料
     function confirmDeleteTag(key, value) {
         if (value === 'all') return;
-        if (confirm(`確定從篩選清單移除「${value}」嗎？\n（現有藏品的內容不會被改變）`)) {
-            const dictKey = key + 's';
-            dict[dictKey] = dict[dictKey].filter(v => v !== value);
+        if (confirm(`確定從篩選清單移除「${value}」嗎？`)) {
+            dict[key + 's'] = dict[key + 's'].filter(v => v !== value);
             if (filters[key] === value) filters[key] = 'all';
             save(); renderFilters(); renderSelects(); renderAll();
             showModal("🗑️", "TAG HIDDEN");
@@ -188,10 +198,8 @@
         let timer;
         const start = () => { timer = setTimeout(() => confirmDeleteTag(key, value), 800); };
         const cancel = () => clearTimeout(timer);
-        element.addEventListener('touchstart', start);
-        element.addEventListener('touchend', cancel);
-        element.addEventListener('mousedown', start);
-        element.addEventListener('mouseup', cancel);
+        element.addEventListener('touchstart', start); element.addEventListener('touchend', cancel);
+        element.addEventListener('mousedown', start); element.addEventListener('mouseup', cancel);
         element.addEventListener('contextmenu', e => e.preventDefault());
     }
 
@@ -220,16 +228,27 @@
     document.getElementById('merchForm').onsubmit = function(e) {
         e.preventDefault();
         const editIdx = parseInt(document.getElementById('editIndex').value);
+        
         const getV = (sid, iid, dk) => {
-            let v = document.getElementById(sid).value;
-            if(v === 'NEW') { v = document.getElementById(iid).value.trim(); if(v && !dict[dk].includes(v)) { dict[dk].push(v); dict[dk].sort(); } }
-            return v;
+            let sVal = document.getElementById(sid).value;
+            if(sVal === 'NEW') { 
+                let inputVal = document.getElementById(iid).value.trim(); 
+                if(inputVal) {
+                    if(!dict[dk].includes(inputVal)) { dict[dk].push(inputVal); dict[dk].sort(); }
+                    return inputVal; // 返回新填寫的值
+                }
+            }
+            return sVal;
         };
 
+        const finalWork = getV('workSelect', 'workInput', 'works');
+        const finalRole = getV('roleSelect', 'roleInput', 'roles');
+        const finalType = getV('typeSelect', 'typeInput', 'types');
+
         const data = {
-            work: getV('workSelect', 'workInput', 'works'),
-            role: getV('roleSelect', 'roleInput', 'roles'),
-            type: getV('typeSelect', 'typeInput', 'types'),
+            work: finalWork,
+            role: finalRole,
+            type: finalType,
             pattern: document.getElementById('pattern').value,
             status: document.getElementById('status').value,
             qty: parseInt(document.getElementById('qty').value) || 1,
@@ -243,16 +262,30 @@
         const done = (b64) => {
             if(b64) data.img = b64; else if(editIdx !== -1) data.img = merchList[editIdx].img;
             if(editIdx === -1) merchList.unshift(data); else merchList[editIdx] = data;
-            save(); showModal("✨", "SAVED!");
+            save(); 
+            showModal("✨", "SAVED!");
+            
+            // 關鍵更新：重新渲染下拉選單，並鎖定剛才選取/新增的值
+            renderSelects();
+            document.getElementById('workSelect').value = finalWork;
+            document.getElementById('roleSelect').value = finalRole;
+            document.getElementById('typeSelect').value = finalType;
+            
+            // 隱藏新增輸入框
+            document.getElementById('workInput').style.display = 'none';
+            document.getElementById('roleInput').style.display = 'none';
+            document.getElementById('typeInput').style.display = 'none';
+
             if(editIdx === -1) { 
                 document.getElementById('pattern').value = ''; 
-                document.getElementById('inputPrice').value = ''; 
                 document.getElementById('imgFile').value = '';
+                // 價格和數量視需求保留，此處保留價格以便連續錄入
             } else { 
                 document.getElementById('editIndex').value = "-1"; 
                 switchTab('page-gallery', document.querySelectorAll('.nav-item')[0]); 
             }
-            renderSelects(); renderFilters(); renderAll();
+            renderFilters(); // 確保頂部篩選同步出現新標籤
+            renderAll();
         };
 
         const file = document.getElementById('imgFile').files[0];
@@ -328,15 +361,18 @@
         const idx = parseInt(document.getElementById('editIndex').value);
         if(idx !== -1 && confirm("確定刪除此藏品？")) {
             merchList.splice(idx, 1); save(); showModal("🗑️", "DELETED");
-            document.getElementById('editIndex').value = "-1";
-            document.getElementById('delBtn').style.display = 'none';
-            switchTab('page-gallery', document.querySelectorAll('.nav-item')[0]);
-            renderAll();
+            document.getElementById('editIndex').value = "-1"; document.getElementById('delBtn').style.display = 'none';
+            switchTab('page-gallery', document.querySelectorAll('.nav-item')[0]); renderAll();
         }
     }
 
     function renderSelects() {
-        const setup = (id, list) => { const s = document.getElementById(id); const cur = s.value; s.innerHTML = `<option value="">選擇...</option>` + list.map(i => `<option value="${i}">${i}</option>`).join('') + `<option value="NEW">+ 新增...</option>`; if(list.includes(cur)) s.value = cur; };
+        const setup = (id, list) => { 
+            const s = document.getElementById(id); 
+            const cur = s.value; 
+            s.innerHTML = `<option value="">選擇...</option>` + list.map(i => `<option value="${i}">${i}</option>`).join('') + `<option value="NEW">+ 新增...</option>`; 
+            if(list.includes(cur)) s.value = cur; 
+        };
         setup('workSelect', dict.works); setup('roleSelect', dict.roles); setup('typeSelect', dict.types);
     }
 
