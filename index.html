@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Morandi Archive - V21 Smart Import</title>
+    <title>Morandi Archive - V22 Quick Delete</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
@@ -38,7 +38,7 @@
         .filter-chip.active { background: var(--m-sage); color: white; }
 
         .list-container.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(var(--dynamic-grid), 1fr)); gap: 15px; }
-        .item-card { background: #fff; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--m-clay); }
+        .item-card { background: #fff; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--m-clay); user-select: none; -webkit-user-select: none; touch-action: manipulation; }
         .img-box { width: 100%; aspect-ratio: 1; background: #eee; overflow: hidden; }
         .img-box img { width: 100%; height: 100%; object-fit: cover; }
         .info { padding: 10px; flex-grow: 1; overflow: hidden; }
@@ -88,6 +88,7 @@
                     </div>
                 </div>
                 <div id="lib-filter-box"></div>
+                <div style="font-size:9px; color:#ccc; margin-top:5px; text-align:center;">* 長按標籤可移除篩選，長按卡片可刪除藏品</div>
             </div>
             <div id="readyList" class="list-container grid"></div>
         </div>
@@ -171,32 +172,19 @@
         localStorage.setItem(DICT_KEY, JSON.stringify(dict)); 
     }
 
-    // 導入功能：自動偵測標籤並補全字典
-    function importData(input) {
-        const file = input.files[0];
-        if(!file) return;
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            try {
-                const d = JSON.parse(e.target.result);
-                merchList = d.merchList || [];
-                
-                // 掃描所有藏品，提取出所有出現過的標籤
-                let newDict = d.dict || { works: [], roles: [], types: [] };
-                merchList.forEach(i => {
-                    if(i.work && !newDict.works.includes(i.work)) newDict.works.push(i.work);
-                    if(i.role && !newDict.roles.includes(i.role)) newDict.roles.push(i.role);
-                    if(i.type && !newDict.types.includes(i.type)) newDict.types.push(i.type);
-                });
-                
-                // 排序
-                newDict.works.sort(); newDict.roles.sort(); newDict.types.sort();
-                dict = newDict;
-                save(); init(); 
-                showModal("📥", "IMPORTED & SYNCED");
-            } catch(err) { alert("導入出錯，檔案格式不正確"); }
+    // 核心功能：通用長按邏輯 (標籤刪除 & 藏品刪除)
+    function handleLongPress(element, callback) {
+        let timer;
+        const start = (e) => { 
+            timer = setTimeout(() => {
+                if (window.navigator.vibrate) window.navigator.vibrate(50);
+                callback();
+            }, 800); 
         };
-        reader.readAsText(file);
+        const cancel = () => clearTimeout(timer);
+        element.addEventListener('touchstart', start); element.addEventListener('touchend', cancel);
+        element.addEventListener('mousedown', start); element.addEventListener('mouseup', cancel);
+        element.addEventListener('contextmenu', e => e.preventDefault());
     }
 
     function confirmDeleteTag(key, value) {
@@ -209,13 +197,35 @@
         }
     }
 
-    function handleLongPress(element, key, value) {
-        let timer;
-        const start = () => { timer = setTimeout(() => confirmDeleteTag(key, value), 800); };
-        const cancel = () => clearTimeout(timer);
-        element.addEventListener('touchstart', start); element.addEventListener('touchend', cancel);
-        element.addEventListener('mousedown', start); element.addEventListener('mouseup', cancel);
-        element.addEventListener('contextmenu', e => e.preventDefault());
+    function confirmDeleteCard(idx) {
+        const item = merchList[idx];
+        if (confirm(`確定刪除「${item.pattern || '無標題'}」嗎？\n此操作無法撤銷。`)) {
+            merchList.splice(idx, 1);
+            save(); renderAll();
+            showModal("🗑️", "ITEM DELETED");
+        }
+    }
+
+    function importData(input) {
+        const file = input.files[0];
+        if(!file) return;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const d = JSON.parse(e.target.result);
+                merchList = d.merchList || [];
+                let newDict = d.dict || { works: [], roles: [], types: [] };
+                merchList.forEach(i => {
+                    if(i.work && !newDict.works.includes(i.work)) newDict.works.push(i.work);
+                    if(i.role && !newDict.roles.includes(i.role)) newDict.roles.push(i.role);
+                    if(i.type && !newDict.types.includes(i.type)) newDict.types.push(i.type);
+                });
+                newDict.works.sort(); newDict.roles.sort(); newDict.types.sort();
+                dict = newDict; save(); init(); 
+                showModal("📥", "IMPORTED & SYNCED");
+            } catch(err) { alert("導入出錯"); }
+        };
+        reader.readAsText(file);
     }
 
     function updateGridSize(val) {
@@ -254,11 +264,9 @@
             }
             return sVal;
         };
-
         const finalWork = getV('workSelect', 'workInput', 'works');
         const finalRole = getV('roleSelect', 'roleInput', 'roles');
         const finalType = getV('typeSelect', 'typeInput', 'types');
-
         const data = {
             work: finalWork, role: finalRole, type: finalType,
             pattern: document.getElementById('pattern').value,
@@ -269,7 +277,6 @@
             totalHkd: liveExchange(), img: null,
             timestamp: editIdx === -1 ? Date.now() : merchList[editIdx].timestamp
         };
-
         const done = (b64) => {
             if(b64) data.img = b64; else if(editIdx !== -1) data.img = merchList[editIdx].img;
             if(editIdx === -1) merchList.unshift(data); else merchList[editIdx] = data;
@@ -278,14 +285,10 @@
             document.getElementById('workSelect').value = finalWork;
             document.getElementById('roleSelect').value = finalRole;
             document.getElementById('typeSelect').value = finalType;
-            document.getElementById('workInput').style.display = 'none';
-            document.getElementById('roleInput').style.display = 'none';
-            document.getElementById('typeInput').style.display = 'none';
             if(editIdx === -1) { document.getElementById('pattern').value = ''; document.getElementById('imgFile').value = ''; }
             else { document.getElementById('editIndex').value = "-1"; switchTab('page-gallery', document.querySelectorAll('.nav-item')[0]); }
             renderFilters(); renderAll();
         };
-
         const file = document.getElementById('imgFile').files[0];
         if(file) { const fr = new FileReader(); fr.onload = () => done(fr.result); fr.readAsDataURL(file); }
         else done(null);
@@ -308,7 +311,8 @@
             list.forEach(item => {
                 let chip = document.createElement('div'); chip.className = `filter-chip ${filters[key]===item?'active':''}`;
                 chip.innerText = item; chip.onclick = () => { filters[key] = item; renderFilters(); renderAll(); };
-                handleLongPress(chip, key, item); row.appendChild(chip);
+                handleLongPress(chip, () => confirmDeleteTag(key, item));
+                row.appendChild(chip);
             });
             return row;
         };
@@ -327,10 +331,22 @@
         else if(sortMode==='price') items.sort((a,b)=> (b.totalHkd - a.totalHkd) * multi);
         else if(sortMode==='qty') items.sort((a,b)=> (b.qty - a.qty) * multi);
         else if(sortMode==='name') items.sort((a,b)=> (a.pattern||"").localeCompare(b.pattern||"") * (sortDesc ? 1 : -1));
+        
         rList.className = `list-container ${viewMode}`; wList.className = `list-container ${viewMode}`;
-        const gen = (i) => `<div class="item-card" onclick="editItem(${i.originalIndex})"><div class="img-box"><img src="${i.img || 'https://via.placeholder.com/200/f2efeb/888'}"></div><div class="info"><div style="font-size:9px;color:var(--m-brown);">${i.role} · ${i.type}</div><div style="font-size:11px;font-weight:bold;">${i.pattern || 'Untitled'}</div><div style="font-size:11px;color:var(--m-deep-green);">HK$ ${i.totalHkd} <small>x${i.qty}</small></div></div></div>`;
-        rList.innerHTML = items.filter(i => i.status === '現貨').map(gen).join('');
-        wList.innerHTML = items.filter(i => i.status === '非現貨').map(gen).join('');
+        rList.innerHTML = ''; wList.innerHTML = '';
+
+        items.forEach(i => {
+            const card = document.createElement('div');
+            card.className = 'item-card';
+            card.innerHTML = `<div class="img-box"><img src="${i.img || 'https://via.placeholder.com/200/f2efeb/888'}"></div><div class="info"><div style="font-size:9px;color:var(--m-brown);">${i.role} · ${i.type}</div><div style="font-size:11px;font-weight:bold;">${i.pattern || 'Untitled'}</div><div style="font-size:11px;color:var(--m-deep-green);">HK$ ${i.totalHkd} <small>x${i.qty}</small></div></div>`;
+            
+            // 點擊編輯
+            card.onclick = () => editItem(i.originalIndex);
+            // 長按刪除
+            handleLongPress(card, () => confirmDeleteCard(i.originalIndex));
+            
+            if(i.status === '現貨') rList.appendChild(card); else wList.appendChild(card);
+        });
     }
 
     function renderStats() {
