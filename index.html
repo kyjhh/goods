@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Morandi Archive - V15 Auto-Flow</title>
+    <title>Morandi Archive - V15 Secure</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
@@ -15,13 +15,13 @@
         body, html { margin: 0; padding: 0; height: 100%; font-family: 'PingFang HK', sans-serif; background: var(--bg); color: var(--text); overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
         #toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: var(--m-deep-green); color: white; padding: 10px 24px; border-radius: 20px; font-size: 12px; z-index: 3000; display: none; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
         
-        #cover-page { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #d2cdc1 center/cover; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; z-index: 2000; transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
+        #cover-page { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #d2cdc1; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; z-index: 2000; transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
         #cover-page.open { transform: translateY(-100%); }
         .cover-menu { width: 160px; margin-bottom: 70px; display: flex; flex-direction: column; gap: 8px; }
         .menu-btn { background: rgba(255, 255, 255, 0.65); backdrop-filter: blur(12px); padding: 14px; text-align: center; cursor: pointer; border-radius: var(--radius); font-size: 11px; letter-spacing: 2px; border: 1px solid rgba(255,255,255,0.2); }
         
         .nav-bar { position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%); width: 92%; max-width: 450px; background: rgba(255,255,255,0.9); backdrop-filter: blur(10px); display: flex; justify-content: space-around; padding: 12px 5px; border-radius: 15px; box-shadow: 0 8px 30px rgba(0,0,0,0.05); z-index: 1000; }
-        .nav-item { border: none; background: none; color: #b5b5b5; font-size: 10px; font-weight: 600; cursor: pointer; }
+        .nav-item { border: none; background: none; color: #b5b5b5; font-size: 10px; font-weight: 600; cursor: pointer; padding: 10px; }
         .nav-item.active { color: var(--m-deep-green); }
 
         .main-content { padding: 25px; padding-bottom: 120px; max-width: 800px; margin: 0 auto; }
@@ -29,27 +29,21 @@
         .page.active { display: block; }
 
         .control-panel { background: #fff; padding: 12px; border-radius: var(--radius); margin-bottom: 20px; border: 1px solid var(--m-clay); }
-        .symbol-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid #f0f0f0; padding-bottom: 8px; }
-        .symbol-group { display: flex; gap: 15px; color: #ccc; font-size: 14px; font-weight: bold; }
-        .symbol-btn { cursor: pointer; transition: color 0.3s; }
-        .symbol-btn.active { color: var(--m-deep-green); }
-
         .filter-row { display: flex; overflow-x: auto; white-space: nowrap; gap: 6px; margin-bottom: 8px; scrollbar-width: none; }
-        .filter-chip { background: var(--m-clay); padding: 5px 12px; border-radius: 12px; font-size: 10px; cursor: pointer; color: #8a8a8a; user-select: none; -webkit-user-select: none; }
+        .filter-chip { background: var(--m-clay); padding: 5px 12px; border-radius: 12px; font-size: 10px; cursor: pointer; color: #8a8a8a; user-select: none; }
         .filter-chip.active { background: var(--m-sage); color: white; }
 
-        .list-container.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(var(--grid-size, 160px), 1fr)); gap: 15px; }
-        .item-card { background: #fff; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--m-clay); position: relative; transition: transform 0.2s; }
-        .item-card.selected { border: 2px solid var(--m-brown); background: var(--m-clay); transform: scale(0.95); }
+        .list-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(var(--grid-size, 160px), 1fr)); gap: 15px; }
+        .item-card { background: #fff; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--m-clay); position: relative; }
         .img-box { width: 100%; aspect-ratio: 1; background: #eee; overflow: hidden; }
         .img-box img { width: 100%; height: 100%; object-fit: cover; }
         .info { padding: 10px; }
 
         .form-label { font-size: 10px; color: var(--m-brown); letter-spacing: 1px; margin-top: 14px; display: block; }
         .btn-main { background: var(--m-deep-green); color: white; border: none; padding: 14px; width: 100%; font-size: 12px; cursor: pointer; border-radius: var(--radius); margin-top: 25px; }
-        input, select { width: 100%; padding: 12px; border-radius: var(--radius); border: 1px solid var(--m-clay); background: #fafafa; font-size: 13px; margin-top: 6px; box-sizing: border-box; outline: none; }
+        input, select { width: 100%; padding: 12px; border-radius: var(--radius); border: 1px solid var(--m-clay); background: #fafafa; font-size: 13px; margin-top: 6px; box-sizing: border-box; }
         
-        #multi-delete-bar { display: none; background: var(--m-brown); color: white; padding: 12px; text-align: center; font-size: 11px; letter-spacing: 2px; cursor: pointer; margin-bottom: 15px; border-radius: var(--radius); }
+        .quick-check { position: absolute; top: 8px; right: 8px; background: rgba(255,255,255,0.9); color: var(--m-deep-green); width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -61,183 +55,113 @@
             <h4 style="text-align:center; font-weight:400; letter-spacing:5px; margin-bottom:25px; color: var(--m-deep-green);">M.ARCHIVE</h4>
             <div class="menu-btn" onclick="openPage('page-gallery')">LIBRARY</div>
             <div class="menu-btn" onclick="openPage('page-pending')">WAITING</div>
-            <div class="menu-btn" onclick="openPage('page-stats')">STATS</div>
             <div class="menu-btn" onclick="openPage('page-recent')">COLLECT</div>
-            <div class="menu-btn" onclick="openPage('page-settings')">CONFIG</div>
         </div>
     </div>
 
     <div class="main-content">
-        <div id="back-btn" onclick="exitSelectMode() || closePage()" style="font-size:10px; color: var(--m-brown); cursor:pointer; margin-bottom:25px; letter-spacing:2px;">← BACK</div>
-        <div id="multi-delete-bar" onclick="deleteSelected()">🗑️ DELETE SELECTED ITEMS</div>
+        <div id="back-btn" onclick="closePage()" style="font-size:10px; color: var(--m-brown); cursor:pointer; margin-bottom:25px; letter-spacing:2px;">← BACK</div>
 
         <div id="page-gallery" class="page">
-            <div class="control-panel">
-                <div class="symbol-row">
-                    <div class="symbol-group">
-                        <span class="symbol-btn sort-date" onclick="setSort('date')">🕒</span>
-                        <span class="symbol-btn sort-price" onclick="setSort('price')">＄</span>
-                    </div>
-                </div>
-                <div id="lib-filter-box"></div>
-            </div>
-            <div id="readyList" class="list-container grid"></div>
+            <div class="control-panel"><div id="lib-filters"></div></div>
+            <div id="readyList" class="list-container"></div>
         </div>
 
         <div id="page-pending" class="page">
-            <div class="control-panel">
-                <div id="wait-filter-box"></div>
-            </div>
-            <div id="waitList" class="list-container grid"></div>
+            <div class="control-panel"><div id="wait-filters"></div></div>
+            <div id="waitList" class="list-container"></div>
         </div>
 
         <div id="page-recent" class="page">
             <div style="background:#fff; padding:25px; border-radius: var(--radius); border:1px solid var(--m-clay);">
                 <form id="merchForm">
                     <input type="hidden" id="editIndex" value="-1">
-                    
                     <label class="form-label">作品名稱 WORK</label>
                     <select id="workSelect" onchange="toggleInput('workSelect', 'workInput')"></select>
-                    <input type="text" id="workInput" style="display:none;" placeholder="例如：世界計畫">
+                    <input type="text" id="workInput" style="display:none;" placeholder="填寫新作品名">
                     
                     <label class="form-label">角色名稱 ROLE</label>
                     <select id="roleSelect" onchange="toggleInput('roleSelect', 'roleInput')"></select>
-                    <input type="text" id="roleInput" style="display:none;" placeholder="例如：宵崎奏">
+                    <input type="text" id="roleInput" style="display:none;" placeholder="填寫新角色名">
                     
                     <label class="form-label">周邊類別 TYPE</label>
                     <select id="typeSelect" onchange="toggleInput('typeSelect', 'typeInput')"></select>
-                    <input type="text" id="typeInput" style="display:none;" placeholder="例如：徽章">
-                    
+                    <input type="text" id="typeInput" style="display:none;" placeholder="填寫新類別（如：徽章）">
+
                     <label class="form-label">款式名稱 PATTERN</label>
-                    <input type="text" id="pattern" placeholder="例如：10週年限定">
+                    <input type="text" id="pattern" placeholder="款式標題">
                     
                     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
                         <div><label class="form-label">狀態 STATUS</label><select id="status"><option value="現貨">現貨</option><option value="非現貨">非現</option></select></div>
-                        <div><label class="form-label">數量 QTY</label><input type="number" id="qty" value="1" oninput="liveExchange()"></div>
+                        <div><label class="form-label">數量 QTY</label><input type="number" id="qty" value="1"></div>
                     </div>
                     
                     <div style="display:grid; grid-template-columns: 1fr 2fr; gap:12px;">
-                        <div><label class="form-label">幣種 CUR</label><select id="currency" onchange="liveExchange()"><option value="HKD">HKD</option><option value="RMB">RMB</option><option value="JPY">JPY</option></select></div>
-                        <div><label class="form-label">單價 PRICE</label><input type="number" id="inputPrice" step="0.01" required placeholder="0.00" oninput="liveExchange()"></div>
+                        <div><label class="form-label">幣種 CUR</label><select id="currency"><option value="HKD">HKD</option><option value="RMB">RMB</option><option value="JPY">JPY</option></select></div>
+                        <div><label class="form-label">單價 PRICE</label><input type="number" id="inputPrice" step="0.01" required></div>
                     </div>
-                    
-                    <div id="exchangePreview" style="margin-top:20px; font-size:13px; color:var(--m-deep-green); font-weight:bold;">Total: HKD 0.00</div>
                     
                     <label class="form-label">作品圖片 IMAGE</label>
                     <input type="file" id="imgFile">
                     
                     <button type="submit" class="btn-main">SAVE TO ARCHIVE</button>
+                    <button type="button" onclick="resetForm()" style="background:none; border:none; color:#ccc; font-size:10px; margin-top:15px; width:100%; cursor:pointer;">RESET ALL FIELDS</button>
                 </form>
             </div>
         </div>
-
-        <div id="page-stats" class="page">... (統計內容)</div>
-        <div id="page-settings" class="page">... (設定內容)</div>
     </div>
 
     <nav class="nav-bar" id="bottom-nav" style="display:none;">
         <button class="nav-item active" onclick="switchTab('page-gallery', this)">LIB</button>
         <button class="nav-item" onclick="switchTab('page-pending', this)">WAIT</button>
         <button class="nav-item" onclick="switchTab('page-recent', this)">ADD</button>
-        <button class="nav-item" onclick="switchTab('page-stats', this)">STAT</button>
-        <button class="nav-item" onclick="switchTab('page-settings', this)">SET</button>
     </nav>
 
 <script>
     const STORAGE_KEY = 'archive_master';
     const DICT_KEY = 'archive_dict_master';
     const rates = { RMB: 1.08, JPY: 0.052, HKD: 1.0 };
-    let merchList = [], dict = {}, filters = { work: 'all', role: 'all', type: 'all' }, sortMode = 'date';
-    let selectedIndices = new Set(), isSelectMode = false;
+    let merchList = [], dict = {}, filters = { work: 'all', role: 'all', type: 'all' };
 
     function init() {
+        // 從資料庫讀取，確保資料不會消失
         merchList = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-        dict = JSON.parse(localStorage.getItem(DICT_KEY)) || { works: ["世界計畫"], roles: ["宵崎奏"], types: ["徽章"] };
-        renderAll(); renderSelects(); renderFilters();
+        dict = JSON.parse(localStorage.getItem(DICT_KEY)) || { works: [], roles: [], types: [] };
+        renderSelects();
+        renderFilters();
+        renderAll();
     }
 
-    function save() { 
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(merchList)); 
-        localStorage.setItem(DICT_KEY, JSON.stringify(dict)); 
-        renderSelects(); renderFilters();
+    function saveData() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(merchList));
+        localStorage.setItem(DICT_KEY, JSON.stringify(dict));
+        renderFilters();
+        renderSelects();
     }
 
-    // --- 關鍵：開新標籤與記憶邏輯 ---
-    function getFormValue(selectId, inputId, dictKey) {
-        let val = document.getElementById(selectId).value;
-        if(val === 'NEW') {
-            val = document.getElementById(inputId).value.trim();
-            if(val && !dict[dictKey].includes(val)) {
-                dict[dictKey].push(val); // 儲存新標籤到字典
-                dict[dictKey].sort();
-            }
-        }
-        return val;
-    }
+    function renderAll() {
+        const rList = document.getElementById('readyList');
+        const wList = document.getElementById('waitList');
+        if(!rList || !wList) return;
 
-    document.getElementById('merchForm').onsubmit = function(e) {
-        e.preventDefault();
-        const editIdx = parseInt(document.getElementById('editIndex').value);
-        
-        const work = getFormValue('workSelect', 'workInput', 'works');
-        const role = getFormValue('roleSelect', 'roleInput', 'roles');
-        const type = getFormValue('typeSelect', 'typeInput', 'types');
+        let filtered = merchList.map((item, index) => ({...item, originalIndex: index}))
+            .filter(i => (filters.work==='all' || i.work===filters.work) && 
+                         (filters.role==='all' || i.role===filters.role) && 
+                         (filters.type==='all' || i.type===filters.type));
 
-        const data = {
-            work, role, type,
-            pattern: document.getElementById('pattern').value,
-            status: document.getElementById('status').value,
-            qty: parseInt(document.getElementById('qty').value),
-            originalPrice: parseFloat(document.getElementById('inputPrice').value),
-            originalCur: document.getElementById('currency').value,
-            totalHkd: liveExchange(),
-            img: null
-        };
+        const cardHtml = (i) => `
+            <div class="item-card" onclick="editItem(${i.originalIndex})">
+                ${i.status === '非現貨' ? `<div class="quick-check" onclick="event.stopPropagation(); quickCheckIn(${i.originalIndex})">✓</div>` : ''}
+                <div class="img-box"><img src="${i.img || 'https://via.placeholder.com/200/f2efeb/888'}"></div>
+                <div class="info">
+                    <div style="font-size:9px; color:var(--m-brown);">${i.role}</div>
+                    <div style="font-size:11px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${i.pattern || i.type}</div>
+                    <div style="color:var(--m-deep-green); font-weight:bold; font-size:11px;">HK$ ${i.totalHkd}</div>
+                </div>
+            </div>`;
 
-        const file = document.getElementById('imgFile').files[0];
-        const completeSave = (b64) => {
-            if(b64) data.img = b64; 
-            else if(editIdx !== -1) data.img = merchList[editIdx].img;
-
-            if(editIdx === -1) merchList.unshift(data);
-            else merchList[editIdx] = data;
-
-            save(); // 儲存資料與新標籤
-            showToast("SAVED");
-
-            // 連續上架：保留作品和角色，只清空款式和價格
-            if(editIdx === -1) {
-                document.getElementById('pattern').value = '';
-                document.getElementById('inputPrice').value = '';
-                document.getElementById('imgFile').value = '';
-                document.getElementById('typeSelect').value = ''; 
-                // 作品和角色選單維持剛才的選擇
-            } else {
-                switchTab('page-gallery', document.querySelectorAll('.nav-item')[0]);
-            }
-        };
-
-        if(file) {
-            const fr = new FileReader();
-            fr.onload = () => completeSave(fr.result);
-            fr.readAsDataURL(file);
-        } else completeSave(null);
-    };
-
-    // --- 標籤管理 (長按/右鍵刪除) ---
-    function bindTagEvents(el, key, val) {
-        const delFunc = (e) => {
-            e.preventDefault(); if(val === 'all') return;
-            if(confirm(`確定刪除標籤「${val}」？`)) {
-                const dk = key === 'work' ? 'works' : key === 'role' ? 'roles' : 'types';
-                dict[dk] = dict[dk].filter(v => v !== val);
-                if (filters[key] === val) filters[key] = 'all';
-                save(); showToast("DELETED");
-            }
-        };
-        el.oncontextmenu = delFunc;
-        el.ontouchstart = () => { tagPressTimer = setTimeout(() => { delFunc(new Event('lp')); if(window.navigator.vibrate) window.navigator.vibrate(50); }, 800); };
-        el.ontouchend = () => clearTimeout(tagPressTimer);
+        rList.innerHTML = filtered.filter(i => i.status === '現貨').map(cardHtml).join('');
+        wList.innerHTML = filtered.filter(i => i.status === '非現貨').map(cardHtml).join('');
     }
 
     function renderFilters() {
@@ -249,60 +173,107 @@
             list.forEach(item => {
                 let chip = document.createElement('div'); chip.className = `filter-chip ${filters[key]===item?'active':''}`;
                 chip.innerText = item; chip.onclick = () => { filters[key] = item; renderFilters(); renderAll(); };
-                bindTagEvents(chip, key, item); row.appendChild(chip);
+                row.appendChild(chip);
             });
             return row;
         };
-        ['lib-filter-box', 'wait-filter-box'].forEach(id => {
-            const box = document.getElementById(id); if(!box) return;
-            box.innerHTML = '';
-            ['work', 'role', 'type'].forEach(k => box.appendChild(build(dict[k+'s'], k)));
+        ['lib-filters', 'wait-filters'].forEach(id => {
+            const el = document.getElementById(id); if(!el) return;
+            el.innerHTML = '';
+            ['work', 'role', 'type'].forEach(k => el.appendChild(build(dict[k+'s'], k)));
         });
     }
 
-    function renderAll() {
-        const rList = document.getElementById('readyList'); const wList = document.getElementById('waitList');
-        if(!rList) return;
-        let items = merchList.map((item, index) => ({...item, originalIndex: index}));
-        // 聯動篩選
-        items = items.filter(i => (filters.work==='all' || i.work===filters.work) && (filters.role==='all' || i.role===filters.role) && (filters.type==='all' || i.type===filters.type));
-        
-        const genHtml = (i) => `<div class="item-card" onclick="editItem(${i.originalIndex})"><div class="img-box"><img src="${i.img || 'https://via.placeholder.com/200/f2efeb/888'}"></div><div class="info"><div style="font-size:9px;color:var(--m-brown);">${i.role} · ${i.type}</div><div style="font-size:11px;font-weight:bold;">HK$ ${i.totalHkd}</div></div></div>`;
-        rList.innerHTML = items.filter(i => i.status === '現貨').map(genHtml).join('');
-        wList.innerHTML = items.filter(i => i.status === '非現貨').map(genHtml).join('');
-    }
-
     function renderSelects() {
-        const setup = (id, list) => { 
+        const setup = (id, list) => {
             const s = document.getElementById(id);
-            const currentVal = s.value; // 保留當前選擇
-            s.innerHTML = `<option value="">請選擇...</option>` + list.map(i => `<option value="${i}">${i}</option>`).join('') + `<option value="NEW">+ 新增...</option>`; 
-            if(list.includes(currentVal)) s.value = currentVal;
-        }; 
-        setup('workSelect', dict.works); setup('roleSelect', dict.roles); setup('typeSelect', dict.types); 
+            const prev = s.value;
+            s.innerHTML = `<option value="">請選擇...</option>` + list.map(i => `<option value="${i}">${i}</option>`).join('') + `<option value="NEW">+ 新增...</option>`;
+            if(list.includes(prev)) s.value = prev;
+        };
+        setup('workSelect', dict.works); setup('roleSelect', dict.roles); setup('typeSelect', dict.types);
     }
 
-    function toggleInput(s, i) { 
-        const isNew = document.getElementById(s).value === 'NEW';
-        document.getElementById(i).style.display = isNew ? 'block' : 'none'; 
-        if(isNew) document.getElementById(inputId).focus();
-    }
-    
-    function liveExchange() { 
-        const p = parseFloat(document.getElementById('inputPrice').value)||0, q = parseInt(document.getElementById('qty').value)||1, cur = document.getElementById('currency').value; 
-        const t = (p * q * rates[cur]).toFixed(2); document.getElementById('exchangePreview').innerText = `Total: HKD ${t}`; return t; 
-    }
+    document.getElementById('merchForm').onsubmit = function(e) {
+        e.preventDefault();
+        const editIdx = parseInt(document.getElementById('editIndex').value);
+        
+        const getVal = (sid, iid, dk) => {
+            let v = document.getElementById(sid).value;
+            if(v === 'NEW') {
+                v = document.getElementById(iid).value.trim();
+                if(v && !dict[dk].includes(v)) { dict[dk].push(v); dict[dk].sort(); }
+            }
+            return v;
+        };
 
-    function switchTab(id, btn) {
+        const price = parseFloat(document.getElementById('inputPrice').value) || 0;
+        const qty = parseInt(document.getElementById('qty').value) || 1;
+        const cur = document.getElementById('currency').value;
+        const total = (price * qty * rates[cur]).toFixed(2);
+
+        const data = {
+            work: getVal('workSelect', 'workInput', 'works'),
+            role: getVal('roleSelect', 'roleInput', 'roles'),
+            type: getVal('typeSelect', 'typeInput', 'types'),
+            pattern: document.getElementById('pattern').value,
+            status: document.getElementById('status').value,
+            qty: qty, originalPrice: price, originalCur: cur, totalHkd: total,
+            img: null
+        };
+
+        const complete = (b64) => {
+            if(b64) data.img = b64; else if(editIdx !== -1) data.img = merchList[editIdx].img;
+            if(editIdx === -1) merchList.unshift(data); else merchList[editIdx] = data;
+            
+            saveData();
+            showToast("SAVED");
+            
+            if(editIdx === -1) {
+                // 連續上架：保留作品和角色
+                document.getElementById('pattern').value = '';
+                document.getElementById('inputPrice').value = '';
+                document.getElementById('imgFile').value = '';
+                document.getElementById('typeSelect').value = '';
+                renderAll();
+            } else {
+                document.getElementById('editIndex').value = "-1";
+                switchTab('page-gallery', document.querySelectorAll('.nav-item')[0]);
+            }
+        };
+
+        const file = document.getElementById('imgFile').files[0];
+        if(file) { const fr = new FileReader(); fr.onload = () => complete(fr.result); fr.readAsDataURL(file); }
+        else complete(null);
+    };
+
+    function quickCheckIn(idx) { merchList[idx].status = '現貨'; saveData(); renderAll(); showToast("ARRIVED"); }
+    function resetForm() { document.getElementById('merchForm').reset(); document.getElementById('workInput').style.display='none'; document.getElementById('roleInput').style.display='none'; document.getElementById('typeInput').style.display='none'; }
+    function toggleInput(s, i) { document.getElementById(i).style.display = document.getElementById(s).value === 'NEW' ? 'block' : 'none'; }
+    function switchTab(id, btn) { 
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
         document.getElementById(id).classList.add('active');
         document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-        if(btn) btn.classList.add('active'); renderAll();
+        if(btn) btn.classList.add('active');
+        renderAll(); // 確保每次切換分頁都重新刷出資料
     }
-
-    function openPage(id) { document.getElementById('cover-page').classList.add('open'); document.getElementById('bottom-nav').style.display='flex'; switchTab(id, document.querySelectorAll('.nav-item')[2]); }
+    function openPage(id) { document.getElementById('cover-page').classList.add('open'); document.getElementById('bottom-nav').style.display='flex'; switchTab(id, document.querySelectorAll('.nav-item')[id==='page-gallery'?0 : id==='page-pending'?1:2]); }
     function closePage() { document.getElementById('cover-page').classList.remove('open'); document.getElementById('bottom-nav').style.display='none'; }
     function showToast(m) { const t=document.getElementById('toast'); t.innerText=m; t.style.display='block'; setTimeout(()=>t.style.display='none',2000); }
+
+    function editItem(idx) {
+        const i = merchList[idx];
+        document.getElementById('editIndex').value = idx;
+        document.getElementById('workSelect').value = i.work;
+        document.getElementById('roleSelect').value = i.role;
+        document.getElementById('typeSelect').value = i.type;
+        document.getElementById('pattern').value = i.pattern || "";
+        document.getElementById('status').value = i.status;
+        document.getElementById('qty').value = i.qty;
+        document.getElementById('currency').value = i.originalCur;
+        document.getElementById('inputPrice').value = i.originalPrice;
+        switchTab('page-recent', document.querySelectorAll('.nav-item')[2]);
+    }
 
     window.onload = init;
 </script>
