@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Morandi Archive - V22 Quick Delete</title>
+    <title>Morandi Archive - V25 Note & Modal Fix</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
@@ -38,13 +38,20 @@
         .filter-chip.active { background: var(--m-sage); color: white; }
 
         .list-container.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(var(--dynamic-grid), 1fr)); gap: 15px; }
-        .item-card { background: #fff; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--m-clay); user-select: none; -webkit-user-select: none; touch-action: manipulation; }
+        .list-container.list { display: flex; flex-direction: column; gap: 10px; }
+
+        .item-card { background: #fff; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--m-clay); user-select: none; -webkit-user-select: none; display: flex; flex-direction: column; }
+        .list .item-card { flex-direction: row; align-items: center; height: 90px; }
+        .list .img-box { width: 90px; height: 90px; flex-shrink: 0; }
+        .list .info { padding: 0 15px; }
+
         .img-box { width: 100%; aspect-ratio: 1; background: #eee; overflow: hidden; }
         .img-box img { width: 100%; height: 100%; object-fit: cover; }
         .info { padding: 10px; flex-grow: 1; overflow: hidden; }
 
         .btn-main { background: var(--m-deep-green); color: white; border: none; padding: 14px; width: 100%; font-size: 12px; cursor: pointer; border-radius: var(--radius); margin-top: 15px; }
-        input, select { width: 100%; padding: 12px; border-radius: var(--radius); border: 1px solid var(--m-clay); background: #fafafa; font-size: 13px; margin-top: 6px; box-sizing: border-box; outline: none; }
+        input, select, textarea { width: 100%; padding: 12px; border-radius: var(--radius); border: 1px solid var(--m-clay); background: #fafafa; font-size: 13px; margin-top: 6px; box-sizing: border-box; outline: none; font-family: inherit; }
+        textarea { height: 80px; resize: none; }
         
         #success-modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 30px; border-radius: 15px; text-align: center; z-index: 4000; box-shadow: 0 10px 40px rgba(0,0,0,0.2); display: none; width: 220px; }
         .overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.4); z-index: 3500; display: none; }
@@ -88,7 +95,7 @@
                     </div>
                 </div>
                 <div id="lib-filter-box"></div>
-                <div style="font-size:9px; color:#ccc; margin-top:5px; text-align:center;">* 長按標籤可移除篩選，長按卡片可刪除藏品</div>
+                <div style="font-size:9px; color:#ccc; margin-top:5px; text-align:center;">* 長按卡片可快速刪除</div>
             </div>
             <div id="readyList" class="list-container grid"></div>
         </div>
@@ -109,6 +116,8 @@
                     <select id="typeSelect" onchange="toggleInput('typeSelect', 'typeInput')"></select>
                     <input type="text" id="typeInput" style="display:none;" placeholder="新類別">
                     <input type="text" id="pattern" placeholder="款式名稱">
+                    <textarea id="note" placeholder="描述 / 備註..."></textarea>
+                    
                     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
                         <select id="status"><option value="現貨">現貨</option><option value="非現貨">非現</option></select>
                         <input type="number" id="qty" value="1">
@@ -172,15 +181,9 @@
         localStorage.setItem(DICT_KEY, JSON.stringify(dict)); 
     }
 
-    // 核心功能：通用長按邏輯 (標籤刪除 & 藏品刪除)
     function handleLongPress(element, callback) {
         let timer;
-        const start = (e) => { 
-            timer = setTimeout(() => {
-                if (window.navigator.vibrate) window.navigator.vibrate(50);
-                callback();
-            }, 800); 
-        };
+        const start = () => { timer = setTimeout(() => { if (window.navigator.vibrate) window.navigator.vibrate(50); callback(); }, 800); };
         const cancel = () => clearTimeout(timer);
         element.addEventListener('touchstart', start); element.addEventListener('touchend', cancel);
         element.addEventListener('mousedown', start); element.addEventListener('mouseup', cancel);
@@ -193,39 +196,14 @@
             dict[key + 's'] = dict[key + 's'].filter(v => v !== value);
             if (filters[key] === value) filters[key] = 'all';
             save(); renderFilters(); renderSelects(); renderAll();
-            showModal("🗑️", "TAG HIDDEN");
         }
     }
 
     function confirmDeleteCard(idx) {
-        const item = merchList[idx];
-        if (confirm(`確定刪除「${item.pattern || '無標題'}」嗎？\n此操作無法撤銷。`)) {
-            merchList.splice(idx, 1);
-            save(); renderAll();
+        if (confirm(`確定刪除此藏品？`)) {
+            merchList.splice(idx, 1); save(); renderAll();
             showModal("🗑️", "ITEM DELETED");
         }
-    }
-
-    function importData(input) {
-        const file = input.files[0];
-        if(!file) return;
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            try {
-                const d = JSON.parse(e.target.result);
-                merchList = d.merchList || [];
-                let newDict = d.dict || { works: [], roles: [], types: [] };
-                merchList.forEach(i => {
-                    if(i.work && !newDict.works.includes(i.work)) newDict.works.push(i.work);
-                    if(i.role && !newDict.roles.includes(i.role)) newDict.roles.push(i.role);
-                    if(i.type && !newDict.types.includes(i.type)) newDict.types.push(i.type);
-                });
-                newDict.works.sort(); newDict.roles.sort(); newDict.types.sort();
-                dict = newDict; save(); init(); 
-                showModal("📥", "IMPORTED & SYNCED");
-            } catch(err) { alert("導入出錯"); }
-        };
-        reader.readAsText(file);
     }
 
     function updateGridSize(val) {
@@ -267,28 +245,39 @@
         const finalWork = getV('workSelect', 'workInput', 'works');
         const finalRole = getV('roleSelect', 'roleInput', 'roles');
         const finalType = getV('typeSelect', 'typeInput', 'types');
+        
         const data = {
-            work: finalWork, role: finalRole, type: finalType,
+            work: finalWork, role: finalRole, type: finalType, 
             pattern: document.getElementById('pattern').value,
-            status: document.getElementById('status').value,
+            note: document.getElementById('note').value, // 儲存 Note
+            status: document.getElementById('status').value, 
             qty: parseInt(document.getElementById('qty').value) || 1,
-            originalPrice: parseFloat(document.getElementById('inputPrice').value) || 0,
+            originalPrice: parseFloat(document.getElementById('inputPrice').value) || 0, 
             originalCur: document.getElementById('currency').value,
-            totalHkd: liveExchange(), img: null,
+            totalHkd: liveExchange(), 
+            img: null, 
             timestamp: editIdx === -1 ? Date.now() : merchList[editIdx].timestamp
         };
+
         const done = (b64) => {
             if(b64) data.img = b64; else if(editIdx !== -1) data.img = merchList[editIdx].img;
             if(editIdx === -1) merchList.unshift(data); else merchList[editIdx] = data;
-            save(); showModal("✨", "SAVED!");
+            save(); 
+            showModal("✨", "SAVED!"); // 成功彈窗
             renderSelects();
-            document.getElementById('workSelect').value = finalWork;
-            document.getElementById('roleSelect').value = finalRole;
-            document.getElementById('typeSelect').value = finalType;
-            if(editIdx === -1) { document.getElementById('pattern').value = ''; document.getElementById('imgFile').value = ''; }
-            else { document.getElementById('editIndex').value = "-1"; switchTab('page-gallery', document.querySelectorAll('.nav-item')[0]); }
-            renderFilters(); renderAll();
+            // 重置表格
+            document.getElementById('merchForm').reset();
+            document.getElementById('editIndex').value = "-1";
+            document.getElementById('delBtn').style.display = 'none';
+            document.querySelectorAll('#workInput, #roleInput, #typeInput').forEach(el => el.style.display = 'none');
+            
+            // 跳回列表頁
+            setTimeout(() => {
+                switchTab('page-gallery', document.querySelectorAll('.nav-item')[0]);
+                renderFilters(); renderAll();
+            }, 600);
         };
+
         const file = document.getElementById('imgFile').files[0];
         if(file) { const fr = new FileReader(); fr.onload = () => done(fr.result); fr.readAsDataURL(file); }
         else done(null);
@@ -338,13 +327,12 @@
         items.forEach(i => {
             const card = document.createElement('div');
             card.className = 'item-card';
-            card.innerHTML = `<div class="img-box"><img src="${i.img || 'https://via.placeholder.com/200/f2efeb/888'}"></div><div class="info"><div style="font-size:9px;color:var(--m-brown);">${i.role} · ${i.type}</div><div style="font-size:11px;font-weight:bold;">${i.pattern || 'Untitled'}</div><div style="font-size:11px;color:var(--m-deep-green);">HK$ ${i.totalHkd} <small>x${i.qty}</small></div></div>`;
+            // 清單模式下加入備註簡述
+            const noteHtml = (viewMode === 'list' && i.note) ? `<div style="font-size:9px; color:#aaa; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${i.note}</div>` : '';
             
-            // 點擊編輯
+            card.innerHTML = `<div class="img-box"><img src="${i.img || 'https://via.placeholder.com/200/f2efeb/888'}"></div><div class="info"><div style="font-size:9px;color:var(--m-brown);">${i.role} · ${i.type}</div><div style="font-size:11px;font-weight:bold;">${i.pattern || 'Untitled'}</div>${noteHtml}<div style="font-size:11px;color:var(--m-deep-green);">HK$ ${i.totalHkd} <small>x${i.qty}</small></div></div>`;
             card.onclick = () => editItem(i.originalIndex);
-            // 長按刪除
             handleLongPress(card, () => confirmDeleteCard(i.originalIndex));
-            
             if(i.status === '現貨') rList.appendChild(card); else wList.appendChild(card);
         });
     }
@@ -359,10 +347,13 @@
     function editItem(idx) {
         const i = merchList[idx]; document.getElementById('editIndex').value = idx;
         document.getElementById('workSelect').value = i.work; document.getElementById('roleSelect').value = i.role; document.getElementById('typeSelect').value = i.type;
-        document.getElementById('pattern').value = i.pattern || ""; document.getElementById('status').value = i.status; document.getElementById('qty').value = i.qty;
+        document.getElementById('pattern').value = i.pattern || ""; 
+        document.getElementById('note').value = i.note || ""; // 填入 Note
+        document.getElementById('status').value = i.status; document.getElementById('qty').value = i.qty;
         document.getElementById('currency').value = i.originalCur; document.getElementById('inputPrice').value = i.originalPrice;
         document.getElementById('delBtn').style.display = 'block';
         switchTab('page-recent', document.querySelectorAll('.nav-item')[2]);
+        liveExchange();
     }
 
     function deleteCurrentItem() {
