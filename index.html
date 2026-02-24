@@ -3,18 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Morandi Archive - V16 Pro</title>
+    <title>Morandi Archive - V17 Master</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
             --m-deep-green: #6b7a63; --m-sage: #acc1ad; --m-brown: #a68b7c;
             --m-sand: #d5cabd; --m-clay: #e5ddd5; --bg: #f2efeb;
-            --text: #4a4a4a; --grid-size: 160px;
-            --radius: 8px;
+            --text: #4a4a4a; --radius: 8px;
+            --dynamic-grid: 160px;
         }
         body, html { margin: 0; padding: 0; height: 100%; font-family: 'PingFang HK', sans-serif; background: var(--bg); color: var(--text); overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
-        #toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: var(--m-deep-green); color: white; padding: 10px 24px; border-radius: 20px; font-size: 12px; z-index: 3000; display: none; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
         
+        /* 頁面與動畫 */
         #cover-page { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #d2cdc1; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; z-index: 2000; transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
         #cover-page.open { transform: translateY(-100%); }
         .cover-menu { width: 160px; margin-bottom: 70px; display: flex; flex-direction: column; gap: 8px; }
@@ -28,6 +28,7 @@
         .page { display: none; }
         .page.active { display: block; }
 
+        /* 頂部面板 */
         .control-panel { background: #fff; padding: 12px; border-radius: var(--radius); margin-bottom: 20px; border: 1px solid var(--m-clay); }
         .symbol-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid #f0f0f0; padding-bottom: 8px; }
         .symbol-group { display: flex; gap: 12px; color: #ccc; font-size: 14px; font-weight: bold; }
@@ -38,23 +39,36 @@
         .filter-chip { background: var(--m-clay); padding: 5px 12px; border-radius: 12px; font-size: 10px; cursor: pointer; color: #8a8a8a; }
         .filter-chip.active { background: var(--m-sage); color: white; }
 
-        .list-container.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(var(--grid-size, 160px), 1fr)); gap: 15px; }
+        /* 列表容器 */
+        .list-container.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(var(--dynamic-grid), 1fr)); gap: 15px; }
         .list-container.list { display: flex; flex-direction: column; gap: 10px; }
-        .item-card { background: #fff; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--m-clay); }
+        .item-card { background: #fff; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--m-clay); transition: transform 0.2s; }
+        .item-card:active { transform: scale(0.98); }
         .list-container.list .item-card { display: flex; height: 80px; align-items: center; }
         .list-container.list .img-box { width: 80px; height: 80px; flex-shrink: 0; }
         .img-box { width: 100%; aspect-ratio: 1; background: #eee; overflow: hidden; }
         .img-box img { width: 100%; height: 100%; object-fit: cover; }
         .info { padding: 10px; flex-grow: 1; overflow: hidden; }
 
+        /* 表單樣式 */
         .form-label { font-size: 10px; color: var(--m-brown); letter-spacing: 1px; margin-top: 14px; display: block; }
         .btn-main { background: var(--m-deep-green); color: white; border: none; padding: 14px; width: 100%; font-size: 12px; cursor: pointer; border-radius: var(--radius); margin-top: 15px; }
         input, select { width: 100%; padding: 12px; border-radius: var(--radius); border: 1px solid var(--m-clay); background: #fafafa; font-size: 13px; margin-top: 6px; box-sizing: border-box; outline: none; }
+        
+        /* 成功彈窗 */
+        #success-modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 30px; border-radius: 15px; text-align: center; z-index: 4000; box-shadow: 0 10px 40px rgba(0,0,0,0.2); display: none; width: 200px; }
+        .overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.4); z-index: 3500; display: none; }
     </style>
 </head>
 <body>
 
-    <div id="toast">DONE</div>
+    <div class="overlay" id="overlay"></div>
+    <div id="success-modal">
+        <div style="font-size: 40px; margin-bottom: 10px;">✨</div>
+        <div style="font-weight: bold; letter-spacing: 2px;">SAVED!</div>
+        <div style="font-size: 10px; color: #aaa; margin-top: 5px;">ARCHIVE UPDATED</div>
+        <button class="btn-main" onclick="closeModal()">OK</button>
+    </div>
 
     <div id="cover-page">
         <div class="cover-menu">
@@ -138,12 +152,16 @@
 
         <div id="page-settings" class="page">
             <div style="background:#fff; padding:20px; border-radius:var(--radius); border:1px solid var(--m-clay);">
-                <p style="font-size:11px; color:var(--m-brown);">DATA BACKUP</p>
+                <p style="font-size:11px; color:var(--m-brown); letter-spacing:1px;">VIEW SETTING</p>
+                <label class="form-label">GRID SIZE: <span id="gridVal">160</span>px</label>
+                <input type="range" id="gridRange" min="120" max="220" value="160" oninput="updateGridSize(this.value)">
+                
+                <hr style="border:0.5px solid #eee; margin:25px 0;">
+                <p style="font-size:11px; color:var(--m-brown); letter-spacing:1px;">DATA MANAGEMENT</p>
                 <button onclick="exportData()" class="btn-main" style="background:var(--m-brown);">EXPORT JSON</button>
                 <input type="file" id="importFile" style="display:none" onchange="importData(this)">
                 <button onclick="document.getElementById('importFile').click()" class="btn-main" style="background:var(--m-sage);">IMPORT JSON</button>
-                <hr style="border:0.5px solid #eee; margin:20px 0;">
-                <button onclick="if(confirm('DANGER: CLEAR EVERYTHING?')) {localStorage.clear(); location.reload();}" class="btn-main" style="background:#cc9999;">ERASE ALL DATA</button>
+                <button onclick="if(confirm('ERASE EVERYTHING?')) {localStorage.clear(); location.reload();}" class="btn-main" style="background:#cc9999; margin-top:30px;">CLEAR DATA</button>
             </div>
         </div>
     </div>
@@ -166,6 +184,9 @@
     function init() {
         merchList = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
         dict = JSON.parse(localStorage.getItem(DICT_KEY)) || { works: [], roles: [], types: [] };
+        const savedGrid = localStorage.getItem('archive_grid_size') || '160';
+        updateGridSize(savedGrid);
+        document.getElementById('gridRange').value = savedGrid;
         renderAll(); renderSelects(); renderFilters(); updateToolUI();
     }
 
@@ -174,7 +195,13 @@
         localStorage.setItem(DICT_KEY, JSON.stringify(dict)); 
     }
 
-    // 排序切換（含倒序邏輯）
+    // 格子大小控制
+    function updateGridSize(val) {
+        document.documentElement.style.setProperty('--dynamic-grid', val + 'px');
+        document.getElementById('gridVal').innerText = val;
+        localStorage.setItem('archive_grid_size', val);
+    }
+
     function toggleSort(s) {
         if (sortMode === s) { sortDesc = !sortDesc; } 
         else { sortMode = s; sortDesc = true; }
@@ -217,9 +244,19 @@
         const done = (b64) => {
             if(b64) data.img = b64; else if(editIdx !== -1) data.img = merchList[editIdx].img;
             if(editIdx === -1) merchList.unshift(data); else merchList[editIdx] = data;
-            save(); showToast("SAVED");
-            if(editIdx === -1) { document.getElementById('pattern').value = ''; document.getElementById('inputPrice').value = ''; }
-            else { document.getElementById('editIndex').value = "-1"; switchTab('page-gallery', document.querySelectorAll('.nav-item')[0]); }
+            save(); 
+            showModal(); // 彈窗通知
+            
+            if(editIdx === -1) { 
+                // 核心：上架後不重置選單，只清空款式和價格
+                document.getElementById('pattern').value = ''; 
+                document.getElementById('inputPrice').value = ''; 
+                document.getElementById('imgFile').value = '';
+                document.getElementById('exchangePreview').innerText = "Total: HKD 0.00";
+            } else { 
+                document.getElementById('editIndex').value = "-1"; 
+                switchTab('page-gallery', document.querySelectorAll('.nav-item')[0]); 
+            }
             renderSelects(); renderFilters(); renderAll();
         };
 
@@ -227,6 +264,9 @@
         if(file) { const fr = new FileReader(); fr.onload = () => done(fr.result); fr.readAsDataURL(file); }
         else done(null);
     };
+
+    function showModal() { document.getElementById('overlay').style.display='block'; document.getElementById('success-modal').style.display='block'; }
+    function closeModal() { document.getElementById('overlay').style.display='none'; document.getElementById('success-modal').style.display='none'; }
 
     function renderFilters() {
         const build = (list, key) => {
@@ -275,17 +315,15 @@
     }
 
     function exportData() { const blob = new Blob([JSON.stringify({merchList, dict})], {type: 'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `archive_${new Date().toLocaleDateString()}.json`; a.click(); }
-    
     function importData(input) {
         const file = input.files[0]; if(!file) return;
         const reader = new FileReader();
         reader.onload = (e) => {
             try {
                 const imported = JSON.parse(e.target.result);
-                merchList = imported.merchList || [];
-                dict = imported.dict || { works: [], roles: [], types: [] };
-                save(); init(); showToast("IMPORT SUCCESS");
-            } catch(err) { alert("Invalid File Format"); }
+                merchList = imported.merchList || []; dict = imported.dict || { works: [], roles: [], types: [] };
+                save(); init(); showModal();
+            } catch(err) { alert("Format Error"); }
         };
         reader.readAsText(file);
     }
@@ -308,7 +346,6 @@
     function switchTab(id, btn) { document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); document.getElementById(id).classList.add('active'); document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); if(btn) btn.classList.add('active'); if(id==='page-stats') renderStats(); renderAll(); }
     function openPage(id) { document.getElementById('cover-page').classList.add('open'); document.getElementById('bottom-nav').style.display='flex'; switchTab(id, document.querySelectorAll('.nav-item')[id==='page-gallery'?0 : id==='page-pending'?1:2]); }
     function closePage() { document.getElementById('cover-page').classList.remove('open'); document.getElementById('bottom-nav').style.display='none'; }
-    function showToast(m) { const t=document.getElementById('toast'); t.innerText=m; t.style.display='block'; setTimeout(()=>t.style.display='none',2000); }
 
     window.onload = init;
 </script>
