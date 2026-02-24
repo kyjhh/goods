@@ -3,13 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Morandi Collection Archive v10</title>
+    <title>Morandi Collection Archive v11</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
             --m-blue: #92a8d1; --m-green: #88b04b; --m-grey: #b5b5b5;
             --m-sage: #acc1ad; --m-sand: #d5cabd; --bg: #f8f8f7;
             --text: #555; --card-bg: #ffffff;
+            --grid-size: 160px; /* 預設格子大小 */
         }
         body, html { margin: 0; padding: 0; height: 100%; font-family: 'PingFang HK', sans-serif; background: var(--bg); color: var(--text); }
 
@@ -24,30 +25,34 @@
         .cover-upload-label { position: absolute; top: 30px; left: 30px; background: rgba(255,255,255,0.8); padding: 8px 15px; border-radius: 4px; font-size: 12px; cursor: pointer; border: 1px solid var(--m-grey); }
 
         /* 內容區 */
-        .main-content { padding: 20px; padding-bottom: 120px; max-width: 600px; margin: 0 auto; min-height: 100vh; }
+        .main-content { padding: 20px; padding-bottom: 120px; max-width: 800px; margin: 0 auto; min-height: 100vh; }
         .back-to-cover { margin-bottom: 20px; cursor: pointer; color: var(--m-blue); font-size: 14px; font-weight: bold; }
         .page { display: none; }
         .page.active { display: block; animation: fadeIn 0.4s; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        /* 分類篩選器 */
-        .filter-section { margin-bottom: 15px; }
+        /* 分類與格子控制 */
+        .control-panel { background: #fff; padding: 15px; border-radius: 12px; margin-bottom: 15px; border: 1px solid #eee; }
         .filter-group { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 10px; scrollbar-width: none; }
-        .filter-chip { background: #eee; border: 1px solid #ddd; padding: 6px 14px; border-radius: 20px; font-size: 12px; cursor: pointer; white-space: nowrap; color: #888; }
+        .filter-chip { background: #f0f0f0; border: 1px solid #ddd; padding: 6px 14px; border-radius: 20px; font-size: 12px; cursor: pointer; white-space: nowrap; color: #888; }
         .filter-chip.active { background: var(--m-blue); color: white; border-color: var(--m-blue); }
+        
+        /* 格子大小滑桿 */
+        .size-slider-container { display: flex; align-items: center; gap: 10px; margin-top: 10px; padding-top: 10px; border-top: 1px dashed #eee; }
+        .size-slider-container label { margin: 0; white-space: nowrap; font-size: 11px; color: var(--m-grey); }
+        input[type=range] { flex-grow: 1; accent-color: var(--m-sage); height: 4px; }
 
-        .glass-card { background: var(--card-bg); padding: 20px; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); margin-bottom: 20px; border: 1px solid #efefef; }
-
-        label { display: block; font-size: 13px; margin: 12px 0 5px; color: var(--m-blue); font-weight: bold; }
-        input, select { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ddd; background: #fff; color: var(--text); box-sizing: border-box; font-size: 14px; }
-
-        /* 列表卡片 */
-        .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 15px; }
-        .item-card { background: #fff; border-radius: 12px; overflow: hidden; border: 1px solid #eee; position: relative; }
-        .item-img { width: 100%; height: 160px; object-fit: cover; background: #fafafa; }
-        .item-info { padding: 12px; }
-        .price-tag { color: var(--m-green); font-weight: bold; font-size: 15px; margin: 4px 0; }
-        .checkbox-arrival { position: absolute; top: 10px; right: 10px; transform: scale(1.3); z-index: 10; accent-color: var(--m-green); }
+        /* 列表卡片佈局 */
+        .gallery { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(var(--grid-size), 1fr)); 
+            gap: 12px; 
+        }
+        .item-card { background: #fff; border-radius: 12px; overflow: hidden; border: 1px solid #eee; position: relative; display: flex; flex-direction: column; }
+        .item-img { width: 100%; aspect-ratio: 1/1; object-fit: cover; background: #fafafa; }
+        .item-info { padding: 10px; flex-grow: 1; }
+        .price-tag { color: var(--m-green); font-weight: bold; font-size: 14px; margin: 2px 0; }
+        .checkbox-arrival { position: absolute; top: 8px; right: 8px; transform: scale(1.2); z-index: 10; accent-color: var(--m-green); }
 
         /* 導覽列 */
         .nav-bar { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 400px; background: #fff; display: flex; justify-content: space-around; padding: 15px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); z-index: 1000; border: 1px solid #eee; }
@@ -74,14 +79,19 @@
         <div class="back-to-cover" onclick="closePage()">◀ 返回封面</div>
 
         <div id="page-gallery" class="page">
-            <div class="filter-section">
+            <div class="control-panel">
                 <div class="filter-group" id="mainFilter">
                     <div class="filter-chip active" onclick="setFilterMode('all', this)">全部</div>
-                    <div class="filter-chip" onclick="setFilterMode('work', this)">按作品</div>
-                    <div class="filter-chip" onclick="setFilterMode('role', this)">按角色</div>
-                    <div class="filter-chip" onclick="setFilterMode('type', this)">按種類</div>
+                    <div class="filter-chip" onclick="setFilterMode('work', this)">作品</div>
+                    <div class="filter-chip" onclick="setFilterMode('role', this)">角色</div>
+                    <div class="filter-chip" onclick="setFilterMode('type', this)">種類</div>
                 </div>
                 <div class="filter-group" id="subFilter" style="margin-top:8px;"></div>
+                
+                <div class="size-slider-container">
+                    <label>格子大小</label>
+                    <input type="range" id="gridSlider" min="100" max="350" value="160" oninput="updateGridSize(this.value)">
+                </div>
             </div>
             <div class="gallery" id="readyList"></div>
         </div>
@@ -89,7 +99,7 @@
         <div id="page-stats" class="page">
             <div class="glass-card">
                 <h3 style="color:var(--m-sage)">💰 支出概覽</h3>
-                <div style="font-size:11px; color:#aaa; margin-bottom:10px;">系統匯率參考：1 RMB = 1.08 HKD | 100 JPY = 5.2 HKD</div>
+                <div style="font-size:10px; color:#aaa; margin-bottom:10px;">匯率參考：1 RMB = 1.08 HKD | 100 JPY = 5.2 HKD</div>
                 <div id="totalSpend" style="font-size: 26px; font-weight: bold; color: var(--m-green);">HKD 0</div>
                 <div style="height: 250px;"><canvas id="charPieChart"></canvas></div>
             </div>
@@ -107,7 +117,7 @@
                     <label>作品名稱</label><input type="text" id="work" placeholder="例：世界計畫">
                     <label>角色</label><input type="text" id="role" required>
                     <label>柄圖名稱</label><input type="text" id="pattern">
-                    <label>周邊種類</label><input type="text" id="type" placeholder="例：徽章、立牌">
+                    <label>周邊種類</label><input type="text" id="type" placeholder="徽章、立牌...">
                     <label>周邊具體名字</label><input type="text" id="name" required>
                     
                     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
@@ -121,7 +131,7 @@
                     </div>
 
                     <div id="arrivalGroup" style="display:none;">
-                        <label>預計到貨日期/月份</label><input type="text" id="arrivalDate" placeholder="例：2025年6月">
+                        <label>預計到貨時間</label><input type="text" id="arrivalDate" placeholder="例：25年8月">
                     </div>
 
                     <div style="display:grid; grid-template-columns: 1fr 2fr; gap:10px;">
@@ -130,7 +140,7 @@
                     </div>
 
                     <label>購入日期</label><input type="date" id="buyDate">
-                    <label>照片 (留空保留)</label><input type="file" id="imgFile">
+                    <label>照片</label><input type="file" id="imgFile">
                     
                     <button type="submit" id="submitBtn" class="btn-main">確認存檔</button>
                     <button type="button" id="cancelBtn" onclick="resetForm()" style="width:100%; background:none; border:1px solid #ccc; padding:10px; margin-top:10px; border-radius:8px; display:none;">取消編輯</button>
@@ -139,7 +149,7 @@
         </div>
 
         <div id="page-pending" class="page">
-            <h3 style="color:var(--m-grey)">⌛ 非現貨待收 (勾選可轉現貨)</h3>
+            <h3 style="color:var(--m-grey)">⌛ 非現貨待收</h3>
             <div class="gallery" id="waitList"></div>
         </div>
     </div>
@@ -152,11 +162,27 @@
     </nav>
 
 <script>
-    let merchList = JSON.parse(localStorage.getItem('mm25_morandi_v10')) || [];
+    let merchList = JSON.parse(localStorage.getItem('mm25_morandi_v11')) || [];
     const rates = { RMB: 1.08, JPY: 0.052, HKD: 1.0 };
     let myChart = null;
     let currentMode = 'all';
     let currentSub = '';
+
+    // 格子大小控制
+    function updateGridSize(val) {
+        document.documentElement.style.setProperty('--grid-size', val + 'px');
+        localStorage.setItem('mm25_grid_size', val);
+        // 根據大小微調文字
+        const cards = document.querySelectorAll('.item-info');
+        cards.forEach(c => {
+            c.style.fontSize = val < 130 ? '10px' : '12px';
+        });
+    }
+
+    // 初始化格子大小
+    const savedGridSize = localStorage.getItem('mm25_grid_size') || 160;
+    document.getElementById('gridSlider').value = savedGridSize;
+    updateGridSize(savedGridSize);
 
     // 封面處理
     const coverPage = document.getElementById('cover-page');
@@ -181,7 +207,6 @@
         renderAll();
     }
 
-    // 分類邏輯
     function setFilterMode(mode, btn) {
         currentMode = mode; currentSub = '';
         document.querySelectorAll('#mainFilter .filter-chip').forEach(c => c.classList.remove('active'));
@@ -200,21 +225,19 @@
         const genHTML = (item, idx) => `
             <div class="item-card">
                 ${item.status === '非現貨' ? `<input type="checkbox" class="checkbox-arrival" onclick="markArrived(${idx})">` : ''}
-                <img src="${item.img || 'https://via.placeholder.com/150/efefef/999999?text=Photo'}" class="item-img">
+                <img src="${item.img || 'https://via.placeholder.com/200/efefef/999999?text=Photo'}" class="item-img">
                 <div class="item-info">
-                    <div style="font-size:10px; color:var(--m-blue)">${item.role} | ${item.type || '未分類'}</div>
-                    <div style="font-weight:bold; font-size:13px; margin:2px 0;">${item.name}</div>
+                    <div style="font-size:0.8em; color:var(--m-blue); overflow:hidden; white-space:nowrap;">${item.role} | ${item.type || '種類'}</div>
+                    <div style="font-weight:bold; font-size:1em; margin:2px 0; overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;">${item.name}</div>
                     <div class="price-tag">HK$ ${Number(item.totalHkd).toLocaleString()}</div>
-                    <div style="font-size:10px; opacity:0.6;">x ${item.qty} (${item.pattern || '無柄圖'})</div>
-                    ${item.arrivalDate ? `<div style="font-size:9px; color:var(--m-grey)">預計到貨：${item.arrivalDate}</div>` : ''}
-                    <div style="margin-top:10px; display:flex; justify-content:space-between;">
-                        <span style="font-size:11px; cursor:pointer; color:var(--m-blue)" onclick="editItem(${idx})">編輯</span>
-                        <span style="font-size:11px; cursor:pointer; color:#d9534f" onclick="deleteItem(${idx})">刪除</span>
+                    <div style="font-size:0.7em; opacity:0.6;">x${item.qty} ${item.pattern ? `(${item.pattern})` : ''}</div>
+                    <div style="margin-top:8px; display:flex; justify-content:space-between;">
+                        <span style="font-size:0.75em; cursor:pointer; color:var(--m-blue)" onclick="editItem(${idx})">編輯</span>
+                        <span style="font-size:0.75em; cursor:pointer; color:#d9534f" onclick="deleteItem(${idx})">刪除</span>
                     </div>
                 </div>
             </div>`;
 
-        // 渲染現貨庫
         document.getElementById('readyList').innerHTML = merchList.map((item, index) => ({item, index}))
             .filter(o => {
                 if(o.item.status !== '現貨') return false;
@@ -222,7 +245,6 @@
                 return true;
             }).map(o => genHTML(o.item, o.index)).join('');
 
-        // 渲染非現貨
         document.getElementById('waitList').innerHTML = merchList.map((item, index) => ({item, index}))
             .filter(o => o.item.status === '非現貨')
             .map(o => genHTML(o.item, o.index)).join('');
@@ -246,7 +268,7 @@
         document.getElementById('arrivalDate').value = item.arrivalDate || '';
         
         toggleArrivalDate(item.status);
-        document.getElementById('formTitle').innerText = "✏️ 編輯中...";
+        document.getElementById('formTitle').innerText = "✏️ 編輯藏品";
         document.getElementById('submitBtn').innerText = "更新資料";
         document.getElementById('cancelBtn').style.display = "block";
         switchTab('page-recent', document.querySelector(`[onclick*="page-recent"]`));
@@ -261,8 +283,8 @@
         document.getElementById('arrivalGroup').style.display = "none";
     }
 
-    function deleteItem(idx) { if(confirm('刪除？')) { merchList.splice(idx,1); save(); renderAll(); } }
-    function save() { localStorage.setItem('mm25_morandi_v10', JSON.stringify(merchList)); }
+    function deleteItem(idx) { if(confirm('確定刪除？')) { merchList.splice(idx,1); save(); renderAll(); } }
+    function save() { localStorage.setItem('mm25_morandi_v11', JSON.stringify(merchList)); }
 
     document.getElementById('merchForm').onsubmit = function(e) {
         e.preventDefault();
@@ -293,7 +315,6 @@
             save(); resetForm(); renderAll(); alert('存檔成功！');
             switchTab('page-gallery', document.querySelector(`[onclick*="page-gallery"]`));
         };
-
         if(file) { const r = new FileReader(); r.onload = () => doSave(r.result); r.readAsDataURL(file); }
         else doSave(null);
     };
