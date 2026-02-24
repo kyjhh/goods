@@ -3,16 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Magical Mirai 2025 Collection</title>
+    <title>Magical Mirai 2025 HK Edition</title>
     <style>
         :root {
             --miku-neon: #00ffcc;
             --mirai-pink: #ff007a;
             --mirai-purple: #7000ff;
-            --glass: rgba(10, 10, 25, 0.8);
+            --glass: rgba(15, 15, 35, 0.85);
         }
 
-        body, html { margin: 0; padding: 0; height: 100%; font-family: 'PingFang TC', sans-serif; background: #050510; color: white; overflow-x: hidden; }
+        body, html { margin: 0; padding: 0; height: 100%; font-family: 'PingFang HK', 'Heiti TC', sans-serif; background: #050510; color: white; overflow-x: hidden; }
 
         /* --- 封面頁面 --- */
         #cover-page {
@@ -21,7 +21,6 @@
             display: flex; flex-direction: column; justify-content: center; align-items: center;
             z-index: 2000; transition: transform 0.8s cubic-bezier(0.65, 0, 0.35, 1);
         }
-        
         #cover-page.open { transform: translateY(-100%); }
 
         .cover-upload-label {
@@ -30,153 +29,178 @@
             cursor: pointer; backdrop-filter: blur(5px); border: 1px solid rgba(255,255,255,0.2);
         }
 
-        .cover-menu { display: flex; flex-direction: column; gap: 20px; width: 250px; }
+        .cover-menu { display: flex; flex-direction: column; gap: 15px; width: 260px; }
         .menu-btn {
             background: var(--glass); border: 1px solid var(--miku-neon);
-            color: var(--miku-neon); padding: 15px; border-radius: 50px;
-            font-size: 16px; font-weight: bold; cursor: pointer; text-align: center;
-            text-transform: uppercase; letter-spacing: 2px; transition: 0.3s;
-            box-shadow: 0 0 15px rgba(0, 255, 204, 0.2);
+            color: var(--miku-neon); padding: 14px; border-radius: 50px;
+            font-size: 15px; font-weight: bold; cursor: pointer; text-align: center;
+            letter-spacing: 2px; transition: 0.3s;
+            box-shadow: 0 0 10px rgba(0, 255, 204, 0.2);
         }
-        .menu-btn:hover { background: var(--miku-neon); color: #000; box-shadow: 0 0 30px var(--miku-neon); }
+        .menu-btn:hover { background: var(--miku-neon); color: #000; box-shadow: 0 0 25px var(--miku-neon); }
 
         /* --- 內容區域 --- */
-        .main-content { padding: 20px; padding-bottom: 100px; min-height: 100vh; }
-        .back-to-cover { margin-bottom: 20px; cursor: pointer; color: var(--miku-neon); font-size: 14px; }
+        .main-content { padding: 20px; padding-bottom: 110px; min-height: 100vh; }
+        .back-to-cover { margin-bottom: 20px; cursor: pointer; color: var(--miku-neon); font-size: 14px; display: inline-block; }
 
-        .page { display: none; animation: fadeIn 0.5s ease; }
+        .page { display: none; animation: fadeIn 0.4s ease; }
         .page.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
 
-        /* 卡片與表單 */
         .glass-card {
-            background: var(--glass); padding: 20px; border-radius: 20px;
+            background: var(--glass); padding: 22px; border-radius: 24px;
             border: 1px solid rgba(255,255,255,0.1); margin-bottom: 20px;
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(12px); box-shadow: 0 8px 32px rgba(0,0,0,0.3);
         }
 
+        /* 表單樣式 */
+        label { display: block; font-size: 12px; margin: 12px 0 5px 5px; color: var(--miku-neon); font-weight: bold; }
+        input, select, textarea { 
+            width: 100%; padding: 12px; border-radius: 12px; 
+            border: 1px solid #333; background: rgba(0,0,0,0.3); color: white; box-sizing: border-box;
+        }
+
+        .exchange-info { font-size: 11px; color: #888; margin-top: 5px; }
+
+        /* 畫廊 */
         .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 15px; }
         .item-card { 
-            background: rgba(255,255,255,0.05); border-radius: 15px; overflow: hidden; 
-            position: relative; border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.03); border-radius: 18px; overflow: hidden; 
+            position: relative; border: 1px solid rgba(255,255,255,0.08); transition: 0.3s;
         }
-        .item-img { width: 100%; height: 160px; object-fit: cover; }
-        .item-info { padding: 10px; font-size: 13px; }
-        .item-price { color: var(--mirai-pink); font-weight: bold; font-size: 16px; }
+        .item-img { width: 100%; height: 160px; object-fit: cover; background: #111; }
+        .item-info { padding: 12px; }
+        .item-price-hkd { color: var(--mirai-pink); font-weight: bold; font-size: 16px; margin: 5px 0; }
+        .original-price { font-size: 10px; color: #777; }
 
-        .checkbox-arrival { position: absolute; top: 10px; right: 10px; transform: scale(1.5); cursor: pointer; }
+        .checkbox-arrival { position: absolute; top: 12px; right: 12px; transform: scale(1.6); cursor: pointer; z-index: 5; }
 
-        input, select, textarea { 
-            width: 100%; padding: 12px; margin-top: 8px; border-radius: 10px; 
-            border: 1px solid #333; background: #1a1a2e; color: white; 
-        }
-
-        /* 底部導航 (隱藏，只在內頁顯示) */
+        /* 導航 */
         .nav-bar {
-            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
-            width: 85%; max-width: 400px; background: var(--glass);
+            position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%);
+            width: 85%; max-width: 380px; background: rgba(10,10,25,0.9);
             display: flex; justify-content: space-around; padding: 12px;
-            border-radius: 30px; border: 1px solid var(--miku-neon); z-index: 1000;
+            border-radius: 35px; border: 1px solid var(--miku-neon); z-index: 1000;
+            backdrop-filter: blur(20px);
         }
-        .nav-item { border: none; background: none; color: #666; font-size: 20px; cursor: pointer; }
-        .nav-item.active { color: var(--miku-neon); }
+        .nav-item { border: none; background: none; color: #555; font-size: 22px; cursor: pointer; transition: 0.3s; }
+        .nav-item.active { color: var(--miku-neon); transform: scale(1.2); }
     </style>
 </head>
 <body>
 
     <div id="cover-page">
-        <label class="cover-upload-label">
-            🖼️ 導入封面照片 <input type="file" id="cover-upload" hidden accept="image/*">
-        </label>
-        
+        <label class="cover-upload-label">🖼️ 導入書本封面 <input type="file" id="cover-upload" hidden accept="image/*"></label>
         <div class="cover-menu">
-            <h1 style="text-align: center; font-size: 20px; letter-spacing: 4px; color: var(--miku-neon); margin-bottom: 30px;">MAGICAL MIRAI 2025</h1>
-            <div class="menu-btn" onclick="openDatabase('page-gallery')">進入藏品庫</div>
-            <div class="menu-btn" onclick="openDatabase('page-search')">關鍵字搜索</div>
-            <div class="menu-btn" onclick="openDatabase('page-recent')">近期收納</div>
-            <div class="menu-btn" onclick="openDatabase('page-pending')">將到非現</div>
+            <h1 style="text-align: center; font-size: 18px; letter-spacing: 3px; color: var(--miku-neon); margin-bottom: 20px;">SEKAI ARCHIVE 2025</h1>
+            <div class="menu-btn" onclick="openPage('page-gallery')">進入藏品庫</div>
+            <div class="menu-btn" onclick="openPage('page-search')">關鍵字搜索</div>
+            <div class="menu-btn" onclick="openPage('page-recent')">近期收納</div>
+            <div class="menu-btn" onclick="openPage('page-pending')">將到非現</div>
         </div>
     </div>
 
-    <div class="main-content" id="main-ui">
-        <div class="back-to-cover" onclick="closeDatabase()">◀ 返回封面</div>
+    <div class="main-content">
+        <div class="back-to-cover" onclick="closePage()">◀ 返回書本封面</div>
 
         <div id="page-gallery" class="page">
+            <h3 style="color:var(--miku-neon)">✨ 我的收藏現貨</h3>
             <div class="gallery" id="readyList"></div>
         </div>
 
         <div id="page-search" class="page">
-            <input type="text" id="globalSearch" placeholder="🔍 輸入角色、名稱或備註搜尋..." oninput="renderAll()" class="glass-card">
+            <input type="text" id="globalSearch" placeholder="🔍 搜尋角色、周邊或備註..." oninput="renderAll()" class="glass-card">
             <div class="gallery" id="searchResult"></div>
         </div>
 
         <div id="page-recent" class="page">
             <div class="glass-card">
-                <h3>✨ 新增藏品</h3>
+                <h3>📦 新增紀錄</h3>
                 <form id="merchForm">
-                    <label>作品分類</label>
-                    <select id="work"><option>世界計畫</option><option>VOCALOID</option></select>
-                    <label>角色</label><input type="text" id="role" list="roleData" placeholder="自填或選取">
+                    <label>角色</label><input type="text" id="role" list="roleData" placeholder="輸入或選取角色">
                     <label>周邊名稱</label><input type="text" id="name" required>
-                    <label>狀態</label>
-                    <select id="status" onchange="document.getElementById('mGroup').style.display=this.value=='非現貨'?'block':'none'">
-                        <option value="現貨">現貨</option><option value="非現貨">非現貨</option>
-                    </select>
-                    <div id="mGroup" style="display:none"><label>到貨月份</label><input type="month" id="month"></div>
-                    <label>價格</label><input type="number" id="price" required>
-                    <label>來源</label><input type="text" id="source" list="sourceData">
-                    <label>照片</label><input type="file" id="imgFile">
-                    <button type="submit" class="menu-btn" style="width:100%; margin-top:20px;">存入檔案</button>
+                    <label>類別 (可自填)</label><input type="text" id="type" list="typeData" placeholder="例如：閃徽、色紙">
+                    
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                        <div>
+                            <label>狀態</label>
+                            <select id="status" onchange="document.getElementById('mGroup').style.display=this.value=='非現貨'?'block':'none'">
+                                <option value="現貨">現貨</option><option value="非現貨">非現貨</option>
+                            </select>
+                        </div>
+                        <div id="mGroup" style="display:none">
+                            <label>到貨月份</label><input type="month" id="month">
+                        </div>
+                    </div>
+
+                    <label>輸入價格</label>
+                    <div style="display:grid; grid-template-columns: 80px 1fr; gap:10px;">
+                        <select id="currency" onchange="calcEx()">
+                            <option value="HKD">HKD</option>
+                            <option value="RMB">RMB</option>
+                            <option value="JPY">JPY</option>
+                        </select>
+                        <input type="number" id="inputPrice" placeholder="金額" required oninput="calcEx()">
+                    </div>
+                    <div class="exchange-info" id="exInfo">匯率參考: 1 RMB = 1.08 HKD | 1 JPY = 0.052 HKD</div>
+                    <div id="resultHkd" style="margin-top:5px; font-weight:bold; color:var(--mirai-pink)">換算結果: HKD 0</div>
+
+                    <label>購買來源</label><input type="text" id="source" list="sourceData">
+                    <label>上傳照片</label><input type="file" id="imgFile">
+                    <button type="submit" class="menu-btn" style="width:100%; margin-top:25px;">確認存檔 ✨</button>
                 </form>
             </div>
         </div>
 
         <div id="page-pending" class="page">
-            <h3 style="color:var(--mirai-pink)">🛒 預購待收 (勾選方格標註到貨)</h3>
+            <h3 style="color:var(--mirai-pink)">⌛ 預購/代購待收</h3>
             <div class="gallery" id="waitList"></div>
         </div>
     </div>
 
     <nav class="nav-bar" id="bottom-nav" style="display:none;">
-        <button class="nav-item active" onclick="switchTab('page-gallery', this)">🖼️</button>
+        <button class="nav-item active" onclick="switchTab('page-gallery', this)">💎</button>
         <button class="nav-item" onclick="switchTab('page-search', this)">🔍</button>
         <button class="nav-item" onclick="switchTab('page-recent', this)">➕</button>
         <button class="nav-item" onclick="switchTab('page-pending', this)">📦</button>
     </nav>
 
-    <datalist id="roleData"><option value="初音未來"><option value="曉山瑞希"><option value="宵崎奏"></datalist>
-    <datalist id="sourceData"><option value="Mercari"><option value="安利美特"></datalist>
+    <datalist id="roleData"><option value="初音未來"><option value="曉山瑞希"><option value="宵崎奏"><option value="東雲繪名"></datalist>
+    <datalist id="typeData"><option value="襟章 (徽章)"><option value="色紙"><option value="立牌"><option value="拍立得/Pera-pachi"><option value="公仔/趴趴"></datalist>
+    <datalist id="sourceData"><option value="Mercari"><option value="安利美特"><option value="淘寶/閑魚"><option value="Facebook社團"></datalist>
 
 <script>
-    let merchList = JSON.parse(localStorage.getItem('mm2025_data')) || [];
+    let merchList = JSON.parse(localStorage.getItem('mm25_hk_data')) || [];
     
-    // 封面照片邏輯
-    const coverUpload = document.getElementById('cover-upload');
-    const coverPage = document.getElementById('cover-page');
-    
-    // 讀取存好的封面
-    if(localStorage.getItem('mm2025_cover')) {
-        coverPage.style.backgroundImage = `url(${localStorage.getItem('mm2025_cover')})`;
+    // 目前匯率設定
+    const rates = { RMB: 1.08, JPY: 0.052, HKD: 1.0 };
+
+    // 匯率計算
+    function calcEx() {
+        const cur = document.getElementById('currency').value;
+        const price = document.getElementById('inputPrice').value || 0;
+        const result = (price * rates[cur]).toFixed(2);
+        document.getElementById('resultHkd').innerText = `換算結果: HKD ${result}`;
+        return { hkd: result, original: `${price} ${cur}` };
     }
 
-    coverUpload.onchange = e => {
-        const reader = new FileReader();
-        reader.onload = () => {
-            const b64 = reader.result;
-            coverPage.style.backgroundImage = `url(${b64})`;
-            localStorage.setItem('mm2025_cover', b64);
-        };
-        reader.readAsDataURL(e.target.files[0]);
+    // 封面邏輯
+    const coverPage = document.getElementById('cover-page');
+    if(localStorage.getItem('mm25_hk_cover')) coverPage.style.backgroundImage = `url(${localStorage.getItem('mm25_hk_cover')})`;
+    
+    document.getElementById('cover-upload').onchange = e => {
+        const r = new FileReader();
+        r.onload = () => { localStorage.setItem('mm25_hk_cover', r.result); coverPage.style.backgroundImage = `url(${r.result})`; };
+        r.readAsDataURL(e.target.files[0]);
     };
 
-    // 切換邏輯
-    function openDatabase(targetPage) {
+    function openPage(id) {
         document.getElementById('cover-page').classList.add('open');
         document.getElementById('bottom-nav').style.display = 'flex';
-        switchTab(targetPage, document.querySelector(`[onclick*="${targetPage}"]`));
+        switchTab(id, document.querySelector(`[onclick*="${id}"]`));
     }
 
-    function closeDatabase() {
+    function closePage() {
         document.getElementById('cover-page').classList.remove('open');
         document.getElementById('bottom-nav').style.display = 'none';
     }
@@ -185,16 +209,16 @@
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
         document.getElementById(id).classList.add('active');
         document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-        btn.classList.add('active');
+        if(btn) btn.classList.add('active');
         renderAll();
     }
 
     function renderAll() {
-        const query = document.getElementById('globalSearch').value.toLowerCase();
+        const q = document.getElementById('globalSearch').value.toLowerCase();
         const containers = {
             'readyList': merchList.filter(i => i.status === '現貨'),
             'waitList': merchList.filter(i => i.status === '非現貨'),
-            'searchResult': merchList.filter(i => i.name.toLowerCase().includes(query) || i.role.toLowerCase().includes(query))
+            'searchResult': merchList.filter(i => i.name.toLowerCase().includes(q) || i.role.toLowerCase().includes(q) || i.type.toLowerCase().includes(q))
         };
 
         Object.keys(containers).forEach(id => {
@@ -202,39 +226,47 @@
             if(!el) return;
             el.innerHTML = containers[id].map((item, idx) => `
                 <div class="item-card">
-                    ${item.status==='非現貨' ? `<input type="checkbox" class="checkbox-arrival" onclick="toReady(${idx})">` : ''}
-                    <img src="${item.img || 'https://via.placeholder.com/200/0a0a19/00ffcc?text=MIRAI'}" class="item-img">
+                    ${item.status==='非現貨' ? `<input type="checkbox" class="checkbox-arrival" onclick="arrived(${idx})">` : ''}
+                    <img src="${item.img || 'https://via.placeholder.com/200/0a0a19/00ffcc?text=MM2025'}" class="item-img">
                     <div class="item-info">
-                        <div style="color:var(--miku-neon); font-size:10px;">${item.role}</div>
-                        <div style="font-weight:bold; margin:3px 0;">${item.name}</div>
-                        <div class="item-price">$${Number(item.price).toLocaleString()}</div>
-                        ${item.month ? `<div style="font-size:10px; opacity:0.6;">到貨: ${item.month}</div>` : ''}
+                        <div style="color:var(--miku-neon); font-size:10px;">${item.role} | ${item.type}</div>
+                        <div style="font-weight:bold; margin:3px 0; font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${item.name}</div>
+                        <div class="item-price-hkd">HK$ ${Number(item.hkd).toLocaleString()}</div>
+                        <div class="original-price">原價: ${item.original}</div>
+                        <div style="font-size:9px; color:#555; margin-top:5px;" onclick="deleteItem(${idx})">移除紀錄 [✕]</div>
                     </div>
                 </div>
             `).join('');
         });
     }
 
-    function toReady(idx) {
+    function arrived(idx) {
         merchList[idx].status = '現貨';
-        localStorage.setItem('mm2025_data', JSON.stringify(merchList));
+        localStorage.setItem('mm25_hk_data', JSON.stringify(merchList));
         renderAll();
+    }
+
+    function deleteItem(idx) {
+        if(confirm('確定移除此紀錄？')) { merchList.splice(idx, 1); localStorage.setItem('mm25_hk_data', JSON.stringify(merchList)); renderAll(); }
     }
 
     document.getElementById('merchForm').onsubmit = function(e) {
         e.preventDefault();
+        const ex = calcEx();
         const file = document.getElementById('imgFile').files[0];
         const save = (b64) => {
             merchList.unshift({
-                role: document.getElementById('role').value || '未定義',
+                role: document.getElementById('role').value || '未知角色',
                 name: document.getElementById('name').value,
+                type: document.getElementById('type').value || '未分類',
                 status: document.getElementById('status').value,
                 month: document.getElementById('month').value,
-                price: document.getElementById('price').value,
+                hkd: ex.hkd,
+                original: ex.original,
                 img: b64
             });
-            localStorage.setItem('mm2025_data', JSON.stringify(merchList));
-            this.reset(); alert('成功存入典藏集 ✨'); renderAll();
+            localStorage.setItem('mm25_hk_data', JSON.stringify(merchList));
+            this.reset(); document.getElementById('resultHkd').innerText = "換算結果: HKD 0"; alert('成功記錄入庫！✨'); renderAll();
         };
         if(file) { const r = new FileReader(); r.onload = () => save(r.result); r.readAsDataURL(file); }
         else save(null);
