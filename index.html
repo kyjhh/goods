@@ -68,7 +68,6 @@
         .img-box img { width: 100%; height: 100%; object-fit: cover; }
         .info { padding: 10px; flex-grow: 1; overflow: hidden; }
 
-        /* 新增表單樣式 */
         .input-group { margin-bottom: 15px; }
         .input-label { font-size: 10px; color: var(--m-brown); font-weight: bold; letter-spacing: 1px; margin-bottom: 4px; display: block; }
         .btn-main { background: var(--m-deep-green); color: white; border: none; padding: 14px; width: 100%; font-size: 12px; cursor: pointer; border-radius: var(--radius); margin-top: 15px; }
@@ -152,67 +151,21 @@
             <div style="background:#fff; padding:25px; border-radius: var(--radius); border:1px solid var(--m-clay);">
                 <form id="merchForm">
                     <input type="hidden" id="editIndex" value="-1">
-                    
-                    <div class="input-group">
-                        <label class="input-label">作品名稱</label>
-                        <select id="workSelect" onchange="toggleInput('workSelect', 'workInput')"></select>
-                        <input type="text" id="workInput" style="display:none;" placeholder="輸入新作品名稱">
-                    </div>
-
-                    <div class="input-group">
-                        <label class="input-label">角色名稱</label>
-                        <select id="roleSelect" onchange="toggleInput('roleSelect', 'roleInput')"></select>
-                        <input type="text" id="roleInput" style="display:none;" placeholder="輸入新角色名稱">
-                    </div>
-
-                    <div class="input-group">
-                        <label class="input-label">藏品類別</label>
-                        <select id="typeSelect" onchange="toggleInput('typeSelect', 'typeInput')"></select>
-                        <input type="text" id="typeInput" style="display:none;" placeholder="例如: 徽章/立牌">
-                    </div>
-
-                    <div class="input-group">
-                        <label class="input-label">款式/柄圖名字</label>
-                        <input type="text" id="pattern" placeholder="例如: 周年慶限定 / A版">
-                    </div>
-
-                    <div class="input-group">
-                        <label class="input-label">備註</label>
-                        <textarea id="note" placeholder="詳細資料或心得"></textarea>
-                    </div>
-
+                    <div class="input-group"><label class="input-label">作品名稱</label><select id="workSelect" onchange="toggleInput('workSelect', 'workInput')"></select><input type="text" id="workInput" style="display:none;" placeholder="輸入新作品名稱"></div>
+                    <div class="input-group"><label class="input-label">角色名稱</label><select id="roleSelect" onchange="toggleInput('roleSelect', 'roleInput')"></select><input type="text" id="roleInput" style="display:none;" placeholder="輸入新角色名稱"></div>
+                    <div class="input-group"><label class="input-label">藏品類別</label><select id="typeSelect" onchange="toggleInput('typeSelect', 'typeInput')"></select><input type="text" id="typeInput" style="display:none;" placeholder="例如: 徽章/立牌"></div>
+                    <div class="input-group"><label class="input-label">款式/柄圖名字</label><input type="text" id="pattern" placeholder="例如: 周年慶限定"></div>
+                    <div class="input-group"><label class="input-label">備註</label><textarea id="note" placeholder="詳細資料"></textarea></div>
                     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-bottom: 15px;">
-                        <div>
-                            <label class="input-label">目前狀態</label>
-                            <select id="status">
-                                <option value="現貨">現貨</option>
-                                <option value="非現貨">非現貨</option>
-                                <option value="願望">願望</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="input-label">購買數量</label>
-                            <input type="number" id="qty" value="1">
-                        </div>
+                        <div><label class="input-label">目前狀態</label><select id="status"><option value="現貨">現貨</option><option value="非現貨">非現貨</option><option value="願望">願望</option></select></div>
+                        <div><label class="input-label">購買數量</label><input type="number" id="qty" value="1"></div>
                     </div>
-
                     <div style="display:grid; grid-template-columns: 1fr 2fr; gap:12px; margin-bottom: 5px;">
-                        <div>
-                            <label class="input-label">幣種</label>
-                            <select id="currency" onchange="liveExchange()"><option value="HKD">HKD</option><option value="RMB">RMB</option><option value="JPY">JPY</option></select>
-                        </div>
-                        <div>
-                            <label class="input-label">單價</label>
-                            <input type="number" id="inputPrice" step="0.01" oninput="liveExchange()" placeholder="0.00">
-                        </div>
+                        <div><label class="input-label">幣種</label><select id="currency" onchange="liveExchange()"><option value="HKD">HKD</option><option value="RMB">RMB</option><option value="JPY">JPY</option></select></div>
+                        <div><label class="input-label">單價</label><input type="number" id="inputPrice" step="0.01" oninput="liveExchange()" placeholder="0.00"></div>
                     </div>
                     <div id="exchangePreview" style="margin-bottom:15px; font-size:12px; color:var(--m-deep-green); font-weight:bold;">總額: HKD 0.00</div>
-
-                    <div class="input-group">
-                        <label class="input-label">藏品照片</label>
-                        <input type="file" id="imgFile">
-                    </div>
-
+                    <div class="input-group"><label class="input-label">藏品照片</label><input type="file" id="imgFile"></div>
                     <button type="submit" class="btn-main">儲存至資料庫</button>
                     <button type="button" id="delBtn" class="btn-main" style="background:#cc9999; display:none;" onclick="deleteCurrentItem()">刪除此項目</button>
                 </form>
@@ -247,9 +200,7 @@
     </nav>
 
 <script>
-    const STORAGE_KEY = 'archive_master';
-    const DICT_KEY = 'archive_dict_master';
-    const COVER_KEY = 'archive_cover_bg';
+    const STORAGE_KEY = 'archive_master'; const DICT_KEY = 'archive_dict_master'; const COVER_KEY = 'archive_cover_bg';
     const rates = { RMB: 1.08, JPY: 0.052, HKD: 1.0 };
     let merchList = [], dict = { works: [], roles: [], types: [] }, filters = { work: 'all', role: 'all', type: 'all' };
     let sortMode = 'date', sortDesc = true, viewMode = 'grid', charts = {};
@@ -261,19 +212,13 @@
         if (savedCover) document.getElementById('cover-page').style.backgroundImage = `url(${savedCover})`;
         const savedGrid = localStorage.getItem('archive_grid_size') || '160';
         updateGridSize(savedGrid);
-        document.getElementById('gridRange').value = savedGrid;
         renderAll(); renderSelects(); renderFilters(); updateToolUI();
     }
 
     function updateCover(input) {
         const file = input.files[0]; if (!file) return;
         const reader = new FileReader();
-        reader.onload = (e) => {
-            const b64 = e.target.result;
-            document.getElementById('cover-page').style.backgroundImage = `url(${b64})`;
-            localStorage.setItem(COVER_KEY, b64);
-            showModal("✓", "封面更新成功");
-        };
+        reader.onload = (e) => { document.getElementById('cover-page').style.backgroundImage = `url(${e.target.result})`; localStorage.setItem(COVER_KEY, e.target.result); showModal("✓", "封面更新成功"); };
         reader.readAsDataURL(file);
     }
 
@@ -349,7 +294,6 @@
                 .filter(i => i.status === targetStatus)
                 .filter(i => (filters.work==='all' || i.work===filters.work) && (filters.role==='all' || i.role===filters.role) && (filters.type==='all' || i.type===filters.type))
                 .filter(i => (i.pattern + (i.note || "")).toLowerCase().includes(searchVal));
-            
             const multi = sortDesc ? 1 : -1;
             if(sortMode==='date') filtered.sort((a,b)=> (b.timestamp - a.timestamp) * multi);
             else if(sortMode==='price') filtered.sort((a,b)=> (parseFloat(b.totalHkd) - parseFloat(a.totalHkd)) * multi);
@@ -370,60 +314,37 @@
             });
         };
 
-        const readyItems = processList('現貨', libSearch);
-        const waitItems = processList('非現貨', waitSearch);
-        const wishItems = processList('願望', wishSearch);
-
+        const readyItems = processList('現貨', libSearch); const waitItems = processList('非現貨', waitSearch); const wishItems = processList('願望', wishSearch);
         document.getElementById('lib-count').innerText = `顯示: ${readyItems.length} / ${merchList.filter(i=>i.status==='現貨').length}`;
         document.getElementById('wait-count').innerText = `顯示: ${waitItems.length} / ${merchList.filter(i=>i.status==='非現貨').length}`;
         document.getElementById('wish-count').innerText = `顯示: ${wishItems.length} / ${merchList.filter(i=>i.status==='願望').length}`;
-
         renderItems(readyItems, rList); renderItems(waitItems, wList); renderItems(wishItems, hList);
     }
 
     function editItem(idx) {
         const i = merchList[idx]; document.getElementById('editIndex').value = idx;
-        document.getElementById('workSelect').value = i.work;
-        document.getElementById('roleSelect').value = i.role;
-        document.getElementById('typeSelect').value = i.type;
-        document.getElementById('pattern').value = i.pattern;
-        document.getElementById('note').value = i.note;
-        document.getElementById('status').value = i.status;
-        document.getElementById('qty').value = i.qty;
-        document.getElementById('currency').value = i.originalCur;
-        document.getElementById('inputPrice').value = i.originalPrice;
-        document.getElementById('delBtn').style.display = 'block';
-        openPage('page-recent'); liveExchange();
+        document.getElementById('workSelect').value = i.work; document.getElementById('roleSelect').value = i.role; document.getElementById('typeSelect').value = i.type;
+        document.getElementById('pattern').value = i.pattern; document.getElementById('note').value = i.note; document.getElementById('status').value = i.status;
+        document.getElementById('qty').value = i.qty; document.getElementById('currency').value = i.originalCur; document.getElementById('inputPrice').value = i.originalPrice;
+        document.getElementById('delBtn').style.display = 'block'; openPage('page-recent'); liveExchange();
     }
 
     function deleteCurrentItem() {
         const idx = parseInt(document.getElementById('editIndex').value);
-        if(idx !== -1 && confirm("確定刪除此藏品？")) {
-            merchList.splice(idx, 1); save(); showModal("🗑️", "項目已刪除");
-            document.getElementById('editIndex').value = "-1"; document.getElementById('delBtn').style.display = 'none';
-            document.getElementById('merchForm').reset(); switchTab('page-gallery', document.querySelectorAll('.nav-item')[0]); renderAll();
-        }
+        if(idx !== -1 && confirm("確定刪除此藏品？")) { merchList.splice(idx, 1); save(); showModal("🗑️", "項目已刪除"); document.getElementById('editIndex').value = "-1"; document.getElementById('delBtn').style.display = 'none'; document.getElementById('merchForm').reset(); switchTab('page-gallery', document.querySelectorAll('.nav-item')[0]); renderAll(); }
     }
 
     function renderStats() {
         Object.values(charts).forEach(c => c.destroy());
         const colors = ['#6b7a63', '#acc1ad', '#a68b7c', '#d5cabd', '#e5ddd5', '#c2b2a3', '#96a48b'];
         const statsList = merchList.filter(i => i.status !== '願望');
-
         const monthData = {};
-        statsList.forEach(i => {
-            const date = new Date(i.timestamp); const key = `${date.getFullYear()}/${date.getMonth()+1}月`;
-            monthData[key] = (monthData[key] || 0) + parseFloat(i.totalHkd);
-        });
+        statsList.forEach(i => { const date = new Date(i.timestamp); const key = `${date.getFullYear()}/${date.getMonth()+1}月`; monthData[key] = (monthData[key] || 0) + parseFloat(i.totalHkd); });
         const monthKeys = Object.keys(monthData).sort();
         charts.monthly = new Chart(document.getElementById('monthlyChart'), { type: 'line', data: { labels: monthKeys, datasets: [{ label: 'HKD', data: monthKeys.map(k => monthData[k]), borderColor: '#6b7a63', fill: true, backgroundColor: 'rgba(107, 122, 99, 0.1)' }] } });
-
-        const workData = {};
-        statsList.forEach(i => { if(i.work) workData[i.work] = (workData[i.work] || 0) + parseFloat(i.totalHkd); });
+        const workData = {}; statsList.forEach(i => { if(i.work) workData[i.work] = (workData[i.work] || 0) + parseFloat(i.totalHkd); });
         charts.work = new Chart(document.getElementById('workChart'), { type: 'pie', data: { labels: Object.keys(workData), datasets: [{ data: Object.values(workData), backgroundColor: colors }] } });
-        
-        const roleData = {};
-        statsList.forEach(i => { if(i.role) roleData[i.role] = (roleData[i.role] || 0) + parseFloat(i.totalHkd); });
+        const roleData = {}; statsList.forEach(i => { if(i.role) roleData[i.role] = (roleData[i.role] || 0) + parseFloat(i.totalHkd); });
         const topRoles = Object.entries(roleData).sort((a,b) => b[1] - a[1]).slice(0, 7);
         charts.role = new Chart(document.getElementById('roleChart'), { type: 'bar', data: { labels: topRoles.map(r => r[0]), datasets: [{ data: topRoles.map(r => r[1]), backgroundColor: '#acc1ad' }] }, options: { indexAxis: 'y' } });
     }
@@ -439,12 +360,21 @@
     function showModal(icon, text) { document.getElementById('modal-icon').innerText = icon; document.getElementById('modal-text').innerText = text; document.getElementById('overlay').style.display='block'; document.getElementById('success-modal').style.display='block'; }
     function closeModal() { document.getElementById('overlay').style.display='none'; document.getElementById('success-modal').style.display='none'; }
     function exportData() { const blob = new Blob([JSON.stringify({merchList, dict})], {type: 'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `archive_master.json`; a.click(); }
+    
     function importData(input) {
         const file = input.files[0]; if(!file) return;
         const reader = new FileReader();
         reader.onload = (e) => {
-            const d = JSON.parse(e.target.result); merchList = d.merchList || []; dict = d.dict || { works: [], roles: [], types: [] };
-            save(); renderSelects(); renderFilters(); renderAll(); showModal("✓", "導入成功");
+            try {
+                const d = JSON.parse(e.target.result);
+                if(d.merchList) {
+                    merchList = d.merchList; dict = d.dict || { works: [], roles: [], types: [] };
+                    save(); 
+                    renderSelects(); renderFilters(); renderAll(); 
+                    showModal("✓", "導入成功");
+                    input.value = ""; // 清除輸入以便下次選擇
+                } else { alert("JSON 格式不正確"); }
+            } catch(err) { alert("讀取檔案失敗：" + err); }
         };
         reader.readAsText(file);
     }
@@ -454,10 +384,7 @@
         const editIdx = parseInt(document.getElementById('editIndex').value);
         const getV = (sid, iid, dk) => {
             let sVal = document.getElementById(sid).value;
-            if(sVal === 'NEW') { 
-                let inputVal = document.getElementById(iid).value.trim(); 
-                if(inputVal) { if(!dict[dk].includes(inputVal)) { dict[dk].push(inputVal); dict[dk].sort(); } return inputVal; }
-            }
+            if(sVal === 'NEW') { let inputVal = document.getElementById(iid).value.trim(); if(inputVal) { if(!dict[dk].includes(inputVal)) { dict[dk].push(inputVal); dict[dk].sort(); } return inputVal; } }
             return sVal;
         };
         const data = {
@@ -474,7 +401,6 @@
         const f = document.getElementById('imgFile').files[0];
         if(f) { const fr = new FileReader(); fr.onload = () => done(fr.result); fr.readAsDataURL(f); } else done(null);
     };
-
     window.onload = init;
 </script>
 </body>
