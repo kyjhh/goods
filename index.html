@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Morandi Archive v36.1 - Final Stable</title>
+    <title>Morandi Archive v30 - Stable Original</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
@@ -13,10 +13,8 @@
         }
         body, html { margin: 0; padding: 0; height: 100%; font-family: 'PingFang HK', sans-serif; background: var(--bg); color: var(--text); overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
         
-        /* 提示窗 */
-        #toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: var(--m-deep-green); color: white; padding: 10px 24px; border-radius: 2px; font-size: 12px; z-index: 5000; display: none; }
-        #success-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.95); display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 6000; backdrop-filter: blur(5px); }
-
+        #toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: var(--m-deep-green); color: white; padding: 10px 24px; border-radius: 2px; font-size: 12px; z-index: 9999; display: none; }
+        
         /* 封面 */
         #cover-page { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #d2cdc1 center/cover; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; z-index: 2000; transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
         #cover-page.open { transform: translateY(-100%); }
@@ -32,41 +30,27 @@
         .page { display: none; }
         .page.active { display: block; }
 
-        /* 控制面板 */
-        .control-panel { background: #fff; padding: 12px; border-radius: 2px; margin-bottom: 20px; border: 1px solid var(--m-clay); }
-        .symbol-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid #f0f0f0; padding-bottom: 8px; }
-        .symbol-group { display: flex; gap: 15px; color: #ccc; font-size: 14px; font-weight: bold; }
-        .symbol-btn { cursor: pointer; }
-        .symbol-btn.active { color: var(--m-deep-green); }
-
-        .filter-row { display: flex; overflow-x: auto; white-space: nowrap; gap: 6px; margin-bottom: 8px; scrollbar-width: none; }
+        /* 列表 */
+        .filter-row { display: flex; overflow-x: auto; white-space: nowrap; gap: 8px; margin-bottom: 15px; scrollbar-width: none; }
         .filter-row::-webkit-scrollbar { display: none; }
-        .filter-chip { background: var(--m-clay); padding: 5px 12px; border-radius: 2px; font-size: 10px; cursor: pointer; color: #8a8a8a; }
+        .filter-chip { background: var(--m-clay); padding: 6px 15px; border-radius: 2px; font-size: 10px; cursor: pointer; color: #8a8a8a; }
         .filter-chip.active { background: var(--m-sage); color: white; }
 
-        /* 佈局容器 */
-        .list-container.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(var(--grid-size, 160px), 1fr)); gap: 15px; }
-        .list-container.list { display: flex; flex-direction: column; gap: 10px; }
-
+        .list-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(var(--grid-size), 1fr)); gap: 15px; }
         .item-card { background: #fff; border-radius: 2px; overflow: hidden; border: 1px solid var(--m-clay); position: relative; }
-        .list-container.list .item-card { display: flex; height: 90px; }
-        .list-container.list .item-card img { width: 90px; height: 90px; object-fit: cover; }
-        .list-container.list .item-card .info { flex: 1; padding: 10px; display: flex; flex-direction: column; justify-content: center; }
-
-        .quick-check { position: absolute; top: 8px; right: 8px; background: rgba(255,255,255,0.9); color: var(--m-deep-green); width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; cursor: pointer; z-index: 5; }
+        .item-card img { width: 100%; height: var(--grid-size); object-fit: cover; background: #eee; }
+        .item-card .info { padding: 12px; }
         
+        .quick-check { position: absolute; top: 8px; right: 8px; background: rgba(255,255,255,0.9); color: var(--m-deep-green); width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; cursor: pointer; z-index: 5; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        
+        /* 表單 */
         input, select { width: 100%; padding: 12px; border-radius: 2px; border: 1px solid var(--m-clay); background: #fafafa; font-size: 13px; margin-top: 8px; box-sizing: border-box; }
-        .btn-main { background: var(--m-deep-green); color: white; border: none; padding: 14px; width: 100%; font-size: 12px; cursor: pointer; border-radius: 2px; }
-        #exchangePreview { margin-top: 10px; font-size: 12px; color: var(--m-deep-green); font-weight: bold; }
+        .btn-main { background: var(--m-deep-green); color: white; border: none; padding: 15px; width: 100%; font-size: 12px; cursor: pointer; border-radius: 2px; margin-top: 10px; }
     </style>
 </head>
 <body>
 
     <div id="toast">DONE</div>
-    <div id="success-modal">
-        <div style="width:50px; height:50px; border:2px solid var(--m-deep-green); border-radius:50%; display:flex; align-items:center; justify-content:center; color:var(--m-deep-green); font-size:24px; margin-bottom:10px;">✓</div>
-        <div style="font-size:11px; letter-spacing:2px; color:var(--m-deep-green);">SUCCESS</div>
-    </div>
 
     <div id="cover-page">
         <div class="cover-menu">
@@ -75,7 +59,6 @@
             <div class="menu-btn" onclick="openPage('page-pending')">WAITING</div>
             <div class="menu-btn" onclick="openPage('page-stats')">STATS</div>
             <div class="menu-btn" onclick="openPage('page-recent')">COLLECT</div>
-            <div class="menu-btn" onclick="openPage('page-settings')">CONFIG</div>
         </div>
     </div>
 
@@ -83,41 +66,13 @@
         <div onclick="closePage()" style="font-size:10px; color: var(--m-brown); cursor:pointer; margin-bottom:25px; letter-spacing:2px;">← BACK TO HOME</div>
 
         <div id="page-gallery" class="page">
-            <div class="control-panel">
-                <div class="symbol-row">
-                    <div class="symbol-group">
-                        <span class="symbol-btn sort-n" onclick="setSort('name')">A-Z</span>
-                        <span class="symbol-btn sort-d active" onclick="setSort('date')">🕒</span>
-                        <span class="symbol-btn sort-q" onclick="setSort('qty')">#</span>
-                        <span class="symbol-btn sort-p" onclick="setSort('price')">＄</span>
-                    </div>
-                    <div class="symbol-group">
-                        <span class="symbol-btn view-g active" onclick="setView('grid')">田</span>
-                        <span class="symbol-btn view-l" onclick="setView('list')">≡</span>
-                    </div>
-                </div>
-                <div id="lib-filter-box"></div>
-            </div>
-            <div id="readyList" class="list-container grid"></div>
+            <div id="lib-filters"></div>
+            <div id="readyList" class="list-container"></div>
         </div>
 
         <div id="page-pending" class="page">
-            <div class="control-panel">
-                <div class="symbol-row">
-                    <div class="symbol-group">
-                        <span class="symbol-btn sort-n" onclick="setSort('name')">A-Z</span>
-                        <span class="symbol-btn sort-d active" onclick="setSort('date')">🕒</span>
-                        <span class="symbol-btn sort-q" onclick="setSort('qty')">#</span>
-                        <span class="symbol-btn sort-p" onclick="setSort('price')">＄</span>
-                    </div>
-                    <div class="symbol-group">
-                        <span class="symbol-btn view-g active" onclick="setView('grid')">田</span>
-                        <span class="symbol-btn view-l" onclick="setView('list')">≡</span>
-                    </div>
-                </div>
-                <div id="wait-filter-box"></div>
-            </div>
-            <div id="waitList" class="list-container grid"></div>
+            <div id="wait-filters"></div>
+            <div id="waitList" class="list-container"></div>
         </div>
 
         <div id="page-stats" class="page">
@@ -125,19 +80,9 @@
                 <div style="font-size:10px; color:var(--m-brown); letter-spacing:2px;">TOTAL INVESTMENT</div>
                 <div id="totalSpend" style="font-size: 28px; color:var(--m-deep-green); margin:10px 0;">HKD 0</div>
                 <div style="height: 250px; margin-top:20px;"><canvas id="charPieChart"></canvas></div>
-                <hr style="border:0; border-top:1px solid var(--m-clay); margin:30px 0;">
+                <hr style="border:0; border-top:1px solid var(--m-clay); margin:40px 0;">
                 <div style="height: 300px;"><canvas id="typeBarChart"></canvas></div>
             </div>
-        </div>
-
-        <div id="page-settings" class="page">
-            <div style="background:#fff; padding:20px; border:1px solid var(--m-clay); margin-bottom:12px;">
-                <span style="font-size:11px;">GRID SCALE</span>
-                <input type="range" min="100" max="300" value="160" oninput="updateGridSize(this.value)">
-            </div>
-            <button onclick="exportData()" class="btn-main" style="background:var(--m-brown);">EXPORT</button>
-            <button onclick="document.getElementById('import-file').click()" class="btn-main" style="background:var(--m-brown); margin-top:10px;">IMPORT</button>
-            <input type="file" id="import-file" hidden onchange="importData(this)">
         </div>
 
         <div id="page-recent" class="page">
@@ -145,23 +90,28 @@
                 <form id="merchForm">
                     <input type="hidden" id="editIndex" value="-1">
                     <select id="workSelect" onchange="toggleInput('workSelect', 'workInput')"></select>
-                    <input type="text" id="workInput" style="display:none;" placeholder="Work">
+                    <input type="text" id="workInput" style="display:none;" placeholder="Work Name">
+                    
                     <select id="roleSelect" onchange="toggleInput('roleSelect', 'roleInput')"></select>
-                    <input type="text" id="roleInput" style="display:none;" placeholder="Role">
+                    <input type="text" id="roleInput" style="display:none;" placeholder="Role Name">
+                    
                     <select id="typeSelect" onchange="toggleInput('typeSelect', 'typeInput')"></select>
-                    <input type="text" id="typeInput" style="display:none;" placeholder="Type">
-                    <input type="text" id="pattern" placeholder="Pattern">
+                    <input type="text" id="typeInput" style="display:none;" placeholder="Type (e.g. 徽章)">
+                    
+                    <input type="text" id="pattern" placeholder="Pattern/Name">
+                    
                     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
                         <select id="status"><option value="現貨">IN STOCK</option><option value="非現貨">PENDING</option></select>
-                        <input type="number" id="qty" value="1" oninput="liveExchange()">
+                        <input type="number" id="qty" value="1" placeholder="Qty">
                     </div>
+
                     <div style="display:grid; grid-template-columns: 1fr 2fr; gap:10px;">
-                        <select id="currency" onchange="liveExchange()"><option value="HKD">HKD</option><option value="RMB">RMB</option><option value="JPY">JPY</option></select>
-                        <input type="number" id="inputPrice" step="0.01" required oninput="liveExchange()" placeholder="Price">
+                        <select id="currency"><option value="HKD">HKD</option><option value="RMB">RMB</option><option value="JPY">JPY</option></select>
+                        <input type="number" id="inputPrice" step="0.01" required placeholder="Price per unit">
                     </div>
-                    <div id="exchangePreview">Total: HKD 0.00</div>
-                    <input type="file" id="imgFile">
-                    <button type="submit" class="btn-main" style="margin-top:15px;">SAVE ARCHIVE</button>
+
+                    <input type="file" id="imgFile" accept="image/*">
+                    <button type="submit" class="btn-main">SAVE ARCHIVE</button>
                 </form>
             </div>
         </div>
@@ -172,31 +122,19 @@
         <button class="nav-item" onclick="switchTab('page-pending', this)">WAIT</button>
         <button class="nav-item" onclick="switchTab('page-recent', this)">ADD</button>
         <button class="nav-item" onclick="switchTab('page-stats', this)">STAT</button>
-        <button class="nav-item" onclick="switchTab('page-settings', this)">SET</button>
     </nav>
 
 <script>
     const STORAGE_KEY = 'archive_master';
     const DICT_KEY = 'archive_dict_master';
     const rates = { RMB: 1.08, JPY: 0.052, HKD: 1.0 };
-    let pieChart = null, barChart = null, pressTimer = null;
-
+    
     let merchList = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
     let dict = JSON.parse(localStorage.getItem(DICT_KEY)) || { works: ["世界計畫"], roles: ["宵崎奏"], types: ["徽章"] };
     let filters = { work: 'all', role: 'all', type: 'all' };
-    let sortMode = 'date', viewMode = 'grid';
+    let pieChart = null, barChart = null, pressTimer = null;
 
     function save() { localStorage.setItem(STORAGE_KEY, JSON.stringify(merchList)); localStorage.setItem(DICT_KEY, JSON.stringify(dict)); }
-
-    function setFilter(k, v) { filters[k] = v; renderFilters(); renderAll(); }
-    function setSort(m) { sortMode = m; updateSymbolUI(); renderAll(); }
-    function setView(v) { viewMode = v; updateSymbolUI(); renderAll(); }
-
-    function updateSymbolUI() {
-        document.querySelectorAll('.symbol-btn').forEach(b => b.classList.remove('active'));
-        document.querySelectorAll('.sort-' + sortMode[0]).forEach(b => b.classList.add('active'));
-        document.querySelectorAll('.view-' + viewMode[0]).forEach(b => b.classList.add('active'));
-    }
 
     function renderFilters() {
         const build = (list, key) => {
@@ -204,100 +142,166 @@
             html += list.map(item => `<div class="filter-chip ${filters[key]===item?'active':''}" onclick="setFilter('${key}','${item}')">${item}</div>`).join('');
             return `<div class="filter-row">${html}</div>`;
         };
-        const f = build(dict.works, 'work') + build(dict.roles, 'role') + build(dict.types, 'type');
-        document.getElementById('lib-filter-box').innerHTML = f; 
-        document.getElementById('wait-filter-box').innerHTML = f;
+        const html = build(dict.works, 'work') + build(dict.roles, 'role') + build(dict.types, 'type');
+        document.getElementById('lib-filters').innerHTML = html;
+        document.getElementById('wait-filters').innerHTML = html;
     }
+
+    function setFilter(k, v) { filters[k] = v; renderFilters(); renderAll(); }
 
     function renderAll() {
         const rList = document.getElementById('readyList');
         const wList = document.getElementById('waitList');
-        rList.className = `list-container ${viewMode}`;
-        wList.className = `list-container ${viewMode}`;
+        rList.innerHTML = ''; wList.innerHTML = '';
 
-        let items = merchList.map((item, index) => ({...item, originalIndex: index}));
-        items = items.filter(i => (filters.work==='all'||i.work===filters.work) && (filters.role==='all'||i.role===filters.role) && (filters.type==='all'||i.type===filters.type));
+        merchList.forEach((item, index) => {
+            if ((filters.work !== 'all' && item.work !== filters.work) ||
+                (filters.role !== 'all' && item.role !== filters.role) ||
+                (filters.type !== 'all' && item.type !== filters.type)) return;
 
-        items.sort((a, b) => {
-            if(sortMode === 'name') return (a.pattern||'').localeCompare(b.pattern||'');
-            if(sortMode === 'date') return b.originalIndex - a.originalIndex;
-            if(sortMode === 'qty') return b.qty - a.qty;
-            if(sortMode === 'price') return parseFloat(b.totalHkd) - parseFloat(a.totalHkd);
-            return 0;
-        });
+            const card = document.createElement('div');
+            card.className = 'item-card';
+            card.onmousedown = () => startPress(index);
+            card.onmouseup = cancelPress;
+            card.ontouchstart = () => startPress(index);
+            card.ontouchend = cancelPress;
 
-        const gen = (i) => `
-            <div class="item-card" onmousedown="startPress(${i.originalIndex})" onmouseup="cancelPress()" ontouchstart="startPress(${i.originalIndex})" ontouchend="cancelPress()">
-                ${i.status === '非現貨' ? `<div class="quick-check" onclick="quickCheckIn(event, ${i.originalIndex})">✓</div>` : ''}
-                <img src="${i.img || 'https://via.placeholder.com/200/f2efeb/888'}" onclick="editItem(${i.originalIndex})" style="cursor:pointer;">
+            card.innerHTML = `
+                ${item.status === '非現貨' ? `<div class="quick-check" onclick="quickCheckIn(event, ${index})">✓</div>` : ''}
+                <img src="${item.img || ''}" onclick="editItem(${index})">
                 <div class="info">
-                    <div style="font-size:9px; color:var(--m-brown);">${i.role} · ${i.type}</div>
-                    <div style="font-size:11px; margin:2px 0; font-weight:500; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${i.pattern || 'Untitled'}</div>
-                    <div style="color:var(--m-deep-green); font-weight:bold; font-size:11px;">HK$ ${i.totalHkd} <span style="font-weight:normal; font-size:9px; opacity:0.4;">x${i.qty}</span></div>
+                    <div style="font-size:9px; color:var(--m-brown);">${item.role} · ${item.type}</div>
+                    <div style="font-size:11px; margin:3px 0; font-weight:500;">${item.pattern || 'Untitled'}</div>
+                    <div style="color:var(--m-deep-green); font-weight:bold; font-size:11px;">HK$ ${item.totalHkd} <span style="font-weight:normal; font-size:9px; opacity:0.5;">x${item.qty}</span></div>
                 </div>
-            </div>`;
-
-        rList.innerHTML = items.filter(i => i.status === '現貨').map(gen).join('');
-        wList.innerHTML = items.filter(i => i.status === '非現貨').map(gen).join('');
+            `;
+            if (item.status === '現貨') rList.appendChild(card); else wList.appendChild(card);
+        });
     }
 
-    function startPress(idx) { pressTimer = setTimeout(() => { if(confirm("DELETE?")) { merchList.splice(idx, 1); save(); renderAll(); showToast("DELETED"); } }, 800); }
+    function startPress(idx) { pressTimer = setTimeout(() => { if(confirm("Delete this archive?")) { merchList.splice(idx, 1); save(); renderAll(); showToast("DELETED"); } }, 800); }
     function cancelPress() { clearTimeout(pressTimer); }
     function quickCheckIn(e, idx) { e.stopPropagation(); merchList[idx].status = '現貨'; save(); renderAll(); showToast("ARRIVED"); }
-    
-    function liveExchange() {
-        const p = parseFloat(document.getElementById('inputPrice').value) || 0, q = parseInt(document.getElementById('qty').value) || 1, cur = document.getElementById('currency').value;
-        const total = (p * q * rates[cur]).toFixed(2);
-        document.getElementById('exchangePreview').innerText = `Total: HKD ${total}`;
-        return total;
-    }
 
     document.getElementById('merchForm').onsubmit = function(e) {
         e.preventDefault();
         const editIdx = parseInt(document.getElementById('editIndex').value);
-        const getV = (s, i, dk) => { let v = document.getElementById(s).value; if(v === 'NEW') { v = document.getElementById(i).value.trim(); if(v && !dict[dk].includes(v)) dict[dk].push(v); } return v; };
-        const data = { work: getV('workSelect', 'workInput', 'works'), role: getV('roleSelect', 'roleInput', 'roles'), type: getV('typeSelect', 'typeInput', 'types'), pattern: document.getElementById('pattern').value, status: document.getElementById('status').value, qty: parseInt(document.getElementById('qty').value), originalPrice: parseFloat(document.getElementById('inputPrice').value), originalCur: document.getElementById('currency').value, totalHkd: liveExchange(), img: null };
-        const file = document.getElementById('imgFile').files[0];
-        const done = (b64) => {
-            if(b64) data.img = b64; else if(editIdx !== -1) data.img = merchList[editIdx].img;
-            if(editIdx === -1) merchList.unshift(data); else merchList[editIdx] = data;
-            save(); 
-            document.getElementById('success-modal').style.display = 'flex';
-            setTimeout(() => { document.getElementById('success-modal').style.display = 'none'; renderSelects(); switchTab('page-gallery', document.querySelectorAll('.nav-item')[0]); document.getElementById('merchForm').reset(); }, 1000);
+        
+        const getVal = (selId, inpId, dictKey) => {
+            let val = document.getElementById(selId).value;
+            if(val === 'NEW') {
+                val = document.getElementById(inpId).value.trim();
+                if(val && !dict[dictKey].includes(val)) dict[dictKey].push(val);
+            }
+            return val;
         };
-        if(file) { const fr = new FileReader(); fr.onload = () => done(fr.result); fr.readAsDataURL(file); } else done(null);
+
+        const price = parseFloat(document.getElementById('inputPrice').value);
+        const qty = parseInt(document.getElementById('qty').value) || 1;
+        const cur = document.getElementById('currency').value;
+        const totalHkd = (price * qty * rates[cur]).toFixed(2);
+
+        const data = {
+            work: getVal('workSelect', 'workInput', 'works'),
+            role: getVal('roleSelect', 'roleInput', 'roles'),
+            type: getVal('typeSelect', 'typeInput', 'types'),
+            pattern: document.getElementById('pattern').value,
+            status: document.getElementById('status').value,
+            qty: qty,
+            totalHkd: totalHkd,
+            img: null
+        };
+
+        const file = document.getElementById('imgFile').files[0];
+        const processSave = (imgB64) => {
+            if(imgB64) data.img = imgB64;
+            else if(editIdx !== -1) data.img = merchList[editIdx].img;
+
+            if(editIdx === -1) merchList.unshift(data);
+            else merchList[editIdx] = data;
+
+            save(); renderSelects(); renderFilters(); renderAll();
+            switchTab('page-gallery', document.querySelectorAll('.nav-item')[0]);
+            document.getElementById('merchForm').reset();
+            showToast("SAVED");
+        };
+
+        if(file) {
+            const reader = new FileReader();
+            reader.onload = () => processSave(reader.result);
+            reader.readAsDataURL(file);
+        } else processSave(null);
     };
 
     function editItem(idx) {
-        const i = merchList[idx]; document.getElementById('editIndex').value = idx;
-        document.getElementById('pattern').value = i.pattern; document.getElementById('qty').value = i.qty;
-        document.getElementById('currency').value = i.originalCur; document.getElementById('inputPrice').value = i.originalPrice;
-        document.getElementById('status').value = i.status; liveExchange(); switchTab('page-recent', document.querySelectorAll('.nav-item')[2]);
+        const i = merchList[idx];
+        document.getElementById('editIndex').value = idx;
+        document.getElementById('pattern').value = i.pattern;
+        document.getElementById('qty').value = i.qty;
+        document.getElementById('status').value = i.status;
+        switchTab('page-recent', document.querySelectorAll('.nav-item')[2]);
+    }
+
+    function renderStats() {
+        let total = 0, charData = {}, typeData = {};
+        merchList.forEach(i => {
+            let v = parseFloat(i.totalHkd); total += v;
+            charData[i.role] = (charData[i.role] || 0) + v;
+            typeData[i.type] = (typeData[i.type] || 0) + v;
+        });
+        document.getElementById('totalSpend').innerText = `HKD ${total.toLocaleString()}`;
+        
+        if(pieChart) pieChart.destroy();
+        pieChart = new Chart(document.getElementById('charPieChart'), {
+            type: 'pie',
+            data: { labels: Object.keys(charData), datasets: [{ data: Object.values(charData), backgroundColor: ['#6b7a63','#a68b7c','#acc1ad','#d5cabd','#e5ddd5'] }] },
+            options: { plugins: { legend: { position: 'bottom' } }, maintainAspectRatio: false }
+        });
+
+        if(barChart) barChart.destroy();
+        const sortedType = Object.entries(typeData).sort((a,b) => b[1]-a[1]);
+        barChart = new Chart(document.getElementById('typeBarChart'), {
+            type: 'bar',
+            data: { labels: sortedType.map(x=>x[0]), datasets: [{ data: sortedType.map(x=>x[1]), backgroundColor: '#acc1ad' }] },
+            options: { indexAxis: 'y', plugins: { legend: { display: false } }, maintainAspectRatio: false }
+        });
     }
 
     function switchTab(id, btn) {
-        document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); document.getElementById(id).classList.add('active');
-        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); if(btn) btn.classList.add('active');
-        if(id === 'page-stats') renderStats(); renderAll();
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        if(btn) btn.classList.add('active');
+        if(id === 'page-stats') renderStats();
     }
-    function openPage(id) { document.getElementById('cover-page').classList.add('open'); document.getElementById('bottom-nav').style.display='flex'; switchTab(id, document.querySelectorAll('.nav-item')[['page-gallery','page-pending','page-recent','page-stats','page-settings'].indexOf(id)]); }
-    function closePage() { document.getElementById('cover-page').classList.remove('open'); document.getElementById('bottom-nav').style.display='none'; }
-    function showToast(m) { const t=document.getElementById('toast'); t.innerText=m; t.style.display='block'; setTimeout(()=>t.style.display='none',2000); }
-    function toggleInput(s, i) { document.getElementById(i).style.display = (document.getElementById(s).value === 'NEW') ? 'block' : 'none'; }
-    function renderSelects() { const setup = (id, list) => { document.getElementById(id).innerHTML = list.map(i => `<option value="${i}">${i}</option>`).join('') + `<option value="NEW">+ NEW...</option>`; }; setup('workSelect', dict.works); setup('roleSelect', dict.roles); setup('typeSelect', dict.types); }
-    function renderStats() {
-        let total = 0, charD = {}, typeD = {};
-        merchList.forEach(i => { const v = parseFloat(i.totalHkd) || 0; total += v; charD[i.role] = (charD[i.role] || 0) + v; typeD[i.type] = (typeD[i.type] || 0) + v; });
-        document.getElementById('totalSpend').innerText = `HKD ${total.toLocaleString()}`;
-        if(pieChart) pieChart.destroy();
-        pieChart = new Chart(document.getElementById('charPieChart'), { type:'pie', data:{ labels:Object.keys(charD), datasets:[{data:Object.values(charD), backgroundColor:['#6b7a63','#a68b7c','#acc1ad','#d5cabd','#e5ddd5']}]}, options:{ plugins:{legend:{position:'bottom'}}, maintainAspectRatio:false }});
-        if(barChart) barChart.destroy();
-        const sorted = Object.entries(typeD).sort((a,b)=>b[1]-a[1]);
-        barChart = new Chart(document.getElementById('typeBarChart'), { type:'bar', data:{ labels:sorted.map(x=>x[0]), datasets:[{data:sorted.map(x=>x[1]), backgroundColor:sorted.map((x,idx)=>`rgba(107,122,99,${1-idx*0.15})`}]}, options:{ indexAxis:'y', plugins:{legend:{display:false}}, maintainAspectRatio:false }});
+
+    function openPage(id) {
+        document.getElementById('cover-page').classList.add('open');
+        document.getElementById('bottom-nav').style.display = 'flex';
+        const navs = document.querySelectorAll('.nav-item');
+        const idx = ['page-gallery','page-pending','page-recent','page-stats'].indexOf(id);
+        switchTab(id, navs[idx]);
     }
-    function exportData() { const b = new Blob([JSON.stringify({merchList, dict})], {type: 'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = `archive_master.json`; a.click(); }
-    function importData(input) { const fr = new FileReader(); fr.onload = (e) => { const d = JSON.parse(e.target.result); merchList = d.merchList; dict = d.dict; save(); location.reload(); }; fr.readAsText(input.files[0]); }
-    function updateGridSize(v) { document.documentElement.style.setProperty('--grid-size', v+'px'); }
+
+    function closePage() {
+        document.getElementById('cover-page').classList.remove('open');
+        document.getElementById('bottom-nav').style.display = 'none';
+    }
+
+    function toggleInput(s, i) { document.getElementById(i).style.display = (document.getElementById(s).value==='NEW') ? 'block' : 'none'; }
+    
+    function renderSelects() {
+        const setup = (id, list) => {
+            document.getElementById(id).innerHTML = list.map(i => `<option value="${i}">${i}</option>`).join('') + `<option value="NEW">+ NEW...</option>`;
+        };
+        setup('workSelect', dict.works); setup('roleSelect', dict.roles); setup('typeSelect', dict.types);
+    }
+
+    function showToast(m) {
+        const t = document.getElementById('toast');
+        t.innerText = m; t.style.display = 'block';
+        setTimeout(() => t.style.display = 'none', 2000);
+    }
 
     window.onload = () => { renderSelects(); renderFilters(); renderAll(); };
 </script>
