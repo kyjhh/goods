@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Morandi Archive - V17 Master</title>
+    <title>Morandi Archive - V19 Safe Tag Delete</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
@@ -14,7 +14,6 @@
         }
         body, html { margin: 0; padding: 0; height: 100%; font-family: 'PingFang HK', sans-serif; background: var(--bg); color: var(--text); overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
         
-        /* 頁面與動畫 */
         #cover-page { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #d2cdc1; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; z-index: 2000; transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
         #cover-page.open { transform: translateY(-100%); }
         .cover-menu { width: 160px; margin-bottom: 70px; display: flex; flex-direction: column; gap: 8px; }
@@ -28,7 +27,6 @@
         .page { display: none; }
         .page.active { display: block; }
 
-        /* 頂部面板 */
         .control-panel { background: #fff; padding: 12px; border-radius: var(--radius); margin-bottom: 20px; border: 1px solid var(--m-clay); }
         .symbol-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid #f0f0f0; padding-bottom: 8px; }
         .symbol-group { display: flex; gap: 12px; color: #ccc; font-size: 14px; font-weight: bold; }
@@ -36,37 +34,28 @@
         .symbol-btn.active { color: var(--m-deep-green); }
 
         .filter-row { display: flex; overflow-x: auto; white-space: nowrap; gap: 6px; margin-bottom: 8px; scrollbar-width: none; }
-        .filter-chip { background: var(--m-clay); padding: 5px 12px; border-radius: 12px; font-size: 10px; cursor: pointer; color: #8a8a8a; }
+        .filter-chip { background: var(--m-clay); padding: 5px 12px; border-radius: 12px; font-size: 10px; cursor: pointer; color: #8a8a8a; user-select: none; -webkit-user-select: none; }
         .filter-chip.active { background: var(--m-sage); color: white; }
 
-        /* 列表容器 */
         .list-container.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(var(--dynamic-grid), 1fr)); gap: 15px; }
-        .list-container.list { display: flex; flex-direction: column; gap: 10px; }
-        .item-card { background: #fff; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--m-clay); transition: transform 0.2s; }
-        .item-card:active { transform: scale(0.98); }
-        .list-container.list .item-card { display: flex; height: 80px; align-items: center; }
-        .list-container.list .img-box { width: 80px; height: 80px; flex-shrink: 0; }
+        .item-card { background: #fff; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--m-clay); }
         .img-box { width: 100%; aspect-ratio: 1; background: #eee; overflow: hidden; }
         .img-box img { width: 100%; height: 100%; object-fit: cover; }
         .info { padding: 10px; flex-grow: 1; overflow: hidden; }
 
-        /* 表單樣式 */
-        .form-label { font-size: 10px; color: var(--m-brown); letter-spacing: 1px; margin-top: 14px; display: block; }
         .btn-main { background: var(--m-deep-green); color: white; border: none; padding: 14px; width: 100%; font-size: 12px; cursor: pointer; border-radius: var(--radius); margin-top: 15px; }
         input, select { width: 100%; padding: 12px; border-radius: var(--radius); border: 1px solid var(--m-clay); background: #fafafa; font-size: 13px; margin-top: 6px; box-sizing: border-box; outline: none; }
         
-        /* 成功彈窗 */
         #success-modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 30px; border-radius: 15px; text-align: center; z-index: 4000; box-shadow: 0 10px 40px rgba(0,0,0,0.2); display: none; width: 200px; }
         .overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.4); z-index: 3500; display: none; }
     </style>
 </head>
 <body>
 
-    <div class="overlay" id="overlay"></div>
+    <div class="overlay" id="overlay" onclick="closeModal()"></div>
     <div id="success-modal">
-        <div style="font-size: 40px; margin-bottom: 10px;">✨</div>
-        <div style="font-weight: bold; letter-spacing: 2px;">SAVED!</div>
-        <div style="font-size: 10px; color: #aaa; margin-top: 5px;">ARCHIVE UPDATED</div>
+        <div id="modal-icon" style="font-size: 40px; margin-bottom: 10px;">✨</div>
+        <div id="modal-text" style="font-weight: bold; letter-spacing: 2px;">SAVED!</div>
         <button class="btn-main" onclick="closeModal()">OK</button>
     </div>
 
@@ -99,6 +88,7 @@
                     </div>
                 </div>
                 <div id="lib-filter-box"></div>
+                <div style="font-size:9px; color:#ccc; margin-top:5px;">* 長按標籤從清單隱藏</div>
             </div>
             <div id="readyList" class="list-container grid"></div>
         </div>
@@ -112,34 +102,25 @@
             <div style="background:#fff; padding:25px; border-radius: var(--radius); border:1px solid var(--m-clay);">
                 <form id="merchForm">
                     <input type="hidden" id="editIndex" value="-1">
-                    <label class="form-label">作品 WORK</label>
                     <select id="workSelect" onchange="toggleInput('workSelect', 'workInput')"></select>
                     <input type="text" id="workInput" style="display:none;" placeholder="新作品">
-                    
-                    <label class="form-label">角色 ROLE</label>
                     <select id="roleSelect" onchange="toggleInput('roleSelect', 'roleInput')"></select>
                     <input type="text" id="roleInput" style="display:none;" placeholder="新角色">
-                    
-                    <label class="form-label">類別 TYPE</label>
                     <select id="typeSelect" onchange="toggleInput('typeSelect', 'typeInput')"></select>
                     <input type="text" id="typeInput" style="display:none;" placeholder="新類別">
-                    
-                    <label class="form-label">款式 PATTERN</label>
-                    <input type="text" id="pattern">
-                    
+                    <input type="text" id="pattern" placeholder="款式名稱 PATTERN">
                     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
-                        <div><label class="form-label">狀態</label><select id="status"><option value="現貨">現貨</option><option value="非現貨">非現</option></select></div>
-                        <div><label class="form-label">數量</label><input type="number" id="qty" value="1"></div>
+                        <select id="status"><option value="現貨">現貨</option><option value="非現貨">非現</option></select>
+                        <input type="number" id="qty" value="1">
                     </div>
-                    
                     <div style="display:grid; grid-template-columns: 1fr 2fr; gap:12px;">
-                        <div><label class="form-label">幣種</label><select id="currency" onchange="liveExchange()"><option value="HKD">HKD</option><option value="RMB">RMB</option><option value="JPY">JPY</option></select></div>
-                        <div><label class="form-label">單價</label><input type="number" id="inputPrice" step="0.01" required oninput="liveExchange()"></div>
+                        <select id="currency" onchange="liveExchange()"><option value="HKD">HKD</option><option value="RMB">RMB</option><option value="JPY">JPY</option></select>
+                        <input type="number" id="inputPrice" step="0.01" placeholder="單價" oninput="liveExchange()">
                     </div>
-                    <div id="exchangePreview" style="margin-top:10px; font-size:12px; color:var(--m-deep-green); font-weight:bold;">Total: HKD 0.00</div>
-                    
-                    <label class="form-label">圖片</label><input type="file" id="imgFile">
+                    <div id="exchangePreview" style="margin:10px 0; font-size:12px; color:var(--m-deep-green); font-weight:bold;">Total: HKD 0.00</div>
+                    <input type="file" id="imgFile">
                     <button type="submit" class="btn-main">SAVE TO ARCHIVE</button>
+                    <button type="button" id="delBtn" class="btn-main" style="background:#cc9999; display:none;" onclick="deleteCurrentItem()">DELETE ITEM</button>
                 </form>
             </div>
         </div>
@@ -152,16 +133,12 @@
 
         <div id="page-settings" class="page">
             <div style="background:#fff; padding:20px; border-radius:var(--radius); border:1px solid var(--m-clay);">
-                <p style="font-size:11px; color:var(--m-brown); letter-spacing:1px;">VIEW SETTING</p>
                 <label class="form-label">GRID SIZE: <span id="gridVal">160</span>px</label>
-                <input type="range" id="gridRange" min="120" max="220" value="160" oninput="updateGridSize(this.value)">
-                
+                <input type="range" id="gridRange" min="120" max="220" oninput="updateGridSize(this.value)">
                 <hr style="border:0.5px solid #eee; margin:25px 0;">
-                <p style="font-size:11px; color:var(--m-brown); letter-spacing:1px;">DATA MANAGEMENT</p>
                 <button onclick="exportData()" class="btn-main" style="background:var(--m-brown);">EXPORT JSON</button>
                 <input type="file" id="importFile" style="display:none" onchange="importData(this)">
                 <button onclick="document.getElementById('importFile').click()" class="btn-main" style="background:var(--m-sage);">IMPORT JSON</button>
-                <button onclick="if(confirm('ERASE EVERYTHING?')) {localStorage.clear(); location.reload();}" class="btn-main" style="background:#cc9999; margin-top:30px;">CLEAR DATA</button>
             </div>
         </div>
     </div>
@@ -195,7 +172,29 @@
         localStorage.setItem(DICT_KEY, JSON.stringify(dict)); 
     }
 
-    // 格子大小控制
+    // 修改後的安全刪除標籤：不影響藏品資料
+    function confirmDeleteTag(key, value) {
+        if (value === 'all') return;
+        if (confirm(`確定從篩選清單移除「${value}」嗎？\n（現有藏品的內容不會被改變）`)) {
+            const dictKey = key + 's';
+            dict[dictKey] = dict[dictKey].filter(v => v !== value);
+            if (filters[key] === value) filters[key] = 'all';
+            save(); renderFilters(); renderSelects(); renderAll();
+            showModal("🗑️", "TAG HIDDEN");
+        }
+    }
+
+    function handleLongPress(element, key, value) {
+        let timer;
+        const start = () => { timer = setTimeout(() => confirmDeleteTag(key, value), 800); };
+        const cancel = () => clearTimeout(timer);
+        element.addEventListener('touchstart', start);
+        element.addEventListener('touchend', cancel);
+        element.addEventListener('mousedown', start);
+        element.addEventListener('mouseup', cancel);
+        element.addEventListener('contextmenu', e => e.preventDefault());
+    }
+
     function updateGridSize(val) {
         document.documentElement.style.setProperty('--dynamic-grid', val + 'px');
         document.getElementById('gridVal').innerText = val;
@@ -238,21 +237,17 @@
             originalCur: document.getElementById('currency').value,
             totalHkd: liveExchange(),
             img: null,
-            timestamp: Date.now()
+            timestamp: editIdx === -1 ? Date.now() : merchList[editIdx].timestamp
         };
 
         const done = (b64) => {
             if(b64) data.img = b64; else if(editIdx !== -1) data.img = merchList[editIdx].img;
             if(editIdx === -1) merchList.unshift(data); else merchList[editIdx] = data;
-            save(); 
-            showModal(); // 彈窗通知
-            
+            save(); showModal("✨", "SAVED!");
             if(editIdx === -1) { 
-                // 核心：上架後不重置選單，只清空款式和價格
                 document.getElementById('pattern').value = ''; 
                 document.getElementById('inputPrice').value = ''; 
                 document.getElementById('imgFile').value = '';
-                document.getElementById('exchangePreview').innerText = "Total: HKD 0.00";
             } else { 
                 document.getElementById('editIndex').value = "-1"; 
                 switchTab('page-gallery', document.querySelectorAll('.nav-item')[0]); 
@@ -265,7 +260,12 @@
         else done(null);
     };
 
-    function showModal() { document.getElementById('overlay').style.display='block'; document.getElementById('success-modal').style.display='block'; }
+    function showModal(icon, text) { 
+        document.getElementById('modal-icon').innerText = icon;
+        document.getElementById('modal-text').innerText = text;
+        document.getElementById('overlay').style.display='block'; 
+        document.getElementById('success-modal').style.display='block'; 
+    }
     function closeModal() { document.getElementById('overlay').style.display='none'; document.getElementById('success-modal').style.display='none'; }
 
     function renderFilters() {
@@ -276,7 +276,9 @@
             row.appendChild(all);
             list.forEach(item => {
                 let chip = document.createElement('div'); chip.className = `filter-chip ${filters[key]===item?'active':''}`;
-                chip.innerText = item; chip.onclick = () => { filters[key] = item; renderFilters(); renderAll(); };
+                chip.innerText = item; 
+                chip.onclick = () => { filters[key] = item; renderFilters(); renderAll(); };
+                handleLongPress(chip, key, item);
                 row.appendChild(chip);
             });
             return row;
@@ -289,7 +291,6 @@
 
     function renderAll() {
         const rList = document.getElementById('readyList'); const wList = document.getElementById('waitList');
-        if(!rList) return;
         let items = merchList.map((item, index) => ({...item, originalIndex: index}))
             .filter(i => (filters.work==='all' || i.work===filters.work) && (filters.role==='all' || i.role===filters.role) && (filters.type==='all' || i.type===filters.type));
         
@@ -302,7 +303,7 @@
         rList.className = `list-container ${viewMode}`;
         wList.className = `list-container ${viewMode}`;
 
-        const gen = (i) => `<div class="item-card" onclick="editItem(${i.originalIndex})"><div class="img-box"><img src="${i.img || 'https://via.placeholder.com/200/f2efeb/888'}"></div><div class="info"><div style="font-size:9px;color:var(--m-brown);">${i.role} · ${i.type}</div><div style="font-size:11px;font-weight:bold;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${i.pattern || 'Untitled'}</div><div style="font-size:11px;color:var(--m-deep-green);">HK$ ${i.totalHkd} <small style="opacity:0.5">x${i.qty}</small></div></div></div>`;
+        const gen = (i) => `<div class="item-card" onclick="editItem(${i.originalIndex})"><div class="img-box"><img src="${i.img || 'https://via.placeholder.com/200/f2efeb/888'}"></div><div class="info"><div style="font-size:9px;color:var(--m-brown);">${i.role} · ${i.type}</div><div style="font-size:11px;font-weight:bold;">${i.pattern || 'Untitled'}</div><div style="font-size:11px;color:var(--m-deep-green);">HK$ ${i.totalHkd} <small>x${i.qty}</small></div></div></div>`;
         rList.innerHTML = items.filter(i => i.status === '現貨').map(gen).join('');
         wList.innerHTML = items.filter(i => i.status === '非現貨').map(gen).join('');
     }
@@ -310,22 +311,8 @@
     function renderStats() {
         if(chart) chart.destroy();
         const ctx = document.getElementById('statChart').getContext('2d');
-        const data = {}; merchList.forEach(i => { data[i.work] = (data[i.work] || 0) + parseFloat(i.totalHkd); });
+        const data = {}; merchList.forEach(i => { if(i.work) data[i.work] = (data[i.work] || 0) + parseFloat(i.totalHkd); });
         chart = new Chart(ctx, { type: 'pie', data: { labels: Object.keys(data), datasets: [{ data: Object.values(data), backgroundColor: ['#6b7a63', '#acc1ad', '#a68b7c', '#d5cabd', '#e5ddd5'] }] }, options: { plugins: { legend: { position: 'bottom', labels: { font: { size: 10 } } } } } });
-    }
-
-    function exportData() { const blob = new Blob([JSON.stringify({merchList, dict})], {type: 'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `archive_${new Date().toLocaleDateString()}.json`; a.click(); }
-    function importData(input) {
-        const file = input.files[0]; if(!file) return;
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            try {
-                const imported = JSON.parse(e.target.result);
-                merchList = imported.merchList || []; dict = imported.dict || { works: [], roles: [], types: [] };
-                save(); init(); showModal();
-            } catch(err) { alert("Format Error"); }
-        };
-        reader.readAsText(file);
     }
 
     function editItem(idx) {
@@ -333,19 +320,38 @@
         document.getElementById('workSelect').value = i.work; document.getElementById('roleSelect').value = i.role; document.getElementById('typeSelect').value = i.type;
         document.getElementById('pattern').value = i.pattern || ""; document.getElementById('status').value = i.status; document.getElementById('qty').value = i.qty;
         document.getElementById('currency').value = i.originalCur; document.getElementById('inputPrice').value = i.originalPrice;
+        document.getElementById('delBtn').style.display = 'block';
         switchTab('page-recent', document.querySelectorAll('.nav-item')[2]);
     }
 
+    function deleteCurrentItem() {
+        const idx = parseInt(document.getElementById('editIndex').value);
+        if(idx !== -1 && confirm("確定刪除此藏品？")) {
+            merchList.splice(idx, 1); save(); showModal("🗑️", "DELETED");
+            document.getElementById('editIndex').value = "-1";
+            document.getElementById('delBtn').style.display = 'none';
+            switchTab('page-gallery', document.querySelectorAll('.nav-item')[0]);
+            renderAll();
+        }
+    }
+
     function renderSelects() {
-        const setup = (id, list) => { const s = document.getElementById(id); const cur = s.value; s.innerHTML = `<option value="">請選擇...</option>` + list.map(i => `<option value="${i}">${i}</option>`).join('') + `<option value="NEW">+ 新增...</option>`; if(list.includes(cur)) s.value = cur; };
+        const setup = (id, list) => { const s = document.getElementById(id); const cur = s.value; s.innerHTML = `<option value="">選擇...</option>` + list.map(i => `<option value="${i}">${i}</option>`).join('') + `<option value="NEW">+ 新增...</option>`; if(list.includes(cur)) s.value = cur; };
         setup('workSelect', dict.works); setup('roleSelect', dict.roles); setup('typeSelect', dict.types);
     }
 
     function toggleInput(s, i) { document.getElementById(i).style.display = document.getElementById(s).value === 'NEW' ? 'block' : 'none'; }
     function liveExchange() { const p = parseFloat(document.getElementById('inputPrice').value)||0, q = parseInt(document.getElementById('qty').value)||1, cur = document.getElementById('currency').value; const t = (p * q * rates[cur]).toFixed(2); document.getElementById('exchangePreview').innerText = `Total: HKD ${t}`; return t; }
-    function switchTab(id, btn) { document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); document.getElementById(id).classList.add('active'); document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); if(btn) btn.classList.add('active'); if(id==='page-stats') renderStats(); renderAll(); }
+    function switchTab(id, btn) { document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); document.getElementById(id).classList.add('active'); document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); if(btn) btn.classList.add('active'); if(id==='page-stats') renderStats(); if(id!=='page-recent') document.getElementById('delBtn').style.display='none'; renderAll(); }
     function openPage(id) { document.getElementById('cover-page').classList.add('open'); document.getElementById('bottom-nav').style.display='flex'; switchTab(id, document.querySelectorAll('.nav-item')[id==='page-gallery'?0 : id==='page-pending'?1:2]); }
     function closePage() { document.getElementById('cover-page').classList.remove('open'); document.getElementById('bottom-nav').style.display='none'; }
+    function exportData() { const blob = new Blob([JSON.stringify({merchList, dict})], {type: 'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `archive_master.json`; a.click(); }
+    function importData(input) {
+        const file = input.files[0]; if(!file) return;
+        const reader = new FileReader();
+        reader.onload = (e) => { try { const d = JSON.parse(e.target.result); merchList = d.merchList; dict = d.dict; save(); init(); showModal("📥", "IMPORTED"); } catch(err) { alert("Error"); } };
+        reader.readAsText(file);
+    }
 
     window.onload = init;
 </script>
