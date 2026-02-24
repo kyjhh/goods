@@ -34,7 +34,7 @@
         .symbol-btn.active { color: var(--m-deep-green); }
 
         .filter-row { display: flex; overflow-x: auto; white-space: nowrap; gap: 6px; margin-bottom: 8px; scrollbar-width: none; }
-        .filter-chip { background: var(--m-clay); padding: 5px 12px; border-radius: 2px; font-size: 10px; cursor: pointer; color: #8a8a8a; }
+        .filter-chip { background: var(--m-clay); padding: 5px 12px; border-radius: 2px; font-size: 10px; cursor: pointer; color: #8a8a8a; user-select: none; -webkit-user-select: none; }
         .filter-chip.active { background: var(--m-sage); color: white; }
 
         .list-container.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(var(--grid-size, 160px), 1fr)); gap: 15px; }
@@ -53,7 +53,7 @@
         .btn-main { background: var(--m-deep-green); color: white; border: none; padding: 14px; width: 100%; font-size: 12px; cursor: pointer; border-radius: 2px; }
         input, select { width: 100%; padding: 12px; border-radius: 2px; border: 1px solid var(--m-clay); background: #fafafa; font-size: 13px; margin-top: 8px; box-sizing: border-box; }
         
-        #multi-delete-bar { display: none; background: var(--m-brown); color: white; padding: 10px; text-align: center; font-size: 12px; letter-spacing: 2px; cursor: pointer; margin-bottom: 10px; border-radius: 2px; }
+        #multi-delete-bar { display: none; background: var(--m-brown); color: white; padding: 10px; text-align: center; font-size: 11px; letter-spacing: 2px; cursor: pointer; margin-bottom: 10px; border-radius: 2px; }
     </style>
 </head>
 <body>
@@ -123,16 +123,27 @@
             </div>
         </div>
 
+        <div id="page-settings" class="page">
+            <div class="control-panel">
+                <span style="font-size:11px;">GRID SCALE</span>
+                <input type="range" min="100" max="300" value="160" oninput="updateGridSize(this.value)">
+            </div>
+            <button onclick="exportData()" class="btn-main" style="background:var(--m-brown);">EXPORT JSON</button>
+            <button onclick="document.getElementById('import-file').click()" class="btn-main" style="background:var(--m-brown); margin-top:10px;">IMPORT JSON</button>
+            <input type="file" id="import-file" hidden onchange="importData(this)">
+            <p style="font-size: 10px; color: var(--m-brown); margin-top: 20px; text-align: center;">Tip: Long-press tags in Library to delete them.</p>
+        </div>
+
         <div id="page-recent" class="page">
             <div style="background:#fff; padding:25px; border:1px solid var(--m-clay);">
                 <form id="merchForm">
                     <input type="hidden" id="editIndex" value="-1">
                     <select id="workSelect" onchange="toggleInput('workSelect', 'workInput')"></select>
-                    <input type="text" id="workInput" style="display:none;" placeholder="Work Name">
+                    <input type="text" id="workInput" style="display:none;" placeholder="New Work Name">
                     <select id="roleSelect" onchange="toggleInput('roleSelect', 'roleInput')"></select>
-                    <input type="text" id="roleInput" style="display:none;" placeholder="Role Name">
+                    <input type="text" id="roleInput" style="display:none;" placeholder="New Role Name">
                     <select id="typeSelect" onchange="toggleInput('typeSelect', 'typeInput')"></select>
-                    <input type="text" id="typeInput" style="display:none;" placeholder="Type Name">
+                    <input type="text" id="typeInput" style="display:none;" placeholder="New Type Name">
                     <input type="text" id="pattern" placeholder="Pattern / Title">
                     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
                         <select id="status"><option value="現貨">IN STOCK</option><option value="非現貨">PENDING</option></select>
@@ -148,16 +159,6 @@
                 </form>
             </div>
         </div>
-
-        <div id="page-settings" class="page">
-            <div class="control-panel">
-                <span style="font-size:11px;">GRID SCALE</span>
-                <input type="range" min="100" max="300" value="160" oninput="updateGridSize(this.value)">
-            </div>
-            <button onclick="exportData()" class="btn-main" style="background:var(--m-brown);">EXPORT JSON</button>
-            <button onclick="document.getElementById('import-file').click()" class="btn-main" style="background:var(--m-brown); margin-top:10px;">IMPORT JSON</button>
-            <input type="file" id="import-file" hidden onchange="importData(this)">
-        </div>
     </div>
 
     <nav class="nav-bar" id="bottom-nav" style="display:none;">
@@ -169,51 +170,70 @@
     </nav>
 
 <script>
-    // 資料庫名字絕對路徑
     const STORAGE_KEY = 'archive_master';
     const DICT_KEY = 'archive_dict_master';
     const rates = { RMB: 1.08, JPY: 0.052, HKD: 1.0 };
     
     let merchList = [];
     let dict = {};
-    let pieChart = null, barChart = null;
     let pressTimer = null;
+    let tagPressTimer = null;
     let isSelectMode = false;
     let selectedIndices = new Set();
     let filters = { work: 'all', role: 'all', type: 'all' };
     let sortMode = 'date', viewMode = 'grid';
+    let pieChart = null, barChart = null;
 
-    // 關鍵修正：啟動時立即強制加載
     function init() {
-        const savedData = localStorage.getItem(STORAGE_KEY);
-        const savedDict = localStorage.getItem(DICT_KEY);
-        
-        merchList = savedData ? JSON.parse(savedData) : [];
-        dict = savedDict ? JSON.parse(savedDict) : { 
+        merchList = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+        dict = JSON.parse(localStorage.getItem(DICT_KEY)) || { 
             works: ["世界計畫", "V家異形舞台"], 
             roles: ["宵崎奏"], 
             types: ["徽章", "立牌", "V家異形舞台"] 
         };
-        
+        renderAll();
         renderSelects();
         renderFilters();
-        renderAll();
         updateSymbolUI();
     }
 
     function save() { 
         localStorage.setItem(STORAGE_KEY, JSON.stringify(merchList)); 
         localStorage.setItem(DICT_KEY, JSON.stringify(dict)); 
+        renderSelects();
+        renderFilters();
     }
+
+    // --- 標籤長按邏輯 ---
+    function handleTagStart(dictKey, val) {
+        tagPressTimer = setTimeout(() => {
+            if (val === 'all') return;
+            if (confirm(`Delete category "${val}" from the list?`)) {
+                const listKey = dictKey === 'work' ? 'works' : dictKey === 'role' ? 'roles' : 'types';
+                dict[listKey] = dict[listKey].filter(v => v !== val);
+                if (filters[dictKey] === val) filters[dictKey] = 'all';
+                save();
+                showToast("CATEGORY REMOVED");
+            }
+        }, 800);
+    }
+    function handleTagEnd() { clearTimeout(tagPressTimer); }
 
     function renderFilters() {
         const build = (list, key) => {
             let html = `<div class="filter-chip ${filters[key]==='all'?'active':''}" onclick="setFilter('${key}','all')">ALL</div>`;
-            html += list.map(item => `<div class="filter-chip ${filters[key]===item?'active':''}" onclick="setFilter('${key}','${item}')">${item}</div>`).join('');
-            return `<div class="filter-row" style="display:flex; overflow-x:auto; gap:6px; margin-bottom:8px; scrollbar-width:none;">${html}</div>`;
+            html += list.map(item => `
+                <div class="filter-chip ${filters[key]===item?'active':''}" 
+                     onclick="setFilter('${key}','${item}')"
+                     ontouchstart="handleTagStart('${key}','${item}')" ontouchend="handleTagEnd()"
+                     onmousedown="handleTagStart('${key}','${item}')" onmouseup="handleTagEnd()">
+                    ${item}
+                </div>`).join('');
+            return `<div class="filter-row">${html}</div>`;
         };
-        document.getElementById('lib-filter-box').innerHTML = build(dict.works, 'work') + build(dict.roles, 'role') + build(dict.types, 'type');
-        document.getElementById('wait-filter-box').innerHTML = build(dict.works, 'work') + build(dict.roles, 'role') + build(dict.types, 'type');
+        const filterHTML = build(dict.works, 'work') + build(dict.roles, 'role') + build(dict.types, 'type');
+        document.getElementById('lib-filter-box').innerHTML = filterHTML;
+        document.getElementById('wait-filter-box').innerHTML = filterHTML;
     }
 
     function setFilter(k, v) { filters[k] = v; renderAll(); renderFilters(); }
@@ -247,7 +267,7 @@
                  onmousedown="handleStart(${i.originalIndex})" onmouseup="handleEnd()"
                  onclick="handleCardClick(event, ${i.originalIndex})">
                 ${i.status === '非現貨' && !isSelectMode ? `<div class="quick-check" onclick="quickCheckIn(event, ${i.originalIndex})">✓</div>` : ''}
-                <div class="img-box"><img src="${i.img || 'https://via.placeholder.com/200/f2efeb/888'}" loading="lazy"></div>
+                <div class="img-box"><img src="${i.img || 'https://via.placeholder.com/200/f2efeb/888'}"></div>
                 <div class="info">
                     <div style="font-size:9px; color:var(--m-brown);">${i.role} · ${i.type}</div>
                     <div style="font-size:11px; margin:2px 0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${i.pattern || 'Untitled'}</div>
@@ -259,7 +279,17 @@
         wList.innerHTML = items.filter(i => i.status === '非現貨').map(genHtml).join('');
     }
 
-    function handleStart(idx) { pressTimer = setTimeout(() => { if(!isSelectMode) { isSelectMode = true; selectedIndices.add(idx); document.getElementById('multi-delete-bar').style.display = 'block'; renderAll(); if(window.navigator.vibrate) window.navigator.vibrate(50); } }, 800); }
+    function handleStart(idx) { 
+        pressTimer = setTimeout(() => { 
+            if(!isSelectMode) { 
+                isSelectMode = true; 
+                selectedIndices.add(idx); 
+                document.getElementById('multi-delete-bar').style.display = 'block'; 
+                renderAll(); 
+                if(window.navigator.vibrate) window.navigator.vibrate(50); 
+            } 
+        }, 800); 
+    }
     function handleEnd() { clearTimeout(pressTimer); }
     function handleCardClick(e, idx) {
         if(isSelectMode) {
@@ -268,7 +298,12 @@
         } else { editItem(idx); }
     }
     function exitSelectMode() { if(!isSelectMode) return false; isSelectMode = false; selectedIndices.clear(); document.getElementById('multi-delete-bar').style.display = 'none'; renderAll(); return true; }
-    function deleteSelected() { if(confirm(`DELETE ${selectedIndices.size} ITEMS?`)) { merchList = merchList.filter((_, index) => !selectedIndices.has(index)); save(); exitSelectMode(); showToast("DELETED"); } }
+    function deleteSelected() { 
+        if(confirm(`DELETE ${selectedIndices.size} ITEMS?`)) { 
+            merchList = merchList.filter((_, index) => !selectedIndices.has(index)); 
+            save(); exitSelectMode(); showToast("DELETED"); 
+        } 
+    }
     function quickCheckIn(e, idx) { e.stopPropagation(); merchList[idx].status = '現貨'; save(); renderAll(); showToast("ARRIVED"); }
     function editItem(idx) {
         const i = merchList[idx]; document.getElementById('editIndex').value = idx;
@@ -295,10 +330,18 @@
     document.getElementById('merchForm').onsubmit = function(e) {
         e.preventDefault();
         const editIdx = parseInt(document.getElementById('editIndex').value);
-        const getV = (s, i, dk) => { let v = document.getElementById(s).value; if(v === 'NEW') { v = document.getElementById(i).value.trim(); if(v && !dict[dk].includes(v)) dict[dk].push(v); } return v; };
+        const getV = (s, i, dk) => { 
+            let v = document.getElementById(s).value; 
+            if(v === 'NEW') { v = document.getElementById(i).value.trim(); if(v && !dict[dk].includes(v)) dict[dk].push(v); } 
+            return v; 
+        };
         const data = { work: getV('workSelect', 'workInput', 'works'), role: getV('roleSelect', 'roleInput', 'roles'), type: getV('typeSelect', 'typeInput', 'types'), pattern: document.getElementById('pattern').value, status: document.getElementById('status').value, qty: parseInt(document.getElementById('qty').value), originalPrice: parseFloat(document.getElementById('inputPrice').value), originalCur: document.getElementById('currency').value, totalHkd: liveExchange(), img: null };
         const file = document.getElementById('imgFile').files[0];
-        const done = (b64) => { if(b64) data.img = b64; else if(editIdx !== -1) data.img = merchList[editIdx].img; if(editIdx === -1) merchList.unshift(data); else merchList[editIdx] = data; save(); renderSelects(); switchTab('page-gallery', document.querySelectorAll('.nav-item')[0]); };
+        const done = (b64) => { 
+            if(b64) data.img = b64; else if(editIdx !== -1) data.img = merchList[editIdx].img; 
+            if(editIdx === -1) merchList.unshift(data); else merchList[editIdx] = data; 
+            save(); switchTab('page-gallery', document.querySelectorAll('.nav-item')[0]); 
+        };
         if(file) { const fr = new FileReader(); fr.onload = () => done(fr.result); fr.readAsDataURL(file); } else done(null);
     };
 
@@ -320,7 +363,6 @@
     function exportData() { const b = new Blob([JSON.stringify({merchList, dict})], {type: 'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = `archive_master.json`; a.click(); }
     function importData(input) { const fr = new FileReader(); fr.onload = (e) => { const d = JSON.parse(e.target.result); merchList = d.merchList; dict = d.dict; save(); location.reload(); }; fr.readAsText(input.files[0]); }
 
-    // 初始化啟動
     window.onload = init;
 </script>
 </body>
