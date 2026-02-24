@@ -14,7 +14,6 @@
         }
         body, html { margin: 0; padding: 0; height: 100%; font-family: 'PingFang HK', 'Microsoft JhengHei', sans-serif; background: var(--bg); color: var(--text); overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
         
-        /* 封面頁面 */
         #cover-page { 
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
             background: #d2cdc1; background-size: cover; background-position: center;
@@ -59,14 +58,15 @@
 
         .list-container.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(var(--dynamic-grid), 1fr)); gap: 15px; }
         .list-container.list { display: flex; flex-direction: column; gap: 10px; }
-        .item-card { background: #fff; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--m-clay); user-select: none; -webkit-user-select: none; display: flex; flex-direction: column; }
+        .item-card { background: #fff; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--m-clay); user-select: none; -webkit-user-select: none; display: flex; flex-direction: column; cursor: pointer; transition: transform 0.1s; }
+        .item-card:active { transform: scale(0.98); }
         .list .item-card { flex-direction: row; align-items: center; height: 90px; }
         .list .img-box { width: 90px; height: 90px; flex-shrink: 0; }
         .list .info { padding: 0 15px; }
 
-        .img-box { width: 100%; aspect-ratio: 1; background: #eee; overflow: hidden; }
+        .img-box { width: 100%; aspect-ratio: 1; background: #eee; overflow: hidden; pointer-events: none; }
         .img-box img { width: 100%; height: 100%; object-fit: cover; }
-        .info { padding: 10px; flex-grow: 1; overflow: hidden; }
+        .info { padding: 10px; flex-grow: 1; overflow: hidden; pointer-events: none; }
 
         .input-group { margin-bottom: 15px; }
         .input-label { font-size: 10px; color: var(--m-brown); font-weight: bold; letter-spacing: 1px; margin-bottom: 4px; display: block; }
@@ -236,12 +236,20 @@
     function toggleInput(s, i) { document.getElementById(i).style.display = document.getElementById(s).value === 'NEW' ? 'block' : 'none'; }
     function liveExchange() { const p = parseFloat(document.getElementById('inputPrice').value)||0, q = parseInt(document.getElementById('qty').value)||1, cur = document.getElementById('currency').value; const t = (p * q * rates[cur]).toFixed(2); document.getElementById('exchangePreview').innerText = `總額: HKD ${t}`; return t; }
 
+    // 通用的長按處理邏輯
     function handleLongPress(element, callback) {
         let timer;
-        const start = () => { timer = setTimeout(() => { if (window.navigator.vibrate) window.navigator.vibrate(50); callback(); }, 800); };
+        const start = (e) => { 
+            timer = setTimeout(() => { 
+                if (window.navigator.vibrate) window.navigator.vibrate(50); 
+                callback(); 
+            }, 800); 
+        };
         const cancel = () => clearTimeout(timer);
-        element.addEventListener('touchstart', start); element.addEventListener('touchend', cancel);
-        element.addEventListener('mousedown', start); element.addEventListener('mouseup', cancel);
+        element.addEventListener('touchstart', start, {passive: true}); 
+        element.addEventListener('touchend', cancel);
+        element.addEventListener('mousedown', start); 
+        element.addEventListener('mouseup', cancel);
         element.addEventListener('contextmenu', e => e.preventDefault());
     }
 
@@ -288,6 +296,7 @@
         const libSearch = document.getElementById('lib-search').value.toLowerCase();
         const waitSearch = document.getElementById('wait-search').value.toLowerCase();
         const wishSearch = document.getElementById('wish-search').value.toLowerCase();
+        
         const processList = (targetStatus, searchVal) => {
             let filtered = merchList.map((item, index) => ({...item, originalIndex: index}))
                 .filter(i => i.status === targetStatus)
@@ -299,6 +308,7 @@
             else if(sortMode==='qty') filtered.sort((a,b)=> (b.qty - a.qty) * multi);
             return filtered;
         };
+
         const renderItems = (items, container) => {
             container.innerHTML = ''; container.className = `list-container ${viewMode}`;
             items.forEach(i => {
@@ -307,10 +317,23 @@
                     <div class="info"><div style="font-size:9px;color:var(--m-brown);">${i.role || ''} ${i.type || ''}</div>
                     <div style="font-size:11px;font-weight:bold;">${i.pattern || '無標題'}</div>
                     <div style="font-size:11px;color:var(--m-deep-green);">HK$ ${i.totalHkd} <small>x${i.qty}</small></div></div>`;
+                
+                // 點擊編輯
                 card.onclick = () => editItem(i.originalIndex);
+                // 長按刪除
+                handleLongPress(card, () => {
+                    if(confirm(`確定刪除「${i.pattern || '未命名'}」？`)) {
+                        merchList.splice(i.originalIndex, 1);
+                        save();
+                        renderAll();
+                        showModal("🗑️", "項目已刪除");
+                    }
+                });
+                
                 container.appendChild(card);
             });
         };
+
         const readyItems = processList('現貨', libSearch); const waitItems = processList('非現貨', waitSearch); const wishItems = processList('願望', wishSearch);
         document.getElementById('lib-count').innerText = `顯示: ${readyItems.length} / ${merchList.filter(i=>i.status==='現貨').length}`;
         document.getElementById('wait-count').innerText = `顯示: ${waitItems.length} / ${merchList.filter(i=>i.status==='非現貨').length}`;
@@ -387,15 +410,16 @@
             if(b64) data.img = b64; else if(editIdx !== -1) data.img = merchList[editIdx].img;
             if(editIdx === -1) merchList.unshift(data); else merchList[editIdx] = data;
             save(); 
-            showModal("✓", "已儲存"); 
             document.getElementById('merchForm').reset(); 
             document.getElementById('editIndex').value = "-1"; 
             document.getElementById('delBtn').style.display = 'none';
             renderSelects(); renderFilters(); renderAll(); 
+            // 修正順序：先顯示彈窗，再跳轉
+            showModal("✓", "已儲存");
             switchTab('page-gallery', document.querySelectorAll('.nav-item')[0]);
         };
         const f = document.getElementById('imgFile').files[0];
-        if(f) { const fr = new FileReader(); fr.onload = () => done(fr.result); fr.readAsDataURL(f); } else done(null);
+        if(f) { const fr = new FileReader(); fr.onload = () => done(fr.result); fr.readAsDataURL(f); } else { done(null); }
     };
     window.onload = init;
 </script>
