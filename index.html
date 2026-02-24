@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Morandi Archive - V27 Stats Pro</title>
+    <title>Morandi Archive - V28 Search & Guide</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
@@ -33,9 +33,15 @@
         .symbol-btn { cursor: pointer; transition: color 0.3s; }
         .symbol-btn.active { color: var(--m-deep-green); }
 
+        /* 搜索框樣式 */
+        .search-input { margin-bottom: 10px; padding: 8px 12px; font-size: 12px; border: 1px solid #eee; background: #fafafa; border-radius: 6px; }
+
         .filter-row { display: flex; overflow-x: auto; white-space: nowrap; gap: 6px; margin-bottom: 8px; scrollbar-width: none; }
         .filter-chip { background: var(--m-clay); padding: 5px 12px; border-radius: 12px; font-size: 10px; cursor: pointer; color: #8a8a8a; user-select: none; -webkit-user-select: none; }
         .filter-chip.active { background: var(--m-sage); color: white; }
+        
+        /* 數量統計標籤 */
+        .count-tag { font-size: 9px; color: #aaa; text-align: right; margin-bottom: 5px; letter-spacing: 1px; }
 
         .list-container.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(var(--dynamic-grid), 1fr)); gap: 15px; }
         .list-container.list { display: flex; flex-direction: column; gap: 10px; }
@@ -52,7 +58,6 @@
         input, select, textarea { width: 100%; padding: 12px; border-radius: var(--radius); border: 1px solid var(--m-clay); background: #fafafa; font-size: 13px; margin-top: 6px; box-sizing: border-box; outline: none; }
         textarea { height: 80px; resize: none; font-family: inherit; }
         
-        /* 統計專用樣式 */
         .stat-card { background:#fff; padding:20px; border-radius:var(--radius); border:1px solid var(--m-clay); margin-bottom: 20px; }
         .stat-title { font-size: 12px; font-weight: bold; color: var(--m-brown); margin-bottom: 15px; letter-spacing: 1px; border-left: 3px solid var(--m-sage); padding-left: 10px; }
 
@@ -85,6 +90,7 @@
 
         <div id="page-gallery" class="page">
             <div class="control-panel">
+                <input type="text" class="search-input" id="lib-search" placeholder="搜尋款式或備註..." oninput="renderAll()">
                 <div class="symbol-row">
                     <div class="symbol-group">
                         <span class="symbol-btn sort-date" onclick="toggleSort('date')">🕒</span>
@@ -98,12 +104,17 @@
                     </div>
                 </div>
                 <div id="lib-filter-box"></div>
+                <div id="lib-count" class="count-tag">Showing: 0 / 0</div>
             </div>
             <div id="readyList" class="list-container grid"></div>
         </div>
 
         <div id="page-pending" class="page">
-            <div class="control-panel"><div id="wait-filter-box"></div></div>
+            <div class="control-panel">
+                <input type="text" class="search-input" id="wait-search" placeholder="搜尋款式或備註..." oninput="renderAll()">
+                <div id="wait-filter-box"></div>
+                <div id="wait-count" class="count-tag">Showing: 0 / 0</div>
+            </div>
             <div id="waitList" class="list-container grid"></div>
         </div>
 
@@ -112,13 +123,13 @@
                 <form id="merchForm">
                     <input type="hidden" id="editIndex" value="-1">
                     <select id="workSelect" onchange="toggleInput('workSelect', 'workInput')"></select>
-                    <input type="text" id="workInput" style="display:none;" placeholder="新作品">
+                    <input type="text" id="workInput" style="display:none;" placeholder="新作品 (例如: 世界計畫)">
                     <select id="roleSelect" onchange="toggleInput('roleSelect', 'roleInput')"></select>
-                    <input type="text" id="roleInput" style="display:none;" placeholder="新角色">
+                    <input type="text" id="roleInput" style="display:none;" placeholder="新角色 (例如: 初音未來)">
                     <select id="typeSelect" onchange="toggleInput('typeSelect', 'typeInput')"></select>
-                    <input type="text" id="typeInput" style="display:none;" placeholder="新類別">
-                    <input type="text" id="pattern" placeholder="款式名稱">
-                    <textarea id="note" placeholder="文字描述 / 備註..."></textarea>
+                    <input type="text" id="typeInput" style="display:none;" placeholder="新類別 (例如: 徽章/立牌)">
+                    <input type="text" id="pattern" placeholder="款式名稱 (例如: 4週年限定款)">
+                    <textarea id="note" placeholder="文字描述 / 備註 (例如: 二手店購入、有傷...)"></textarea>
                     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
                         <select id="status"><option value="現貨">現貨</option><option value="非現貨">非現</option></select>
                         <input type="number" id="qty" value="1">
@@ -329,34 +340,58 @@
 
     function renderAll() {
         const rList = document.getElementById('readyList'); const wList = document.getElementById('waitList');
-        let items = merchList.map((item, index) => ({...item, originalIndex: index}))
-            .filter(i => (filters.work==='all' || i.work===filters.work) && (filters.role==='all' || i.role===filters.role) && (filters.type==='all' || i.type===filters.type));
-        const multi = sortDesc ? 1 : -1;
-        if(sortMode==='date') items.sort((a,b)=> (b.timestamp - a.timestamp) * multi);
-        else if(sortMode==='price') items.sort((a,b)=> (b.totalHkd - a.totalHkd) * multi);
-        else if(sortMode==='qty') items.sort((a,b)=> (b.qty - a.qty) * multi);
-        else if(sortMode==='name') items.sort((a,b)=> (a.pattern||"").localeCompare(b.pattern||"") * (sortDesc ? 1 : -1));
-        
-        rList.className = `list-container ${viewMode}`; wList.className = `list-container ${viewMode}`;
-        rList.innerHTML = ''; wList.innerHTML = '';
+        const libSearch = document.getElementById('lib-search').value.toLowerCase();
+        const waitSearch = document.getElementById('wait-search').value.toLowerCase();
 
-        items.forEach(i => {
-            const card = document.createElement('div');
-            card.className = 'item-card';
-            const notePreview = (viewMode==='list' && i.note) ? `<div style="font-size:9px;color:#999;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${i.note}</div>` : '';
-            card.innerHTML = `<div class="img-box"><img src="${i.img || 'https://via.placeholder.com/200/f2efeb/888'}"></div><div class="info"><div style="font-size:9px;color:var(--m-brown);">${i.role || 'NA'} · ${i.type || 'NA'}</div><div style="font-size:11px;font-weight:bold;">${i.pattern || 'Untitled'}</div>${notePreview}<div style="font-size:11px;color:var(--m-deep-green);">HK$ ${i.totalHkd} <small>x${i.qty}</small></div></div>`;
-            card.onclick = () => editItem(i.originalIndex);
-            handleLongPress(card, () => confirmDeleteCard(i.originalIndex));
-            if(i.status === '現貨') rList.appendChild(card); else wList.appendChild(card);
-        });
+        const processList = (isReady) => {
+            const searchVal = isReady ? libSearch : waitSearch;
+            const targetStatus = isReady ? '現貨' : '非現貨';
+            
+            let filtered = merchList.map((item, index) => ({...item, originalIndex: index}))
+                .filter(i => i.status === targetStatus)
+                .filter(i => (filters.work==='all' || i.work===filters.work) && (filters.role==='all' || i.role===filters.role) && (filters.type==='all' || i.type===filters.type))
+                .filter(i => {
+                    const content = (i.pattern + (i.note || "")).toLowerCase();
+                    return content.includes(searchVal);
+                });
+
+            const multi = sortDesc ? 1 : -1;
+            if(sortMode==='date') filtered.sort((a,b)=> (b.timestamp - a.timestamp) * multi);
+            else if(sortMode==='price') filtered.sort((a,b)=> (b.totalHkd - a.totalHkd) * multi);
+            else if(sortMode==='qty') filtered.sort((a,b)=> (b.qty - a.qty) * multi);
+            else if(sortMode==='name') filtered.sort((a,b)=> (a.pattern||"").localeCompare(b.pattern||"") * (sortDesc ? 1 : -1));
+            
+            return filtered;
+        };
+
+        const readyItems = processList(true);
+        const waitItems = processList(false);
+
+        // 更新數量統計
+        document.getElementById('lib-count').innerText = `Showing: ${readyItems.length} / ${merchList.filter(i=>i.status==='現貨').length}`;
+        document.getElementById('wait-count').innerText = `Showing: ${waitItems.length} / ${merchList.filter(i=>i.status==='非現貨').length}`;
+
+        const renderItems = (items, container) => {
+            container.innerHTML = '';
+            container.className = `list-container ${viewMode}`;
+            items.forEach(i => {
+                const card = document.createElement('div');
+                card.className = 'item-card';
+                const notePreview = (viewMode==='list' && i.note) ? `<div style="font-size:9px;color:#999;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${i.note}</div>` : '';
+                card.innerHTML = `<div class="img-box"><img src="${i.img || 'https://via.placeholder.com/200/f2efeb/888'}"></div><div class="info"><div style="font-size:9px;color:var(--m-brown);">${i.role || 'NA'} · ${i.type || 'NA'}</div><div style="font-size:11px;font-weight:bold;">${i.pattern || 'Untitled'}</div>${notePreview}<div style="font-size:11px;color:var(--m-deep-green);">HK$ ${i.totalHkd} <small>x${i.qty}</small></div></div>`;
+                card.onclick = () => editItem(i.originalIndex);
+                handleLongPress(card, () => confirmDeleteCard(i.originalIndex));
+                container.appendChild(card);
+            });
+        };
+
+        renderItems(readyItems, rList);
+        renderItems(waitItems, wList);
     }
 
     function renderStats() {
-        // 清除舊圖表
         Object.values(charts).forEach(c => c.destroy());
         const colors = ['#6b7a63', '#acc1ad', '#a68b7c', '#d5cabd', '#e5ddd5', '#c2b2a3', '#96a48b'];
-
-        // 1. 每月支出走勢
         const monthData = {};
         merchList.forEach(i => {
             const date = new Date(i.timestamp);
@@ -364,50 +399,17 @@
             monthData[key] = (monthData[key] || 0) + parseFloat(i.totalHkd);
         });
         const monthKeys = Object.keys(monthData).sort((a,b) => new Date(a) - new Date(b));
-        charts.monthly = new Chart(document.getElementById('monthlyChart'), {
-            type: 'line',
-            data: { labels: monthKeys, datasets: [{ label: 'HKD', data: monthKeys.map(k => monthData[k]), borderColor: '#6b7a63', tension: 0.3, fill: true, backgroundColor: 'rgba(107, 122, 99, 0.1)' }] },
-            options: { plugins: { legend: { display: false } } }
-        });
-
-        // 2. 作品支出圓餅圖
+        charts.monthly = new Chart(document.getElementById('monthlyChart'), { type: 'line', data: { labels: monthKeys, datasets: [{ label: 'HKD', data: monthKeys.map(k => monthData[k]), borderColor: '#6b7a63', tension: 0.3, fill: true, backgroundColor: 'rgba(107, 122, 99, 0.1)' }] }, options: { plugins: { legend: { display: false } } } });
         const workData = {};
         merchList.forEach(i => { if(i.work) workData[i.work] = (workData[i.work] || 0) + parseFloat(i.totalHkd); });
-        charts.work = new Chart(document.getElementById('workChart'), {
-            type: 'pie',
-            data: { labels: Object.keys(workData), datasets: [{ data: Object.values(workData), backgroundColor: colors }] },
-            options: { plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 10 } } } } }
-        });
-
-        // 3. 角色支出排行 (前7名)
+        charts.work = new Chart(document.getElementById('workChart'), { type: 'pie', data: { labels: Object.keys(workData), datasets: [{ data: Object.values(workData), backgroundColor: colors }] }, options: { plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 10 } } } } } });
         const roleData = {};
         merchList.forEach(i => { if(i.role) roleData[i.role] = (roleData[i.role] || 0) + parseFloat(i.totalHkd); });
         const topRoles = Object.entries(roleData).sort((a,b) => b[1] - a[1]).slice(0, 7);
-        charts.role = new Chart(document.getElementById('roleChart'), {
-            type: 'bar',
-            data: { labels: topRoles.map(r => r[0]), datasets: [{ label: 'HKD', data: topRoles.map(r => r[1]), backgroundColor: '#acc1ad' }] },
-            options: { indexAxis: 'y', plugins: { legend: { display: false } } }
-        });
-
-        // 4. 類型分析 (雙軸：數量 vs 金額)
+        charts.role = new Chart(document.getElementById('roleChart'), { type: 'bar', data: { labels: topRoles.map(r => r[0]), datasets: [{ label: 'HKD', data: topRoles.map(r => r[1]), backgroundColor: '#acc1ad' }] }, options: { indexAxis: 'y', plugins: { legend: { display: false } } } });
         const typeQty = {}, typeAmt = {};
-        merchList.forEach(i => {
-            if(i.type) {
-                typeQty[i.type] = (typeQty[i.type] || 0) + (i.qty || 1);
-                typeAmt[i.type] = (typeAmt[i.type] || 0) + parseFloat(i.totalHkd);
-            }
-        });
-        charts.type = new Chart(document.getElementById('typeChart'), {
-            type: 'bar',
-            data: {
-                labels: Object.keys(typeQty),
-                datasets: [
-                    { label: 'Qty', data: Object.values(typeQty), backgroundColor: '#d5cabd', yAxisID: 'y' },
-                    { label: 'HKD', data: Object.values(typeAmt), backgroundColor: '#6b7a63', yAxisID: 'y1' }
-                ]
-            },
-            options: { scales: { y: { type: 'linear', position: 'left' }, y1: { type: 'linear', position: 'right', grid: { drawOnChartArea: false } } }, plugins: { legend: { position: 'bottom' } } }
-        });
+        merchList.forEach(i => { if(i.type) { typeQty[i.type] = (typeQty[i.type] || 0) + (i.qty || 1); typeAmt[i.type] = (typeAmt[i.type] || 0) + parseFloat(i.totalHkd); } });
+        charts.type = new Chart(document.getElementById('typeChart'), { type: 'bar', data: { labels: Object.keys(typeQty), datasets: [{ label: 'Qty', data: Object.values(typeQty), backgroundColor: '#d5cabd', yAxisID: 'y' }, { label: 'HKD', data: Object.values(typeAmt), backgroundColor: '#6b7a63', yAxisID: 'y1' }] }, options: { scales: { y: { type: 'linear', position: 'left' }, y1: { type: 'linear', position: 'right', grid: { drawOnChartArea: false } } }, plugins: { legend: { position: 'bottom' } } } });
     }
 
     function editItem(idx) {
