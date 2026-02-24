@@ -68,8 +68,11 @@
         .img-box img { width: 100%; height: 100%; object-fit: cover; }
         .info { padding: 10px; flex-grow: 1; overflow: hidden; }
 
+        /* 新增表單樣式 */
+        .input-group { margin-bottom: 15px; }
+        .input-label { font-size: 10px; color: var(--m-brown); font-weight: bold; letter-spacing: 1px; margin-bottom: 4px; display: block; }
         .btn-main { background: var(--m-deep-green); color: white; border: none; padding: 14px; width: 100%; font-size: 12px; cursor: pointer; border-radius: var(--radius); margin-top: 15px; }
-        input, select, textarea { width: 100%; padding: 12px; border-radius: var(--radius); border: 1px solid var(--m-clay); background: #fafafa; font-size: 13px; margin-top: 6px; box-sizing: border-box; outline: none; }
+        input, select, textarea { width: 100%; padding: 12px; border-radius: var(--radius); border: 1px solid var(--m-clay); background: #fafafa; font-size: 13px; margin-top: 4px; box-sizing: border-box; outline: none; }
         textarea { height: 80px; resize: none; font-family: inherit; }
         
         .stat-card { background:#fff; padding:20px; border-radius:var(--radius); border:1px solid var(--m-clay); margin-bottom: 20px; }
@@ -149,28 +152,67 @@
             <div style="background:#fff; padding:25px; border-radius: var(--radius); border:1px solid var(--m-clay);">
                 <form id="merchForm">
                     <input type="hidden" id="editIndex" value="-1">
-                    <select id="workSelect" onchange="toggleInput('workSelect', 'workInput')"></select>
-                    <input type="text" id="workInput" style="display:none;" placeholder="新作品">
-                    <select id="roleSelect" onchange="toggleInput('roleSelect', 'roleInput')"></select>
-                    <input type="text" id="roleInput" style="display:none;" placeholder="新角色">
-                    <select id="typeSelect" onchange="toggleInput('typeSelect', 'typeInput')"></select>
-                    <input type="text" id="typeInput" style="display:none;" placeholder="新類別">
-                    <input type="text" id="pattern" placeholder="款式名稱">
-                    <textarea id="note" placeholder="備註"></textarea>
-                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
-                        <select id="status">
-                            <option value="現貨">現貨</option>
-                            <option value="非現貨">非現貨</option>
-                            <option value="願望">願望</option>
-                        </select>
-                        <input type="number" id="qty" value="1">
+                    
+                    <div class="input-group">
+                        <label class="input-label">作品名稱</label>
+                        <select id="workSelect" onchange="toggleInput('workSelect', 'workInput')"></select>
+                        <input type="text" id="workInput" style="display:none;" placeholder="輸入新作品名稱">
                     </div>
-                    <div style="display:grid; grid-template-columns: 1fr 2fr; gap:12px;">
-                        <select id="currency" onchange="liveExchange()"><option value="HKD">HKD</option><option value="RMB">RMB</option><option value="JPY">JPY</option></select>
-                        <input type="number" id="inputPrice" step="0.01" oninput="liveExchange()" placeholder="單價">
+
+                    <div class="input-group">
+                        <label class="input-label">角色名稱</label>
+                        <select id="roleSelect" onchange="toggleInput('roleSelect', 'roleInput')"></select>
+                        <input type="text" id="roleInput" style="display:none;" placeholder="輸入新角色名稱">
                     </div>
-                    <div id="exchangePreview" style="margin:10px 0; font-size:12px; color:var(--m-deep-green); font-weight:bold;">總額: HKD 0.00</div>
-                    <input type="file" id="imgFile">
+
+                    <div class="input-group">
+                        <label class="input-label">藏品類別</label>
+                        <select id="typeSelect" onchange="toggleInput('typeSelect', 'typeInput')"></select>
+                        <input type="text" id="typeInput" style="display:none;" placeholder="例如: 徽章/立牌">
+                    </div>
+
+                    <div class="input-group">
+                        <label class="input-label">款式/柄圖名字</label>
+                        <input type="text" id="pattern" placeholder="例如: 周年慶限定 / A版">
+                    </div>
+
+                    <div class="input-group">
+                        <label class="input-label">備註</label>
+                        <textarea id="note" placeholder="詳細資料或心得"></textarea>
+                    </div>
+
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-bottom: 15px;">
+                        <div>
+                            <label class="input-label">目前狀態</label>
+                            <select id="status">
+                                <option value="現貨">現貨</option>
+                                <option value="非現貨">非現貨</option>
+                                <option value="願望">願望</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="input-label">購買數量</label>
+                            <input type="number" id="qty" value="1">
+                        </div>
+                    </div>
+
+                    <div style="display:grid; grid-template-columns: 1fr 2fr; gap:12px; margin-bottom: 5px;">
+                        <div>
+                            <label class="input-label">幣種</label>
+                            <select id="currency" onchange="liveExchange()"><option value="HKD">HKD</option><option value="RMB">RMB</option><option value="JPY">JPY</option></select>
+                        </div>
+                        <div>
+                            <label class="input-label">單價</label>
+                            <input type="number" id="inputPrice" step="0.01" oninput="liveExchange()" placeholder="0.00">
+                        </div>
+                    </div>
+                    <div id="exchangePreview" style="margin-bottom:15px; font-size:12px; color:var(--m-deep-green); font-weight:bold;">總額: HKD 0.00</div>
+
+                    <div class="input-group">
+                        <label class="input-label">藏品照片</label>
+                        <input type="file" id="imgFile">
+                    </div>
+
                     <button type="submit" class="btn-main">儲存至資料庫</button>
                     <button type="button" id="delBtn" class="btn-main" style="background:#cc9999; display:none;" onclick="deleteCurrentItem()">刪除此項目</button>
                 </form>
@@ -366,7 +408,7 @@
     function renderStats() {
         Object.values(charts).forEach(c => c.destroy());
         const colors = ['#6b7a63', '#acc1ad', '#a68b7c', '#d5cabd', '#e5ddd5', '#c2b2a3', '#96a48b'];
-        const statsList = merchList.filter(i => i.status !== '願望'); // 願望清單不計入支出
+        const statsList = merchList.filter(i => i.status !== '願望');
 
         const monthData = {};
         statsList.forEach(i => {
