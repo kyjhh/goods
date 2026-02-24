@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Morandi Archive v30 - Stable Original</title>
+    <title>Morandi Archive v30 - Heatmap LongPress</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
@@ -12,40 +12,28 @@
             --text: #4a4a4a; --grid-size: 160px;
         }
         body, html { margin: 0; padding: 0; height: 100%; font-family: 'PingFang HK', sans-serif; background: var(--bg); color: var(--text); overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
-        
-        #toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: var(--m-deep-green); color: white; padding: 10px 24px; border-radius: 2px; font-size: 12px; z-index: 9999; display: none; }
-        
-        /* 封面 */
+        #toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: var(--m-deep-green); color: white; padding: 10px 24px; border-radius: 2px; font-size: 12px; z-index: 3000; display: none; }
         #cover-page { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #d2cdc1 center/cover; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; z-index: 2000; transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
         #cover-page.open { transform: translateY(-100%); }
+        .cover-set-icon { position: absolute; top: 20px; right: 20px; font-size: 16px; opacity: 0.2; cursor: pointer; }
         .cover-menu { width: 160px; margin-bottom: 70px; display: flex; flex-direction: column; gap: 8px; }
         .menu-btn { background: rgba(255, 255, 255, 0.65); backdrop-filter: blur(12px); padding: 14px; text-align: center; cursor: pointer; border-radius: 2px; font-size: 11px; letter-spacing: 2px; border: 1px solid rgba(255,255,255,0.2); }
-        
-        /* 導航 */
         .nav-bar { position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%); width: 92%; max-width: 450px; background: rgba(255,255,255,0.9); backdrop-filter: blur(10px); display: flex; justify-content: space-around; padding: 12px 5px; border-radius: 2px; box-shadow: 0 8px 30px rgba(0,0,0,0.05); z-index: 1000; }
         .nav-item { border: none; background: none; color: #b5b5b5; font-size: 10px; font-weight: 600; cursor: pointer; }
         .nav-item.active { color: var(--m-deep-green); }
-
         .main-content { padding: 25px; padding-bottom: 120px; max-width: 800px; margin: 0 auto; }
         .page { display: none; }
         .page.active { display: block; }
-
-        /* 列表 */
-        .filter-row { display: flex; overflow-x: auto; white-space: nowrap; gap: 8px; margin-bottom: 15px; scrollbar-width: none; }
+        .control-panel { background: #fff; padding: 12px; border-radius: 2px; margin-bottom: 20px; border: 1px solid var(--m-clay); }
+        .filter-row { display: flex; overflow-x: auto; white-space: nowrap; gap: 6px; margin-bottom: 8px; scrollbar-width: none; }
         .filter-row::-webkit-scrollbar { display: none; }
-        .filter-chip { background: var(--m-clay); padding: 6px 15px; border-radius: 2px; font-size: 10px; cursor: pointer; color: #8a8a8a; }
+        .filter-chip { background: var(--m-clay); padding: 5px 12px; border-radius: 2px; font-size: 10px; cursor: pointer; color: #8a8a8a; }
         .filter-chip.active { background: var(--m-sage); color: white; }
-
-        .list-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(var(--grid-size), 1fr)); gap: 15px; }
-        .item-card { background: #fff; border-radius: 2px; overflow: hidden; border: 1px solid var(--m-clay); position: relative; }
-        .item-card img { width: 100%; height: var(--grid-size); object-fit: cover; background: #eee; }
-        .item-card .info { padding: 12px; }
-        
-        .quick-check { position: absolute; top: 8px; right: 8px; background: rgba(255,255,255,0.9); color: var(--m-deep-green); width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; cursor: pointer; z-index: 5; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        
-        /* 表單 */
+        .item-card { background: #fff; border-radius: 2px; overflow: hidden; border: 1px solid var(--m-clay); position: relative; user-select: none; }
+        .quick-check { position: absolute; top: 8px; right: 8px; background: rgba(255,255,255,0.9); color: var(--m-deep-green); width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; cursor: pointer; z-index: 5; }
+        .btn-main { background: var(--m-deep-green); color: white; border: none; padding: 14px; width: 100%; font-size: 12px; cursor: pointer; border-radius: 2px; }
         input, select { width: 100%; padding: 12px; border-radius: 2px; border: 1px solid var(--m-clay); background: #fafafa; font-size: 13px; margin-top: 8px; box-sizing: border-box; }
-        .btn-main { background: var(--m-deep-green); color: white; border: none; padding: 15px; width: 100%; font-size: 12px; cursor: pointer; border-radius: 2px; margin-top: 10px; }
+        .setting-item { background: #fff; padding: 20px; border-radius: 2px; margin-bottom: 12px; border: 1px solid var(--m-clay); }
     </style>
 </head>
 <body>
@@ -53,12 +41,15 @@
     <div id="toast">DONE</div>
 
     <div id="cover-page">
+        <div class="cover-set-icon" onclick="document.getElementById('cover-upload').click()">⚙</div>
+        <input type="file" id="cover-upload" hidden onchange="uploadCover(this)">
         <div class="cover-menu">
             <h4 style="text-align:center; font-weight:400; letter-spacing:5px; margin-bottom:25px; color: var(--m-deep-green);">M.ARCHIVE</h4>
             <div class="menu-btn" onclick="openPage('page-gallery')">LIBRARY</div>
             <div class="menu-btn" onclick="openPage('page-pending')">WAITING</div>
             <div class="menu-btn" onclick="openPage('page-stats')">STATS</div>
             <div class="menu-btn" onclick="openPage('page-recent')">COLLECT</div>
+            <div class="menu-btn" onclick="openPage('page-settings')">CONFIG</div>
         </div>
     </div>
 
@@ -66,22 +57,40 @@
         <div onclick="closePage()" style="font-size:10px; color: var(--m-brown); cursor:pointer; margin-bottom:25px; letter-spacing:2px;">← BACK TO HOME</div>
 
         <div id="page-gallery" class="page">
-            <div id="lib-filters"></div>
-            <div id="readyList" class="list-container"></div>
+            <div class="control-panel" id="lib-filter-box"></div>
+            <div id="readyList" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(var(--grid-size, 160px), 1fr)); gap:15px;"></div>
         </div>
 
         <div id="page-pending" class="page">
-            <div id="wait-filters"></div>
-            <div id="waitList" class="list-container"></div>
+            <div class="control-panel" id="wait-filter-box"></div>
+            <div id="waitList" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(var(--grid-size, 160px), 1fr)); gap:15px;"></div>
         </div>
 
         <div id="page-stats" class="page">
             <div style="background:#fff; padding:25px; border:1px solid var(--m-clay); text-align:center;">
                 <div style="font-size:10px; color:var(--m-brown); letter-spacing:2px;">TOTAL INVESTMENT</div>
                 <div id="totalSpend" style="font-size: 28px; color:var(--m-deep-green); margin:10px 0;">HKD 0</div>
-                <div style="height: 250px; margin-top:20px;"><canvas id="charPieChart"></canvas></div>
+                <div style="margin-top:30px;">
+                    <div style="font-size:9px; color:var(--m-brown); margin-bottom:15px; letter-spacing:1px;">BY CHARACTER</div>
+                    <div style="height: 250px;"><canvas id="charPieChart"></canvas></div>
+                </div>
                 <hr style="border:0; border-top:1px solid var(--m-clay); margin:40px 0;">
-                <div style="height: 300px;"><canvas id="typeBarChart"></canvas></div>
+                <div style="margin-top:10px;">
+                    <div style="font-size:9px; color:var(--m-brown); margin-bottom:15px; letter-spacing:1px;">BY CATEGORY (HEATMAP)</div>
+                    <div style="height: 320px;"><canvas id="typeBarChart"></canvas></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="page-settings" class="page">
+            <div class="setting-item"><span style="font-size:11px;">GRID SCALE</span><input type="range" min="100" max="300" value="160" oninput="updateGridSize(this.value)" style="accent-color: var(--m-sage);"></div>
+            <div class="setting-item">
+                <span style="font-size:11px;">DATA BACKUP</span>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:10px;">
+                    <button onclick="exportData()" class="btn-main" style="background:var(--m-brown);">EXPORT</button>
+                    <button onclick="document.getElementById('import-file').click()" class="btn-main" style="background:var(--m-brown);">IMPORT</button>
+                </div>
+                <input type="file" id="import-file" hidden onchange="importData(this)">
             </div>
         </div>
 
@@ -90,28 +99,23 @@
                 <form id="merchForm">
                     <input type="hidden" id="editIndex" value="-1">
                     <select id="workSelect" onchange="toggleInput('workSelect', 'workInput')"></select>
-                    <input type="text" id="workInput" style="display:none;" placeholder="Work Name">
-                    
+                    <input type="text" id="workInput" style="display:none;" placeholder="Work">
                     <select id="roleSelect" onchange="toggleInput('roleSelect', 'roleInput')"></select>
-                    <input type="text" id="roleInput" style="display:none;" placeholder="Role Name">
-                    
+                    <input type="text" id="roleInput" style="display:none;" placeholder="Role">
                     <select id="typeSelect" onchange="toggleInput('typeSelect', 'typeInput')"></select>
-                    <input type="text" id="typeInput" style="display:none;" placeholder="Type (e.g. 徽章)">
-                    
-                    <input type="text" id="pattern" placeholder="Pattern/Name">
-                    
+                    <input type="text" id="typeInput" style="display:none;" placeholder="Type">
+                    <input type="text" id="pattern" placeholder="Pattern">
                     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
                         <select id="status"><option value="現貨">IN STOCK</option><option value="非現貨">PENDING</option></select>
-                        <input type="number" id="qty" value="1" placeholder="Qty">
+                        <input type="number" id="qty" value="1" oninput="liveExchange()">
                     </div>
-
                     <div style="display:grid; grid-template-columns: 1fr 2fr; gap:10px;">
-                        <select id="currency"><option value="HKD">HKD</option><option value="RMB">RMB</option><option value="JPY">JPY</option></select>
-                        <input type="number" id="inputPrice" step="0.01" required placeholder="Price per unit">
+                        <select id="currency" onchange="liveExchange()"><option value="HKD">HKD</option><option value="RMB">RMB</option><option value="JPY">JPY</option></select>
+                        <input type="number" id="inputPrice" step="0.01" required oninput="liveExchange()">
                     </div>
-
-                    <input type="file" id="imgFile" accept="image/*">
-                    <button type="submit" class="btn-main">SAVE ARCHIVE</button>
+                    <div id="exchangePreview" style="margin:10px 0; font-size:12px; color:var(--m-deep-green);">Total: HKD 0.00</div>
+                    <input type="file" id="imgFile">
+                    <button type="submit" class="btn-main" style="margin-top:15px;">SAVE ARCHIVE</button>
                 </form>
             </div>
         </div>
@@ -122,17 +126,18 @@
         <button class="nav-item" onclick="switchTab('page-pending', this)">WAIT</button>
         <button class="nav-item" onclick="switchTab('page-recent', this)">ADD</button>
         <button class="nav-item" onclick="switchTab('page-stats', this)">STAT</button>
+        <button class="nav-item" onclick="switchTab('page-settings', this)">SET</button>
     </nav>
 
 <script>
     const STORAGE_KEY = 'archive_master';
     const DICT_KEY = 'archive_dict_master';
     const rates = { RMB: 1.08, JPY: 0.052, HKD: 1.0 };
-    
+    let pieChart = null, barChart = null, pressTimer = null;
+
     let merchList = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
     let dict = JSON.parse(localStorage.getItem(DICT_KEY)) || { works: ["世界計畫"], roles: ["宵崎奏"], types: ["徽章"] };
     let filters = { work: 'all', role: 'all', type: 'all' };
-    let pieChart = null, barChart = null, pressTimer = null;
 
     function save() { localStorage.setItem(STORAGE_KEY, JSON.stringify(merchList)); localStorage.setItem(DICT_KEY, JSON.stringify(dict)); }
 
@@ -142,168 +147,112 @@
             html += list.map(item => `<div class="filter-chip ${filters[key]===item?'active':''}" onclick="setFilter('${key}','${item}')">${item}</div>`).join('');
             return `<div class="filter-row">${html}</div>`;
         };
-        const html = build(dict.works, 'work') + build(dict.roles, 'role') + build(dict.types, 'type');
-        document.getElementById('lib-filters').innerHTML = html;
-        document.getElementById('wait-filters').innerHTML = html;
+        const f = build(dict.works, 'work') + build(dict.roles, 'role') + build(dict.types, 'type');
+        document.getElementById('lib-filter-box').innerHTML = f; document.getElementById('wait-filter-box').innerHTML = f;
     }
 
     function setFilter(k, v) { filters[k] = v; renderFilters(); renderAll(); }
 
     function renderAll() {
-        const rList = document.getElementById('readyList');
-        const wList = document.getElementById('waitList');
-        rList.innerHTML = ''; wList.innerHTML = '';
-
-        merchList.forEach((item, index) => {
-            if ((filters.work !== 'all' && item.work !== filters.work) ||
-                (filters.role !== 'all' && item.role !== filters.role) ||
-                (filters.type !== 'all' && item.type !== filters.type)) return;
-
-            const card = document.createElement('div');
-            card.className = 'item-card';
-            card.onmousedown = () => startPress(index);
-            card.onmouseup = cancelPress;
-            card.ontouchstart = () => startPress(index);
-            card.ontouchend = cancelPress;
-
-            card.innerHTML = `
-                ${item.status === '非現貨' ? `<div class="quick-check" onclick="quickCheckIn(event, ${index})">✓</div>` : ''}
-                <img src="${item.img || ''}" onclick="editItem(${index})">
-                <div class="info">
-                    <div style="font-size:9px; color:var(--m-brown);">${item.role} · ${item.type}</div>
-                    <div style="font-size:11px; margin:3px 0; font-weight:500;">${item.pattern || 'Untitled'}</div>
-                    <div style="color:var(--m-deep-green); font-weight:bold; font-size:11px;">HK$ ${item.totalHkd} <span style="font-weight:normal; font-size:9px; opacity:0.5;">x${item.qty}</span></div>
+        const gen = (i, idx, w) => `
+            <div class="item-card" 
+                 onmousedown="startPress(${idx})" onmouseup="cancelPress()" 
+                 ontouchstart="startPress(${idx})" ontouchend="cancelPress()">
+                ${w ? `<div class="quick-check" onclick="quickCheckIn(event, ${idx})">✓</div>` : ''}
+                <img src="${i.img || 'https://via.placeholder.com/200/f2efeb/888'}" 
+                     onclick="editItem(${idx})" 
+                     style="width:100%; aspect-ratio:1; object-fit:cover; cursor:pointer;">
+                <div style="padding:10px;">
+                    <div style="font-size:9px; color:var(--m-brown);">${i.role}</div>
+                    <div style="font-size:11px; margin:2px 0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${i.pattern || 'Untitled'}</div>
+                    <div style="color:var(--m-deep-green); font-weight:bold; font-size:11px;">HK$ ${i.totalHkd}</div>
                 </div>
-            `;
-            if (item.status === '現貨') rList.appendChild(card); else wList.appendChild(card);
-        });
-    }
+            </div>`;
 
-    function startPress(idx) { pressTimer = setTimeout(() => { if(confirm("Delete this archive?")) { merchList.splice(idx, 1); save(); renderAll(); showToast("DELETED"); } }, 800); }
-    function cancelPress() { clearTimeout(pressTimer); }
-    function quickCheckIn(e, idx) { e.stopPropagation(); merchList[idx].status = '現貨'; save(); renderAll(); showToast("ARRIVED"); }
-
-    document.getElementById('merchForm').onsubmit = function(e) {
-        e.preventDefault();
-        const editIdx = parseInt(document.getElementById('editIndex').value);
+        const filtered = merchList.map((item, index) => ({...item, originalIndex: index}))
+                                  .filter(i => (filters.work === 'all' || i.work === filters.work) && (filters.role === 'all' || i.role === filters.role) && (filters.type === 'all' || i.type === filters.type));
         
-        const getVal = (selId, inpId, dictKey) => {
-            let val = document.getElementById(selId).value;
-            if(val === 'NEW') {
-                val = document.getElementById(inpId).value.trim();
-                if(val && !dict[dictKey].includes(val)) dict[dictKey].push(val);
-            }
-            return val;
-        };
-
-        const price = parseFloat(document.getElementById('inputPrice').value);
-        const qty = parseInt(document.getElementById('qty').value) || 1;
-        const cur = document.getElementById('currency').value;
-        const totalHkd = (price * qty * rates[cur]).toFixed(2);
-
-        const data = {
-            work: getVal('workSelect', 'workInput', 'works'),
-            role: getVal('roleSelect', 'roleInput', 'roles'),
-            type: getVal('typeSelect', 'typeInput', 'types'),
-            pattern: document.getElementById('pattern').value,
-            status: document.getElementById('status').value,
-            qty: qty,
-            totalHkd: totalHkd,
-            img: null
-        };
-
-        const file = document.getElementById('imgFile').files[0];
-        const processSave = (imgB64) => {
-            if(imgB64) data.img = imgB64;
-            else if(editIdx !== -1) data.img = merchList[editIdx].img;
-
-            if(editIdx === -1) merchList.unshift(data);
-            else merchList[editIdx] = data;
-
-            save(); renderSelects(); renderFilters(); renderAll();
-            switchTab('page-gallery', document.querySelectorAll('.nav-item')[0]);
-            document.getElementById('merchForm').reset();
-            showToast("SAVED");
-        };
-
-        if(file) {
-            const reader = new FileReader();
-            reader.onload = () => processSave(reader.result);
-            reader.readAsDataURL(file);
-        } else processSave(null);
-    };
-
-    function editItem(idx) {
-        const i = merchList[idx];
-        document.getElementById('editIndex').value = idx;
-        document.getElementById('pattern').value = i.pattern;
-        document.getElementById('qty').value = i.qty;
-        document.getElementById('status').value = i.status;
-        switchTab('page-recent', document.querySelectorAll('.nav-item')[2]);
+        document.getElementById('readyList').innerHTML = filtered.filter(i => i.status === '現貨').map(i => gen(i, i.originalIndex, false)).join('');
+        document.getElementById('waitList').innerHTML = filtered.filter(i => i.status === '非現貨').map(i => gen(i, i.originalIndex, true)).join('');
     }
+
+    // 長按刪除邏輯
+    function startPress(idx) {
+        pressTimer = setTimeout(() => {
+            if (confirm("確定刪除此項紀錄？")) {
+                merchList.splice(idx, 1);
+                save();
+                renderAll();
+                showToast("DELETED");
+            }
+        }, 800);
+    }
+    function cancelPress() { clearTimeout(pressTimer); }
 
     function renderStats() {
         let total = 0, charData = {}, typeData = {};
         merchList.forEach(i => {
-            let v = parseFloat(i.totalHkd); total += v;
+            const v = parseFloat(i.totalHkd) || 0; total += v;
             charData[i.role] = (charData[i.role] || 0) + v;
             typeData[i.type] = (typeData[i.type] || 0) + v;
         });
-        document.getElementById('totalSpend').innerText = `HKD ${total.toLocaleString()}`;
+        document.getElementById('totalSpend').innerText = `HKD ${total.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
         
         if(pieChart) pieChart.destroy();
-        pieChart = new Chart(document.getElementById('charPieChart'), {
-            type: 'pie',
-            data: { labels: Object.keys(charData), datasets: [{ data: Object.values(charData), backgroundColor: ['#6b7a63','#a68b7c','#acc1ad','#d5cabd','#e5ddd5'] }] },
-            options: { plugins: { legend: { position: 'bottom' } }, maintainAspectRatio: false }
-        });
+        pieChart = new Chart(document.getElementById('charPieChart'), { type: 'pie', data: { labels: Object.keys(charData), datasets: [{ data: Object.values(charData), backgroundColor: ['#6b7a63', '#a68b7c', '#acc1ad', '#d5cabd', '#e5ddd5'] }] }, options: { plugins: { legend: { position: 'bottom', labels: { font: { size: 10 } } } }, maintainAspectRatio: false } });
 
         if(barChart) barChart.destroy();
-        const sortedType = Object.entries(typeData).sort((a,b) => b[1]-a[1]);
-        barChart = new Chart(document.getElementById('typeBarChart'), {
-            type: 'bar',
-            data: { labels: sortedType.map(x=>x[0]), datasets: [{ data: sortedType.map(x=>x[1]), backgroundColor: '#acc1ad' }] },
-            options: { indexAxis: 'y', plugins: { legend: { display: false } }, maintainAspectRatio: false }
+        const sortedTypes = Object.entries(typeData).sort((a,b) => b[1]-a[1]);
+        const maxVal = sortedTypes[0] ? sortedTypes[0][1] : 1;
+        const barColors = sortedTypes.map(x => `rgba(107, 122, 99, ${Math.max(0.2, x[1]/maxVal)})`);
+
+        barChart = new Chart(document.getElementById('typeBarChart'), { 
+            type: 'bar', 
+            data: { labels: sortedTypes.map(x=>x[0]), datasets: [{ data: sortedTypes.map(x=>x[1]), backgroundColor: barColors, borderRadius: 2 }] }, 
+            options: { 
+                indexAxis: 'y', 
+                plugins: { legend: { display: false } }, 
+                scales: { x: { grid: { display: false }, ticks: { font: { size: 9 } } }, y: { grid: { display: false }, ticks: { font: { size: 10 } } } },
+                maintainAspectRatio: false 
+            } 
         });
     }
 
+    function quickCheckIn(e, idx) { e.stopPropagation(); merchList[idx].status = '現貨'; save(); renderAll(); showToast("ARRIVED"); }
     function switchTab(id, btn) {
-        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
-        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-        if(btn) btn.classList.add('active');
-        if(id === 'page-stats') renderStats();
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); document.getElementById(id).classList.add('active');
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); if(btn) btn.classList.add('active');
+        if(id === 'page-stats') renderStats(); renderFilters(); renderAll();
+    }
+    function openPage(id) { document.getElementById('cover-page').classList.add('open'); document.getElementById('bottom-nav').style.display = 'flex'; switchTab(id, document.querySelectorAll('.nav-item')[Object.keys({'page-gallery':0,'page-pending':1,'page-recent':2,'page-stats':3,'page-settings':4}).indexOf(id)]); }
+    function closePage() { document.getElementById('cover-page').classList.remove('open'); document.getElementById('bottom-nav').style.display = 'none'; }
+    function liveExchange() { const p = parseFloat(document.getElementById('inputPrice').value) || 0, q = parseInt(document.getElementById('qty').value) || 1, cur = document.getElementById('currency').value; const t = (p * q * rates[cur]).toFixed(2); document.getElementById('exchangePreview').innerText = `Total: HKD ${t}`; return t; }
+    function showToast(m) { const t=document.getElementById('toast'); t.innerText=m; t.style.display='block'; setTimeout(()=>t.style.display='none',2000); }
+    function toggleInput(s, i) { document.getElementById(i).style.display = (document.getElementById(s).value === 'NEW') ? 'block' : 'none'; }
+    function updateGridSize(v) { document.documentElement.style.setProperty('--grid-size', v+'px'); }
+
+    document.getElementById('merchForm').onsubmit = function(e) {
+        e.preventDefault();
+        const editIdx = parseInt(document.getElementById('editIndex').value);
+        const getV = (s, i, dk) => { let v = document.getElementById(s).value; if(v === 'NEW') { v = document.getElementById(i).value.trim(); if(v && !dict[dk].includes(v)) dict[dk].push(v); } return v; };
+        const data = { work: getV('workSelect', 'workInput', 'works'), role: getV('roleSelect', 'roleInput', 'roles'), type: getV('typeSelect', 'typeInput', 'types'), pattern: document.getElementById('pattern').value, status: document.getElementById('status').value, qty: parseInt(document.getElementById('qty').value), originalPrice: parseFloat(document.getElementById('inputPrice').value), originalCur: document.getElementById('currency').value, totalHkd: liveExchange(), img: null };
+        const file = document.getElementById('imgFile').files[0];
+        const done = (b64) => { if(b64) data.img = b64; else if(editIdx !== -1) data.img = merchList[editIdx].img; if(editIdx === -1) merchList.unshift(data); else merchList[editIdx] = data; save(); renderSelects(); switchTab('page-gallery', document.querySelectorAll('.nav-item')[0]); };
+        if(file) { const fr = new FileReader(); fr.onload = () => done(fr.result); fr.readAsDataURL(file); } else done(null);
+    };
+
+    function editItem(idx) {
+        const i = merchList[idx]; document.getElementById('editIndex').value = idx; document.getElementById('workSelect').value = i.work; document.getElementById('roleSelect').value = i.role; document.getElementById('typeSelect').value = i.type; document.getElementById('pattern').value = i.pattern; document.getElementById('status').value = i.status; document.getElementById('qty').value = i.qty; document.getElementById('currency').value = i.originalCur; document.getElementById('inputPrice').value = i.originalPrice; liveExchange(); switchTab('page-recent', document.querySelectorAll('.nav-item')[2]);
     }
 
-    function openPage(id) {
-        document.getElementById('cover-page').classList.add('open');
-        document.getElementById('bottom-nav').style.display = 'flex';
-        const navs = document.querySelectorAll('.nav-item');
-        const idx = ['page-gallery','page-pending','page-recent','page-stats'].indexOf(id);
-        switchTab(id, navs[idx]);
-    }
+    function exportData() { const blob = new Blob([JSON.stringify({merchList, dict})], {type: 'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `archive_master_backup.json`; a.click(); }
+    function importData(input) { const fr = new FileReader(); fr.onload = (e) => { const d = JSON.parse(e.target.result); merchList = d.merchList; dict = d.dict; save(); location.reload(); }; fr.readAsText(input.files[0]); }
+    function uploadCover(input) { const fr = new FileReader(); fr.onload = (e) => { localStorage.setItem('mm25_hd_cover', e.target.result); document.getElementById('cover-page').style.backgroundImage = `url(${e.target.result})`; }; fr.readAsDataURL(input.files[0]); }
 
-    function closePage() {
-        document.getElementById('cover-page').classList.remove('open');
-        document.getElementById('bottom-nav').style.display = 'none';
-    }
-
-    function toggleInput(s, i) { document.getElementById(i).style.display = (document.getElementById(s).value==='NEW') ? 'block' : 'none'; }
-    
-    function renderSelects() {
-        const setup = (id, list) => {
-            document.getElementById(id).innerHTML = list.map(i => `<option value="${i}">${i}</option>`).join('') + `<option value="NEW">+ NEW...</option>`;
-        };
-        setup('workSelect', dict.works); setup('roleSelect', dict.roles); setup('typeSelect', dict.types);
-    }
-
-    function showToast(m) {
-        const t = document.getElementById('toast');
-        t.innerText = m; t.style.display = 'block';
-        setTimeout(() => t.style.display = 'none', 2000);
-    }
-
-    window.onload = () => { renderSelects(); renderFilters(); renderAll(); };
+    const savedCover = localStorage.getItem('mm25_hd_cover');
+    if(savedCover) document.getElementById('cover-page').style.backgroundImage = `url(${savedCover})`;
+    function renderSelects() { const setup = (id, list) => { document.getElementById(id).innerHTML = list.map(i => `<option value="${i}">${i}</option>`).join('') + `<option value="NEW">+ NEW...</option>`; }; setup('workSelect', dict.works); setup('roleSelect', dict.roles); setup('typeSelect', dict.types); }
+    renderSelects(); renderFilters(); renderAll();
 </script>
 </body>
 </html>
