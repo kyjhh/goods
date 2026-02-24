@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Morandi Archive - Stable Edition</title>
+    <title>Morandi Archive - V15 Refined</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
@@ -40,14 +40,10 @@
         .list-container.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(var(--grid-size, 160px), 1fr)); gap: 15px; }
         .list-container.list { display: flex; flex-direction: column; gap: 10px; }
         
-        .item-card { background: #fff; border-radius: 2px; overflow: hidden; border: 1px solid var(--m-clay); position: relative; user-select: none; transition: transform 0.2s; }
+        .item-card { background: #fff; border-radius: 2px; overflow: hidden; border: 1px solid var(--m-clay); position: relative; transition: transform 0.2s; }
         .item-card.selected { border: 2px solid var(--m-brown); background: var(--m-clay); transform: scale(0.95); }
         .img-box { width: 100%; aspect-ratio: 1; background: #eee; overflow: hidden; }
         .img-box img { width: 100%; height: 100%; object-fit: cover; }
-
-        .list-container.list .item-card { display: flex; height: 90px; }
-        .list-container.list .img-box { width: 90px; height: 90px; flex-shrink: 0; }
-        .list-container.list .info { flex: 1; padding: 10px 15px; display: flex; flex-direction: column; justify-content: center; }
 
         .quick-check { position: absolute; top: 8px; right: 8px; background: rgba(255,255,255,0.9); color: var(--m-deep-green); width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; cursor: pointer; z-index: 10; }
         .btn-main { background: var(--m-deep-green); color: white; border: none; padding: 14px; width: 100%; font-size: 12px; cursor: pointer; border-radius: 2px; }
@@ -77,40 +73,12 @@
         <div id="multi-delete-bar" onclick="deleteSelected()">🗑️ DELETE SELECTED ITEMS</div>
 
         <div id="page-gallery" class="page">
-            <div class="control-panel">
-                <div class="symbol-row">
-                    <div class="symbol-group">
-                        <span class="symbol-btn sort-name" onclick="setSort('name')">A-Z</span>
-                        <span class="symbol-btn sort-date active" onclick="setSort('date')">🕒</span>
-                        <span class="symbol-btn sort-qty" onclick="setSort('qty')">#</span>
-                        <span class="symbol-btn sort-price" onclick="setSort('price')">＄</span>
-                    </div>
-                    <div class="symbol-group">
-                        <span class="symbol-btn view-grid active" onclick="setView('grid')">田</span>
-                        <span class="symbol-btn view-list" onclick="setView('list')">≡</span>
-                    </div>
-                </div>
-                <div id="lib-filter-box"></div>
-            </div>
+            <div class="control-panel"><div id="lib-filter-box"></div></div>
             <div id="readyList" class="list-container grid"></div>
         </div>
 
         <div id="page-pending" class="page">
-            <div class="control-panel">
-                <div class="symbol-row">
-                    <div class="symbol-group">
-                        <span class="symbol-btn sort-name" onclick="setSort('name')">A-Z</span>
-                        <span class="symbol-btn sort-date active" onclick="setSort('date')">🕒</span>
-                        <span class="symbol-btn sort-qty" onclick="setSort('qty')">#</span>
-                        <span class="symbol-btn sort-price" onclick="setSort('price')">＄</span>
-                    </div>
-                    <div class="symbol-group">
-                        <span class="symbol-btn view-grid active" onclick="setView('grid')">田</span>
-                        <span class="symbol-btn view-list" onclick="setView('list')">≡</span>
-                    </div>
-                </div>
-                <div id="wait-filter-box"></div>
-            </div>
+            <div class="control-panel"><div id="wait-filter-box"></div></div>
             <div id="waitList" class="list-container grid"></div>
         </div>
 
@@ -131,28 +99,34 @@
             <button onclick="exportData()" class="btn-main" style="background:var(--m-brown);">EXPORT JSON</button>
             <button onclick="document.getElementById('import-file').click()" class="btn-main" style="background:var(--m-brown); margin-top:10px;">IMPORT JSON</button>
             <input type="file" id="import-file" hidden onchange="importData(this)">
-            <p style="font-size: 10px; color: var(--m-brown); margin-top: 20px; text-align: center;">Tip: Long-press tags in Library to delete them.</p>
         </div>
 
         <div id="page-recent" class="page">
             <div style="background:#fff; padding:25px; border:1px solid var(--m-clay);">
                 <form id="merchForm">
                     <input type="hidden" id="editIndex" value="-1">
+                    
                     <select id="workSelect" onchange="toggleInput('workSelect', 'workInput')"></select>
-                    <input type="text" id="workInput" style="display:none;" placeholder="New Work Name">
+                    <input type="text" id="workInput" style="display:none;" placeholder="例如：世界計畫">
+                    
                     <select id="roleSelect" onchange="toggleInput('roleSelect', 'roleInput')"></select>
-                    <input type="text" id="roleInput" style="display:none;" placeholder="New Role Name">
+                    <input type="text" id="roleInput" style="display:none;" placeholder="例如：宵崎奏">
+                    
                     <select id="typeSelect" onchange="toggleInput('typeSelect', 'typeInput')"></select>
-                    <input type="text" id="typeInput" style="display:none;" placeholder="New Type Name">
-                    <input type="text" id="pattern" placeholder="Pattern / Title">
+                    <input type="text" id="typeInput" style="display:none;" placeholder="例如：V家異形舞台">
+                    
+                    <input type="text" id="pattern" placeholder="款式名稱 (例如：10週年限定)">
+                    
                     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
-                        <select id="status"><option value="現貨">IN STOCK</option><option value="非現貨">PENDING</option></select>
-                        <input type="number" id="qty" value="1" oninput="liveExchange()">
+                        <select id="status"><option value="現貨">現貨 IN STOCK</option><option value="非現貨">非現 PENDING</option></select>
+                        <input type="number" id="qty" value="1" placeholder="數量" oninput="liveExchange()">
                     </div>
+                    
                     <div style="display:grid; grid-template-columns: 1fr 2fr; gap:10px;">
                         <select id="currency" onchange="liveExchange()"><option value="HKD">HKD</option><option value="RMB">RMB</option><option value="JPY">JPY</option></select>
-                        <input type="number" id="inputPrice" step="0.01" required oninput="liveExchange()">
+                        <input type="number" id="inputPrice" step="0.01" required placeholder="單價" oninput="liveExchange()">
                     </div>
+                    
                     <div id="exchangePreview" style="margin-top:10px; font-size:12px; color:var(--m-deep-green);">Total: HKD 0.00</div>
                     <input type="file" id="imgFile">
                     <button type="submit" class="btn-main" style="margin-top:15px;">SAVE TO ARCHIVE</button>
@@ -176,12 +150,11 @@
     
     let merchList = [];
     let dict = {};
-    let pressTimer = null;
     let tagPressTimer = null;
+    let cardPressTimer = null;
     let isSelectMode = false;
     let selectedIndices = new Set();
     let filters = { work: 'all', role: 'all', type: 'all' };
-    let sortMode = 'date', viewMode = 'grid';
     let pieChart = null, barChart = null;
 
     function init() {
@@ -194,7 +167,6 @@
         renderAll();
         renderSelects();
         renderFilters();
-        updateSymbolUI();
     }
 
     function save() { 
@@ -204,73 +176,78 @@
         renderFilters();
     }
 
-    // --- 標籤長按邏輯 ---
-    function handleTagStart(dictKey, val) {
-        tagPressTimer = setTimeout(() => {
-            if (val === 'all') return;
-            if (confirm(`Delete category "${val}" from the list?`)) {
-                const listKey = dictKey === 'work' ? 'works' : dictKey === 'role' ? 'roles' : 'types';
-                dict[listKey] = dict[listKey].filter(v => v !== val);
-                if (filters[dictKey] === val) filters[dictKey] = 'all';
+    // --- 標籤管理 (長按/右鍵刪除) ---
+    function bindTagEvents(el, key, val) {
+        const delFunc = (e) => {
+            e.preventDefault();
+            if(val === 'all') return;
+            if(confirm(`確定刪除標籤「${val}」嗎？\n(這不會刪除已保存的作品數據)`)) {
+                const dictKey = key === 'work' ? 'works' : key === 'role' ? 'roles' : 'types';
+                dict[dictKey] = dict[dictKey].filter(v => v !== val);
+                if (filters[key] === val) filters[key] = 'all';
                 save();
-                showToast("CATEGORY REMOVED");
+                showToast("TAG DELETED");
             }
-        }, 800);
+        };
+        el.oncontextmenu = delFunc; // 電腦右鍵
+        el.ontouchstart = () => { tagPressTimer = setTimeout(() => { delFunc(new Event('longpress')); if(window.navigator.vibrate) window.navigator.vibrate(50); }, 800); };
+        el.ontouchend = () => clearTimeout(tagPressTimer);
     }
-    function handleTagEnd() { clearTimeout(tagPressTimer); }
 
     function renderFilters() {
         const build = (list, key) => {
-            let html = `<div class="filter-chip ${filters[key]==='all'?'active':''}" onclick="setFilter('${key}','all')">ALL</div>`;
-            html += list.map(item => `
-                <div class="filter-chip ${filters[key]===item?'active':''}" 
-                     onclick="setFilter('${key}','${item}')"
-                     ontouchstart="handleTagStart('${key}','${item}')" ontouchend="handleTagEnd()"
-                     onmousedown="handleTagStart('${key}','${item}')" onmouseup="handleTagEnd()">
-                    ${item}
-                </div>`).join('');
-            return `<div class="filter-row">${html}</div>`;
+            let row = document.createElement('div');
+            row.className = 'filter-row';
+            let allChip = document.createElement('div');
+            allChip.className = `filter-chip ${filters[key]==='all'?'active':''}`;
+            allChip.innerText = 'ALL';
+            allChip.onclick = () => { filters[key] = 'all'; renderFilters(); renderAll(); };
+            row.appendChild(allChip);
+
+            list.forEach(item => {
+                let chip = document.createElement('div');
+                chip.className = `filter-chip ${filters[key]===item?'active':''}`;
+                chip.innerText = item;
+                chip.onclick = () => { filters[key] = item; renderFilters(); renderAll(); };
+                bindTagEvents(chip, key, item);
+                row.appendChild(chip);
+            });
+            return row;
         };
-        const filterHTML = build(dict.works, 'work') + build(dict.roles, 'role') + build(dict.types, 'type');
-        document.getElementById('lib-filter-box').innerHTML = filterHTML;
-        document.getElementById('wait-filter-box').innerHTML = filterHTML;
+        const libBox = document.getElementById('lib-filter-box');
+        const waitBox = document.getElementById('wait-filter-box');
+        libBox.innerHTML = ''; waitBox.innerHTML = '';
+        ['work', 'role', 'type'].forEach(k => {
+            libBox.appendChild(build(dict[k+'s'], k));
+            waitBox.appendChild(build(dict[k+'s'], k));
+        });
     }
 
-    function setFilter(k, v) { filters[k] = v; renderAll(); renderFilters(); }
-    function setSort(m) { sortMode = m; updateSymbolUI(); renderAll(); }
-    function setView(v) { viewMode = v; updateSymbolUI(); renderAll(); }
-    function updateSymbolUI() {
-        document.querySelectorAll('.symbol-btn').forEach(b => b.classList.remove('active'));
-        document.querySelector('.sort-'+sortMode).classList.add('active');
-        document.querySelector('.view-'+viewMode).classList.add('active');
-    }
-
+    // --- 藏品顯示 ---
     function renderAll() {
         const rList = document.getElementById('readyList');
         const wList = document.getElementById('waitList');
-        rList.className = `list-container ${viewMode}`;
-        wList.className = `list-container ${viewMode}`;
-
+        
         let items = merchList.map((item, index) => ({...item, originalIndex: index}));
-        items = items.filter(i => (filters.work==='all'||i.work===filters.work) && (filters.role==='all'||i.role===filters.role) && (filters.type==='all'||i.type===filters.type));
-
-        if(sortMode==='name') items.sort((a,b)=>(a.pattern||"").localeCompare(b.pattern||""));
-        else if(sortMode==='date') items.sort((a,b)=>b.originalIndex - a.originalIndex);
-        else if(sortMode==='qty') items.sort((a,b)=>b.qty - a.qty);
-        else if(sortMode==='price') items.sort((a,b)=>parseFloat(b.totalHkd) - parseFloat(a.totalHkd));
+        // 聯動篩選邏輯
+        items = items.filter(i => 
+            (filters.work==='all' || i.work===filters.work) && 
+            (filters.role==='all' || i.role===filters.role) && 
+            (filters.type==='all' || i.type===filters.type)
+        );
 
         const genHtml = (i) => {
             const isSel = selectedIndices.has(i.originalIndex);
             return `
             <div class="item-card ${isSel?'selected':''}" 
-                 ontouchstart="handleStart(${i.originalIndex})" ontouchend="handleEnd()"
-                 onmousedown="handleStart(${i.originalIndex})" onmouseup="handleEnd()"
+                 ontouchstart="handleCardStart(${i.originalIndex})" ontouchend="handleCardEnd()"
+                 onmousedown="handleCardStart(${i.originalIndex})" onmouseup="handleCardEnd()"
                  onclick="handleCardClick(event, ${i.originalIndex})">
                 ${i.status === '非現貨' && !isSelectMode ? `<div class="quick-check" onclick="quickCheckIn(event, ${i.originalIndex})">✓</div>` : ''}
                 <div class="img-box"><img src="${i.img || 'https://via.placeholder.com/200/f2efeb/888'}"></div>
                 <div class="info">
                     <div style="font-size:9px; color:var(--m-brown);">${i.role} · ${i.type}</div>
-                    <div style="font-size:11px; margin:2px 0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${i.pattern || 'Untitled'}</div>
+                    <div style="font-size:11px; margin:2px 0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${i.pattern || '未命名'}</div>
                     <div style="color:var(--m-deep-green); font-weight:bold; font-size:11px;">HK$ ${i.totalHkd} <span style="font-weight:normal; font-size:9px; opacity:0.4">x${i.qty}</span></div>
                 </div>
             </div>`;
@@ -279,38 +256,26 @@
         wList.innerHTML = items.filter(i => i.status === '非現貨').map(genHtml).join('');
     }
 
-    function handleStart(idx) { 
-        pressTimer = setTimeout(() => { 
-            if(!isSelectMode) { 
-                isSelectMode = true; 
-                selectedIndices.add(idx); 
-                document.getElementById('multi-delete-bar').style.display = 'block'; 
-                renderAll(); 
-                if(window.navigator.vibrate) window.navigator.vibrate(50); 
-            } 
-        }, 800); 
-    }
-    function handleEnd() { clearTimeout(pressTimer); }
+    // --- 交互邏輯 ---
+    function handleCardStart(idx) { cardPressTimer = setTimeout(() => { if(!isSelectMode){ isSelectMode=true; selectedIndices.add(idx); document.getElementById('multi-delete-bar').style.display='block'; renderAll(); if(window.navigator.vibrate) window.navigator.vibrate(50); } }, 800); }
+    function handleCardEnd() { clearTimeout(cardPressTimer); }
     function handleCardClick(e, idx) {
         if(isSelectMode) {
             if(selectedIndices.has(idx)) selectedIndices.delete(idx); else selectedIndices.add(idx);
             renderAll(); if(selectedIndices.size === 0) exitSelectMode();
         } else { editItem(idx); }
     }
-    function exitSelectMode() { if(!isSelectMode) return false; isSelectMode = false; selectedIndices.clear(); document.getElementById('multi-delete-bar').style.display = 'none'; renderAll(); return true; }
-    function deleteSelected() { 
-        if(confirm(`DELETE ${selectedIndices.size} ITEMS?`)) { 
-            merchList = merchList.filter((_, index) => !selectedIndices.has(index)); 
-            save(); exitSelectMode(); showToast("DELETED"); 
-        } 
-    }
+    function exitSelectMode() { isSelectMode=false; selectedIndices.clear(); document.getElementById('multi-delete-bar').style.display='none'; renderAll(); return true; }
+    function deleteSelected() { if(confirm(`確定刪除這 ${selectedIndices.size} 件作品？`)) { merchList = merchList.filter((_, index) => !selectedIndices.has(index)); save(); exitSelectMode(); showToast("DELETED"); } }
     function quickCheckIn(e, idx) { e.stopPropagation(); merchList[idx].status = '現貨'; save(); renderAll(); showToast("ARRIVED"); }
+    
     function editItem(idx) {
         const i = merchList[idx]; document.getElementById('editIndex').value = idx;
         document.getElementById('pattern').value = i.pattern || ""; document.getElementById('qty').value = i.qty || 1;
         document.getElementById('currency').value = i.originalCur || "HKD"; document.getElementById('inputPrice').value = i.originalPrice || 0;
         document.getElementById('status').value = i.status; liveExchange(); switchTab('page-recent', document.querySelectorAll('.nav-item')[2]);
     }
+
     function showToast(m) { const t=document.getElementById('toast'); t.innerText=m; t.style.display='block'; setTimeout(()=>t.style.display='none',2000); }
     function toggleInput(s, i) { document.getElementById(i).style.display = (document.getElementById(s).value === 'NEW') ? 'block' : 'none'; }
     function updateGridSize(v) { document.documentElement.style.setProperty('--grid-size', v+'px'); }
@@ -318,6 +283,7 @@
         const p = parseFloat(document.getElementById('inputPrice').value) || 0, q = parseInt(document.getElementById('qty').value) || 1, cur = document.getElementById('currency').value; 
         const t = (p * q * rates[cur]).toFixed(2); document.getElementById('exchangePreview').innerText = `Total: HKD ${t}`; return t; 
     }
+
     function switchTab(id, btn) {
         exitSelectMode(); document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
         document.getElementById(id).classList.add('active');
@@ -330,18 +296,10 @@
     document.getElementById('merchForm').onsubmit = function(e) {
         e.preventDefault();
         const editIdx = parseInt(document.getElementById('editIndex').value);
-        const getV = (s, i, dk) => { 
-            let v = document.getElementById(s).value; 
-            if(v === 'NEW') { v = document.getElementById(i).value.trim(); if(v && !dict[dk].includes(v)) dict[dk].push(v); } 
-            return v; 
-        };
+        const getV = (s, i, dk) => { let v = document.getElementById(s).value; if(v === 'NEW') { v = document.getElementById(i).value.trim(); if(v && !dict[dk].includes(v)) dict[dk].push(v); } return v; };
         const data = { work: getV('workSelect', 'workInput', 'works'), role: getV('roleSelect', 'roleInput', 'roles'), type: getV('typeSelect', 'typeInput', 'types'), pattern: document.getElementById('pattern').value, status: document.getElementById('status').value, qty: parseInt(document.getElementById('qty').value), originalPrice: parseFloat(document.getElementById('inputPrice').value), originalCur: document.getElementById('currency').value, totalHkd: liveExchange(), img: null };
         const file = document.getElementById('imgFile').files[0];
-        const done = (b64) => { 
-            if(b64) data.img = b64; else if(editIdx !== -1) data.img = merchList[editIdx].img; 
-            if(editIdx === -1) merchList.unshift(data); else merchList[editIdx] = data; 
-            save(); switchTab('page-gallery', document.querySelectorAll('.nav-item')[0]); 
-        };
+        const done = (b64) => { if(b64) data.img = b64; else if(editIdx !== -1) data.img = merchList[editIdx].img; if(editIdx === -1) merchList.unshift(data); else merchList[editIdx] = data; save(); switchTab('page-gallery', document.querySelectorAll('.nav-item')[0]); };
         if(file) { const fr = new FileReader(); fr.onload = () => done(fr.result); fr.readAsDataURL(file); } else done(null);
     };
 
@@ -357,7 +315,7 @@
     }
 
     function renderSelects() { 
-        const setup = (id, list) => { document.getElementById(id).innerHTML = list.map(i => `<option value="${i}">${i}</option>`).join('') + `<option value="NEW">+ NEW...</option>`; }; 
+        const setup = (id, list) => { document.getElementById(id).innerHTML = `<option value="">請選擇...</option>` + list.map(i => `<option value="${i}">${i}</option>`).join('') + `<option value="NEW">+ 新增...</option>`; }; 
         setup('workSelect', dict.works); setup('roleSelect', dict.roles); setup('typeSelect', dict.types); 
     }
     function exportData() { const b = new Blob([JSON.stringify({merchList, dict})], {type: 'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = `archive_master.json`; a.click(); }
