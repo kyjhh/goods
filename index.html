@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Morandi Archive - V25 Note & Modal Fix</title>
+    <title>Morandi Archive - V26 Import Fix</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
@@ -50,8 +50,8 @@
         .info { padding: 10px; flex-grow: 1; overflow: hidden; }
 
         .btn-main { background: var(--m-deep-green); color: white; border: none; padding: 14px; width: 100%; font-size: 12px; cursor: pointer; border-radius: var(--radius); margin-top: 15px; }
-        input, select, textarea { width: 100%; padding: 12px; border-radius: var(--radius); border: 1px solid var(--m-clay); background: #fafafa; font-size: 13px; margin-top: 6px; box-sizing: border-box; outline: none; font-family: inherit; }
-        textarea { height: 80px; resize: none; }
+        input, select, textarea { width: 100%; padding: 12px; border-radius: var(--radius); border: 1px solid var(--m-clay); background: #fafafa; font-size: 13px; margin-top: 6px; box-sizing: border-box; outline: none; }
+        textarea { height: 80px; resize: none; font-family: inherit; }
         
         #success-modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 30px; border-radius: 15px; text-align: center; z-index: 4000; box-shadow: 0 10px 40px rgba(0,0,0,0.2); display: none; width: 220px; }
         .overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.4); z-index: 3500; display: none; }
@@ -95,7 +95,6 @@
                     </div>
                 </div>
                 <div id="lib-filter-box"></div>
-                <div style="font-size:9px; color:#ccc; margin-top:5px; text-align:center;">* 長按卡片可快速刪除</div>
             </div>
             <div id="readyList" class="list-container grid"></div>
         </div>
@@ -116,8 +115,7 @@
                     <select id="typeSelect" onchange="toggleInput('typeSelect', 'typeInput')"></select>
                     <input type="text" id="typeInput" style="display:none;" placeholder="新類別">
                     <input type="text" id="pattern" placeholder="款式名稱">
-                    <textarea id="note" placeholder="描述 / 備註..."></textarea>
-                    
+                    <textarea id="note" placeholder="文字描述 / 備註..."></textarea>
                     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
                         <select id="status"><option value="現貨">現貨</option><option value="非現貨">非現</option></select>
                         <input type="number" id="qty" value="1">
@@ -181,6 +179,30 @@
         localStorage.setItem(DICT_KEY, JSON.stringify(dict)); 
     }
 
+    // 導入功能修正版
+    function importData(input) {
+        const file = input.files[0]; if(!file) return;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const d = JSON.parse(e.target.result);
+                // 直接更新全局變數
+                merchList = d.merchList || [];
+                dict = d.dict || { works: [], roles: [], types: [] };
+                
+                save(); // 存檔
+                
+                // 強制刷新介面
+                renderSelects();
+                renderFilters();
+                renderAll();
+                input.value = ""; // 清除選取檔案以便下次使用
+                showModal("📥", "IMPORTED SUCCESS");
+            } catch(err) { alert("導入失敗，請檢查檔案格式"); }
+        };
+        reader.readAsText(file);
+    }
+
     function handleLongPress(element, callback) {
         let timer;
         const start = () => { timer = setTimeout(() => { if (window.navigator.vibrate) window.navigator.vibrate(50); callback(); }, 800); };
@@ -192,7 +214,7 @@
 
     function confirmDeleteTag(key, value) {
         if (value === 'all') return;
-        if (confirm(`確定從篩選清單移除「${value}」嗎？`)) {
+        if (confirm(`確定刪除標籤「${value}」嗎？`)) {
             dict[key + 's'] = dict[key + 's'].filter(v => v !== value);
             if (filters[key] === value) filters[key] = 'all';
             save(); renderFilters(); renderSelects(); renderAll();
@@ -245,39 +267,28 @@
         const finalWork = getV('workSelect', 'workInput', 'works');
         const finalRole = getV('roleSelect', 'roleInput', 'roles');
         const finalType = getV('typeSelect', 'typeInput', 'types');
-        
         const data = {
             work: finalWork, role: finalRole, type: finalType, 
             pattern: document.getElementById('pattern').value,
-            note: document.getElementById('note').value, // 儲存 Note
+            note: document.getElementById('note').value,
             status: document.getElementById('status').value, 
             qty: parseInt(document.getElementById('qty').value) || 1,
             originalPrice: parseFloat(document.getElementById('inputPrice').value) || 0, 
             originalCur: document.getElementById('currency').value,
-            totalHkd: liveExchange(), 
-            img: null, 
+            totalHkd: liveExchange(), img: null, 
             timestamp: editIdx === -1 ? Date.now() : merchList[editIdx].timestamp
         };
-
         const done = (b64) => {
             if(b64) data.img = b64; else if(editIdx !== -1) data.img = merchList[editIdx].img;
             if(editIdx === -1) merchList.unshift(data); else merchList[editIdx] = data;
-            save(); 
-            showModal("✨", "SAVED!"); // 成功彈窗
+            save(); showModal("✨", "SAVED!");
             renderSelects();
-            // 重置表格
             document.getElementById('merchForm').reset();
             document.getElementById('editIndex').value = "-1";
             document.getElementById('delBtn').style.display = 'none';
-            document.querySelectorAll('#workInput, #roleInput, #typeInput').forEach(el => el.style.display = 'none');
-            
-            // 跳回列表頁
-            setTimeout(() => {
-                switchTab('page-gallery', document.querySelectorAll('.nav-item')[0]);
-                renderFilters(); renderAll();
-            }, 600);
+            switchTab('page-gallery', document.querySelectorAll('.nav-item')[0]);
+            renderFilters(); renderAll();
         };
-
         const file = document.getElementById('imgFile').files[0];
         if(file) { const fr = new FileReader(); fr.onload = () => done(fr.result); fr.readAsDataURL(file); }
         else done(null);
@@ -327,10 +338,8 @@
         items.forEach(i => {
             const card = document.createElement('div');
             card.className = 'item-card';
-            // 清單模式下加入備註簡述
-            const noteHtml = (viewMode === 'list' && i.note) ? `<div style="font-size:9px; color:#aaa; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${i.note}</div>` : '';
-            
-            card.innerHTML = `<div class="img-box"><img src="${i.img || 'https://via.placeholder.com/200/f2efeb/888'}"></div><div class="info"><div style="font-size:9px;color:var(--m-brown);">${i.role} · ${i.type}</div><div style="font-size:11px;font-weight:bold;">${i.pattern || 'Untitled'}</div>${noteHtml}<div style="font-size:11px;color:var(--m-deep-green);">HK$ ${i.totalHkd} <small>x${i.qty}</small></div></div>`;
+            const notePreview = (viewMode==='list' && i.note) ? `<div style="font-size:9px;color:#999;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${i.note}</div>` : '';
+            card.innerHTML = `<div class="img-box"><img src="${i.img || 'https://via.placeholder.com/200/f2efeb/888'}"></div><div class="info"><div style="font-size:9px;color:var(--m-brown);">${i.role} · ${i.type}</div><div style="font-size:11px;font-weight:bold;">${i.pattern || 'Untitled'}</div>${notePreview}<div style="font-size:11px;color:var(--m-deep-green);">HK$ ${i.totalHkd} <small>x${i.qty}</small></div></div>`;
             card.onclick = () => editItem(i.originalIndex);
             handleLongPress(card, () => confirmDeleteCard(i.originalIndex));
             if(i.status === '現貨') rList.appendChild(card); else wList.appendChild(card);
@@ -348,7 +357,7 @@
         const i = merchList[idx]; document.getElementById('editIndex').value = idx;
         document.getElementById('workSelect').value = i.work; document.getElementById('roleSelect').value = i.role; document.getElementById('typeSelect').value = i.type;
         document.getElementById('pattern').value = i.pattern || ""; 
-        document.getElementById('note').value = i.note || ""; // 填入 Note
+        document.getElementById('note').value = i.note || "";
         document.getElementById('status').value = i.status; document.getElementById('qty').value = i.qty;
         document.getElementById('currency').value = i.originalCur; document.getElementById('inputPrice').value = i.originalPrice;
         document.getElementById('delBtn').style.display = 'block';
@@ -376,7 +385,7 @@
 
     function toggleInput(s, i) { document.getElementById(i).style.display = document.getElementById(s).value === 'NEW' ? 'block' : 'none'; }
     function liveExchange() { const p = parseFloat(document.getElementById('inputPrice').value)||0, q = parseInt(document.getElementById('qty').value)||1, cur = document.getElementById('currency').value; const t = (p * q * rates[cur]).toFixed(2); document.getElementById('exchangePreview').innerText = `Total: HKD ${t}`; return t; }
-    function switchTab(id, btn) { document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); document.getElementById(id).classList.add('active'); document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); if(btn) btn.classList.add('active'); if(id==='page-stats') renderStats(); if(id!=='page-recent') document.getElementById('delBtn').style.display='none'; renderAll(); }
+    function switchTab(id, btn) { document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); document.getElementById(id).classList.add('active'); document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); if(btn) btn.classList.add('active'); if(id==='page-stats') renderStats(); if(id!=='page-recent') { document.getElementById('delBtn').style.display='none'; document.getElementById('merchForm').reset(); document.getElementById('editIndex').value = "-1"; } renderAll(); }
     function openPage(id) { document.getElementById('cover-page').classList.add('open'); document.getElementById('bottom-nav').style.display='flex'; switchTab(id, document.querySelectorAll('.nav-item')[id==='page-gallery'?0 : id==='page-pending'?1:2]); }
     function closePage() { document.getElementById('cover-page').classList.remove('open'); document.getElementById('bottom-nav').style.display='none'; }
     function exportData() { const blob = new Blob([JSON.stringify({merchList, dict})], {type: 'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `archive_master.json`; a.click(); }
