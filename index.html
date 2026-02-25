@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Morandi Archive - Master Full Version</title>
+    <title>Morandi Archive - Master V37 Full</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
@@ -221,11 +221,17 @@
     </nav>
 
 <script>
-    const STORAGE_KEY = 'archive_master'; const DICT_KEY = 'archive_dict_master'; const COVER_KEY = 'archive_cover_bg';
-    let merchList = [], dict = { works: [], roles: [], types: [] }, filters = { work: 'all', role: 'all', type: 'all' };
+    // --- 資料庫參數設定 ---
+    const STORAGE_KEY = 'archive_master'; 
+    const DICT_KEY = 'archive_dict_master'; 
+    const COVER_KEY = 'archive_cover_bg';
+    
+    let merchList = [];
+    let dict = { works: [], roles: [], types: [] };
+    let filters = { work: 'all', role: 'all', type: 'all' };
     let sortMode = 'date', sortDesc = true, viewMode = 'grid', charts = {};
     
-    // --- 3. 新增：批量編輯邏輯變數 ---
+    // --- 批量編輯邏輯變數 ---
     let isBatchMode = false;
     let selectedIndices = [];
 
@@ -248,7 +254,24 @@
         localStorage.setItem(DICT_KEY, JSON.stringify(dict)); 
     }
 
-    // --- 4. 新增：批量操作邏輯函數 ---
+    // --- 長按偵測函數 (核心修復：解決無法刪除標籤/藏品的問題) ---
+    function handleLongPress(element, callback) {
+        let timer;
+        const start = (e) => {
+            timer = setTimeout(() => {
+                if (window.navigator.vibrate) window.navigator.vibrate(60);
+                callback();
+            }, 800);
+        };
+        const cancel = () => clearTimeout(timer);
+        element.addEventListener('touchstart', start, {passive: true});
+        element.addEventListener('touchend', cancel);
+        element.addEventListener('mousedown', start);
+        element.addEventListener('mouseup', cancel);
+        element.addEventListener('contextmenu', e => e.preventDefault());
+    }
+
+    // --- 批量操作邏輯函數 ---
     function toggleBatchMode() {
         isBatchMode = !isBatchMode;
         selectedIndices = [];
@@ -270,18 +293,16 @@
     function confirmBatchDelete() {
         if (selectedIndices.length === 0) return;
         if (confirm(`確定刪除選中的 ${selectedIndices.length} 個藏品嗎？此操作無法復原。`)) {
-            // 從大到小排序，確保 splice 不會影響尚未刪除的索引位置
             selectedIndices.sort((a, b) => b - a);
             selectedIndices.forEach(idx => merchList.splice(idx, 1));
             save();
-            updateDictData(); // 更新選項字典
+            updateDictData();
             toggleBatchMode();
             showModal("🗑️", "已批量刪除");
         }
     }
 
     function updateDictData() {
-        // 當刪除項目後，重新整理字典選項 (過濾掉已不存在的標籤)
         dict.works = [...new Set(merchList.map(i => i.work).filter(Boolean))].sort();
         dict.roles = [...new Set(merchList.map(i => i.role).filter(Boolean))].sort();
         dict.types = [...new Set(merchList.map(i => i.type).filter(Boolean))].sort();
@@ -315,7 +336,6 @@
             
             filtered.forEach(i => {
                 const card = document.createElement('div'); 
-                // 5. 修改：判斷是否為批量選中狀態
                 card.className = `item-card ${isBatchMode && selectedIndices.includes(i.originalIndex) ? 'selected' : ''}`;
                 card.innerHTML = `<div class="img-box"><img src="${i.img || ''}"></div>
                     <div class="info">
@@ -324,7 +344,7 @@
                         <div style="color:var(--m-deep-green); font-size:11px; font-weight:bold;">HK$ ${i.totalHkd} <span style="color:#aaa;font-weight:normal;font-size:9px;">x${i.qty}</span></div>
                     </div>`;
                 
-                // 6. 修改：點擊事件分流 (編輯單項 vs 批量選取)
+                // 點擊事件分流 (編輯單項 vs 批量選取)
                 card.onclick = () => {
                     if (isBatchMode) {
                         toggleSelectItem(i.originalIndex);
@@ -332,6 +352,14 @@
                         editItem(i.originalIndex);
                     }
                 };
+
+                // 長按卡片自動進入批量模式並選中
+                handleLongPress(card, () => {
+                    if (!isBatchMode) {
+                        toggleBatchMode();
+                        toggleSelectItem(i.originalIndex);
+                    }
+                });
                 
                 container.appendChild(card);
             });
@@ -343,7 +371,7 @@
         });
     }
 
-    // --- 其餘所有原始邏輯 ---
+    // --- 篩選器、排序與視圖 ---
     function setSort(mode) { sortMode = mode; updateToolUI(); renderAll(); }
     function toggleOrder() { 
         sortDesc = !sortDesc; 
@@ -363,13 +391,26 @@
             let all = document.createElement('div'); all.className = `filter-chip ${filters[key]==='all'?'active':''}`;
             all.innerText = '全部'; all.onclick = () => { filters[key] = 'all'; renderFilters(); renderAll(); };
             row.appendChild(all);
+            
             list.forEach(item => {
                 let chip = document.createElement('div'); chip.className = `filter-chip ${filters[key]===item?'active':''}`;
-                chip.innerText = item; chip.onclick = () => { filters[key] = item; renderFilters(); renderAll(); };
+                chip.innerText = item; 
+                chip.onclick = () => { filters[key] = item; renderFilters(); renderAll(); };
+                
+                // 長按刪除標籤 (修復！)
+                handleLongPress(chip, () => {
+                    if(confirm(`確定要從系統中刪除標籤「${item}」嗎？`)) {
+                        dict[key+'s'] = dict[key+'s'].filter(v => v !== item);
+                        if(filters[key] === item) filters[key] = 'all';
+                        save(); renderFilters(); renderSelects(); renderAll();
+                    }
+                });
+                
                 row.appendChild(chip);
             });
             return row;
         };
+        
         ['lib-filter-box', 'wait-filter-box', 'wish-filter-box'].forEach(id => {
             const box = document.getElementById(id); if(!box) return; box.innerHTML = '';
             ['work', 'role', 'type'].forEach(k => box.appendChild(build(dict[k+'s'], k)));
@@ -381,21 +422,19 @@
         const statsList = merchList.filter(i => i.status !== '願望');
         const colors = ['#6b7a63', '#acc1ad', '#a68b7c', '#d5cabd', '#e5ddd5', '#c2b2a3', '#8a9a83'];
         
-        // 每月趨勢
         const mData = {}; statsList.forEach(i => { const d = new Date(i.timestamp); const k = `${d.getFullYear()}/${d.getMonth()+1}`; mData[k] = (mData[k] || 0) + parseFloat(i.totalHkd); });
         const mKeys = Object.keys(mData).sort();
         charts.monthly = new Chart(document.getElementById('monthlyChart').getContext('2d'), { type: 'line', data: { labels: mKeys, datasets: [{ label: '花費 (HKD)', data: mKeys.map(k => mData[k]), borderColor: '#6b7a63', backgroundColor: 'rgba(107, 122, 99, 0.1)', fill: true, tension: 0.3 }] } });
         
-        // 作品佔比
         const wData = {}; statsList.forEach(i => { if(i.work) wData[i.work] = (wData[i.work] || 0) + parseFloat(i.totalHkd); });
         charts.work = new Chart(document.getElementById('workChart').getContext('2d'), { type: 'doughnut', data: { labels: Object.keys(wData), datasets: [{ data: Object.values(wData), backgroundColor: colors }] }, options: { plugins: { legend: { position: 'right' } } } });
         
-        // 角色排行
         const rData = {}; statsList.forEach(i => { if(i.role) rData[i.role] = (rData[i.role] || 0) + parseFloat(i.totalHkd); });
         const topR = Object.entries(rData).sort((a,b) => b[1]-a[1]).slice(0, 5);
         charts.role = new Chart(document.getElementById('roleChart').getContext('2d'), { type: 'bar', data: { labels: topR.map(x=>x[0]), datasets: [{ label: '總金額 (HKD)', data: topR.map(x=>x[1]), backgroundColor: '#acc1ad', borderRadius: 4 }] }, options: { indexAxis: 'y' } });
     }
 
+    // --- 單筆編輯與刪除 ---
     function editItem(idx) {
         const i = merchList[idx]; document.getElementById('editIndex').value = idx;
         document.getElementById('workSelect').value = i.work || ""; document.getElementById('roleSelect').value = i.role || ""; document.getElementById('typeSelect').value = i.type || "";
@@ -407,9 +446,22 @@
 
     function deleteCurrentItem() {
         const idx = parseInt(document.getElementById('editIndex').value);
-        if(idx !== -1 && confirm("確定刪除此藏品？")) { merchList.splice(idx, 1); save(); updateDictData(); showModal("🗑️", "已刪除"); switchTab('page-gallery', document.querySelectorAll('.nav-item')[0]); renderAll(); }
+        if(idx !== -1 && confirm("確定刪除此藏品？")) { 
+            merchList.splice(idx, 1); 
+            save(); 
+            updateDictData(); 
+            showModal("🗑️", "已刪除"); 
+            
+            // 清空表單並返回館藏
+            document.getElementById('merchForm').reset();
+            document.getElementById('editIndex').value = "-1";
+            document.getElementById('delBtn').style.display = 'none';
+            switchTab('page-gallery', document.querySelectorAll('.nav-item')[0]); 
+            renderAll(); 
+        }
     }
 
+    // --- 頁面與工具邏輯 ---
     function switchTab(id, btn) {
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
         document.getElementById(id).classList.add('active');
@@ -433,6 +485,7 @@
     }
     
     function toggleInput(s, i) { document.getElementById(i).style.display = document.getElementById(s).value === 'NEW' ? 'block' : 'none'; }
+    
     function updateCover(input) {
         const f = input.files[0]; if(!f) return;
         const fr = new FileReader(); fr.onload = (e) => { document.getElementById('cover-page').style.backgroundImage = `url(${e.target.result})`; localStorage.setItem(COVER_KEY, e.target.result); };
@@ -481,4 +534,4 @@
     window.onload = init;
 </script>
 </body>
-    </html>
+                                                                                 </html>
