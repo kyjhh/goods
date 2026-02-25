@@ -185,7 +185,8 @@ input, select, textarea { width: 100%; padding: 12px; border-radius: var(--radiu
     <div id="page-settings" class="page">
         <div class="stat-card">
             <label class="input-label">網格大小: <span id="gridVal">160</span>px</label>
-            <input type="range" id="gridRange" min="120" max="220" value="160" oninput="updateGridSize(this.value)">
+            <!-- 修改處：min 從 120 改為 100 -->
+            <input type="range" id="gridRange" min="100" max="220" value="160" oninput="updateGridSize(this.value)">
             <hr style="border: 0.5px solid #f0f0f0; margin: 25px 0;">
             <button onclick="exportData()" class="btn-main" style="background:var(--m-brown);">匯出資料備份(.json)</button>
             <input type="file" id="importFile" style="display:none" accept=".json" onchange="importData(this)">
@@ -214,7 +215,7 @@ let merchList = [], dict = { works: [], roles: [], types: [] }, filters = { work
 let sortMode = 'date', sortDesc = true, viewMode = 'grid', charts = {};
 let isBatchMode = false, selectedIndices = [];
 
-// 壓縮圖片函數 (新增)
+// 壓縮圖片函數
 function compressImage(base64, maxWidth = 800, quality = 0.8) {
     return new Promise((resolve) => {
         const img = new Image();
@@ -460,7 +461,7 @@ function liveExchange() {
     document.getElementById('exchangePreview').innerText = `總額: HKD ${total}`;
 }
 
-// 修改後的表單提交事件（包含圖片壓縮）
+// 表單提交事件（包含圖片壓縮）
 document.getElementById('merchForm').onsubmit = function(e) {
     e.preventDefault();
     const editIdx = parseInt(document.getElementById('editIndex').value);
@@ -612,4 +613,4 @@ function renderStats() {
 window.onload = init;
 </script>
 </body>
-                                             </html>
+</html>
