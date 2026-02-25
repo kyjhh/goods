@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Morandi Archive - 最終版</title>
+<title>Morandi Archive - 多選標籤版</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
 :root {
@@ -30,7 +30,7 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: 'PingFang HK', 'M
 .page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; }
 .back-btn-header { font-size: 20px; cursor: pointer; color: var(--m-brown); width: 40px; text-align: left; }
 .page-title { font-size: 18px; font-weight: bold; color: var(--m-deep-green); text-align: center; flex: 1; }
-.header-placeholder { width: 40px; } /* 右側佔位 */
+.header-placeholder { width: 40px; }
 .control-panel { background: #fff; padding: 15px; border-radius: var(--radius); margin-bottom: 20px; border: 1px solid var(--m-clay); box-shadow: 0 2px 10px rgba(0,0,0,0.02); }
 .symbol-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid #f0f0f0; padding-bottom: 12px; }
 .symbol-group { display: flex; gap: 12px; color: #ccc; align-items: center; }
@@ -113,8 +113,6 @@ input, select, textarea { width: 100%; padding: 10px; border-radius: var(--radiu
 </div>
 
 <div class="main-content" id="main-content">
-    <!-- 注意：原先的 #back-btn 已被移除 -->
-    
     <!-- 館藏頁 -->
     <div id="page-gallery" class="page">
         <div class="page-header">
@@ -287,12 +285,10 @@ input, select, textarea { width: 100%; padding: 10px; border-radius: var(--radiu
             <div class="stat-title">角色支出排行(HKD)</div>
             <canvas id="roleChart"></canvas>
         </div>
-        <!-- 類別數量統計 -->
         <div class="stat-card">
             <div class="stat-title">類別數量分佈</div>
             <canvas id="typeCountChart"></canvas>
         </div>
-        <!-- 角色數量統計 -->
         <div class="stat-card">
             <div class="stat-title">角色數量統計</div>
             <canvas id="roleCountChart"></canvas>
@@ -308,7 +304,6 @@ input, select, textarea { width: 100%; padding: 10px; border-radius: var(--radiu
         </div>
         <div class="stat-card">
             <label class="input-label">網格大小: <span id="gridVal">160</span>px</label>
-            <!-- 最大值改為 180 -->
             <input type="range" id="gridRange" min="50" max="180" value="160" oninput="updateGridSize(this.value)">
             <hr style="border: 0.5px solid #f0f0f0; margin: 25px 0;">
             <button onclick="exportData()" class="btn-main" style="background:var(--m-brown);">匯出資料備份(.json)</button>
@@ -335,7 +330,9 @@ const LAST_INPUT_KEY = 'archive_last_input';
 const DEFAULT_WORKS = ['世界計畫', 'V家', 'Alien Stage'];
 const DEFAULT_TYPES = ['襟','色紙','掛件','立牌', '拍立得'];
 
-let merchList = [], dict = { works: [], roles: [], types: [] }, filters = { work: 'all', role: 'all', type: 'all' };
+let merchList = [], dict = { works: [], roles: [], types: [] };
+// filters 改為陣列形式，初始為空陣列（表示全部）
+let filters = { work: [], role: [], type: [] };
 let sortMode = 'date', sortDesc = true, viewMode = 'grid', charts = {};
 let isBatchMode = false, selectedIndices = [];
 
@@ -365,6 +362,12 @@ function compressImage(base64, maxWidth = 800, quality = 0.8) {
 function init() {
     merchList = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
     dict = JSON.parse(localStorage.getItem(DICT_KEY)) || { works: [], roles: [], types: [] };
+
+    // 初始化 dict，若為空則放入預設標籤
+    if (dict.works.length === 0) dict.works = [...DEFAULT_WORKS];
+    if (dict.types.length === 0) dict.types = [...DEFAULT_TYPES];
+    // roles 無預設值
+
     const savedCover = localStorage.getItem(COVER_KEY);
     if (savedCover) document.getElementById('cover-page').style.backgroundImage = `url(${savedCover})`;
     updateGridSize(localStorage.getItem('archive_grid_size') || '160');
@@ -374,7 +377,7 @@ function init() {
     updateToolUI();
 }
 
-// 儲存函數（加入錯誤處理，失敗時拋出例外）
+// 儲存函數
 function save() {
     try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(merchList));
@@ -428,7 +431,6 @@ function confirmBatchDelete() {
     let newList = [...merchList];
     indicesToDelete.forEach(idx => newList.splice(idx, 1));
 
-    // 只儲存藏品，字典保持不變
     try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(newList));
         localStorage.setItem(DICT_KEY, JSON.stringify(dict));
@@ -438,13 +440,10 @@ function confirmBatchDelete() {
     }
 
     merchList = newList;
-    // dict 不變
-
     renderSelects();
     renderFilters();
     renderAll();
     setBatchMode(false);
-    // 移除彈窗
 }
 
 function renderAll() {
@@ -455,7 +454,10 @@ function renderAll() {
         const sVal = document.getElementById(srch[status]) ? document.getElementById(srch[status]).value.toLowerCase() : "";
         let filtered = merchList.map((item, index) => ({...item, originalIndex: index}))
             .filter(i => i.status === status)
-            .filter(i => (filters.work==='all' || i.work===filters.work) && (filters.role==='all' || i.role===filters.role) && (filters.type==='all' || i.type===filters.type))
+            // 過濾條件：如果 filters.work 為空陣列則全部，否則只要 item.work 在陣列中
+            .filter(i => filters.work.length === 0 || filters.work.includes(i.work))
+            .filter(i => filters.role.length === 0 || filters.role.includes(i.role))
+            .filter(i => filters.type.length === 0 || filters.type.includes(i.type))
             .filter(i => (i.pattern + (i.note || "") + (i.role || "")).toLowerCase().includes(sVal));
 
         const multi = sortDesc? 1:-1;
@@ -487,7 +489,7 @@ function renderAll() {
         const countLabel = document.getElementById(cld);
         if(countLabel) countLabel.innerText = `顯示: ${filtered.length} / ${merchList.filter(x=>x.status===status).length}`;
     });
-    renderFilters();
+    renderFilters(); // 更新過濾器數量
 }
 
 function setSort(mode) { sortMode = mode; updateToolUI(); renderAll(); }
@@ -509,32 +511,49 @@ function getCurrentStatus() {
 }
 
 function renderFilters() {
-    const build = (list, key, defaults) => {
-        const combined = [...new Set([...defaults, ...list])];
+    const build = (list, key) => {
+        // list 是 dict 中的陣列，已包含所有可用的標籤
         const currentStatus = getCurrentStatus();
         let row = document.createElement('div'); row.className = 'filter-row';
         const totalCount = currentStatus ? merchList.filter(i => i.status === currentStatus).length : 0;
-        let all = document.createElement('div'); all.className = `filter-chip ${filters[key]==='all'?'active':''}`;
+        let all = document.createElement('div'); all.className = `filter-chip ${filters[key].length === 0 ? 'active' : ''}`;
         all.innerText = `全部 (${totalCount})`;
-        all.onclick = () => { filters[key] = 'all'; renderFilters(); renderAll(); };
+        all.onclick = () => { 
+            filters[key] = []; 
+            renderFilters(); 
+            renderAll(); 
+        };
         row.appendChild(all);
-        combined.forEach(item => {
+        list.forEach(item => {
             const count = currentStatus ? merchList.filter(i => i.status === currentStatus && i[key] === item).length : 0;
             let chip = document.createElement('div');
-            chip.className = `filter-chip ${filters[key]===item?'active':''}`;
+            chip.className = `filter-chip ${filters[key].includes(item) ? 'active' : ''}`;
             chip.innerText = `${item} (${count})`;
-            chip.onclick = () => { filters[key] = item; renderFilters(); renderAll(); };
+            chip.onclick = () => {
+                // 多選邏輯：如果已選中則移除，否則加入
+                if (filters[key].includes(item)) {
+                    filters[key] = filters[key].filter(v => v !== item);
+                } else {
+                    filters[key] = [...filters[key], item];
+                }
+                renderFilters(); 
+                renderAll(); 
+            };
             handleLongPress(chip, () => {
                 if(confirm(`確定刪除標籤「${item}」嗎？`)) {
-                    const dk = key==='work'?'works':(key==='role'?'roles':'types');
+                    const dk = key;
                     dict[dk] = dict[dk].filter(x => x !== item);
-                    // 只儲存字典，不影響藏品
                     try {
                         localStorage.setItem(DICT_KEY, JSON.stringify(dict));
                     } catch (e) {
                         showModal("⚠️", "標籤刪除後儲存失敗");
                     }
-                    renderFilters(); renderSelects();
+                    // 如果刪除的標籤正好在 filters 中，一併移除
+                    if (filters[key].includes(item)) {
+                        filters[key] = filters[key].filter(v => v !== item);
+                    }
+                    renderFilters(); 
+                    renderSelects();
                 }
             });
             row.appendChild(chip);
@@ -547,9 +566,9 @@ function renderFilters() {
         if ((id === 'lib-filter-box' && currentStatus === '現貨') ||
             (id === 'wait-filter-box' && currentStatus === '非現貨') ||
             (id === 'wish-filter-box' && currentStatus === '願望')) {
-            box.appendChild(build(dict.works, 'work', DEFAULT_WORKS));
-            box.appendChild(build(dict.roles, 'role', []));
-            box.appendChild(build(dict.types, 'type', DEFAULT_TYPES));
+            box.appendChild(build(dict.works, 'work'));
+            box.appendChild(build(dict.roles, 'role'));
+            box.appendChild(build(dict.types, 'type'));
         }
     });
 }
@@ -575,7 +594,6 @@ function editItem(idx) {
     switchTab('page-recent');
 }
 
-// 重置表單為新增模式，並恢復上次輸入
 function resetFormForNew() {
     document.getElementById('merchForm').reset();
     document.getElementById('editIndex').value = "-1";
@@ -644,17 +662,16 @@ function liveExchange() {
     document.getElementById('exchangePreview').innerText = `總額: HKD ${total}`;
 }
 
-// 表單提交事件
 document.getElementById('merchForm').onsubmit = function(e) {
     e.preventDefault();
     const editIdx = parseInt(document.getElementById('editIndex').value);
     if(document.activeElement) document.activeElement.blur();
 
-    const getV = (sid, iid, dk, def) => {
+    const getV = (sid, iid, dk) => {
         let sVal = document.getElementById(sid).value;
         if(sVal === 'NEW') {
             let v = document.getElementById(iid).value.trim();
-            if(v && !def.includes(v) && !dict[dk].includes(v)) { 
+            if(v && !dict[dk].includes(v)) { 
                 dict[dk].push(v); 
                 dict[dk].sort(); 
             }
@@ -663,9 +680,9 @@ document.getElementById('merchForm').onsubmit = function(e) {
         return sVal;
     };
 
-    const work = getV('workSelect', 'workInput', 'works', DEFAULT_WORKS);
-    const role = getV('roleSelect', 'roleInput', 'roles', []);
-    const type = getV('typeSelect', 'typeInput', 'types', DEFAULT_TYPES);
+    const work = getV('workSelect', 'workInput', 'works');
+    const role = getV('roleSelect', 'roleInput', 'roles');
+    const type = getV('typeSelect', 'typeInput', 'types');
     const status = document.getElementById('status').value;
 
     const done = (imgBase64) => {
@@ -691,7 +708,6 @@ document.getElementById('merchForm').onsubmit = function(e) {
             newList = [...merchList, data];
         }
 
-        // 字典已可能透過 getV 新增標籤，直接儲存
         try {
             localStorage.setItem(STORAGE_KEY, JSON.stringify(newList));
             localStorage.setItem(DICT_KEY, JSON.stringify(dict));
@@ -701,7 +717,6 @@ document.getElementById('merchForm').onsubmit = function(e) {
         }
 
         merchList = newList;
-        // dict 已更新
 
         const lastInput = {
             work: data.work,
@@ -738,7 +753,6 @@ function deleteCurrentItem() {
     if(idx > -1 && confirm("確定刪除此藏品？")) {
         let newList = [...merchList];
         newList.splice(idx, 1);
-        // 字典保持不變
         try {
             localStorage.setItem(STORAGE_KEY, JSON.stringify(newList));
             localStorage.setItem(DICT_KEY, JSON.stringify(dict));
@@ -747,7 +761,6 @@ function deleteCurrentItem() {
             return;
         }
         merchList = newList;
-        // dict 不變
         renderSelects();
         renderFilters();
         renderAll();
@@ -757,14 +770,14 @@ function deleteCurrentItem() {
 }
 
 function renderSelects() {
-    const fill = (id, list, defaults) => {
+    const fill = (id, list) => {
         const s = document.getElementById(id);
-        const combined = [...new Set([...defaults, ...list])].sort();
+        const combined = [...list].sort();
         s.innerHTML = '<option value="">請選擇...</option>' + combined.map(x => `<option value="${x}">${x}</option>`).join('') + '<option value="NEW">+ 新增標籤</option>';
     };
-    fill('workSelect', dict.works, DEFAULT_WORKS);
-    fill('roleSelect', dict.roles, []);
-    fill('typeSelect', dict.types, DEFAULT_TYPES);
+    fill('workSelect', dict.works);
+    fill('roleSelect', dict.roles);
+    fill('typeSelect', dict.types);
 }
 
 function updateGridSize(v) {
@@ -800,6 +813,8 @@ function importData(input) {
             const data = JSON.parse(e.target.result);
             merchList = data.merchList || [];
             dict = data.dict || { works: [], roles: [], types: [] };
+            if (dict.works.length === 0) dict.works = [...DEFAULT_WORKS];
+            if (dict.types.length === 0) dict.types = [...DEFAULT_TYPES];
             if(data.cover) localStorage.setItem(COVER_KEY, data.cover);
             save();
             location.reload();
