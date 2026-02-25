@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Morandi Archive - 標籤獨立版</title>
+<title>Morandi Archive - 最終版</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
 :root {
@@ -26,8 +26,12 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: 'PingFang HK', 'M
 .main-content { padding: 25px; padding-bottom: 120px; max-width: 800px; margin: 0 auto; transition: margin-top 0.3s; }
 .page { display: none; }
 .page.active { display: block; }
+/* 頁面頂欄 */
+.page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; }
+.back-btn-header { font-size: 20px; cursor: pointer; color: var(--m-brown); width: 40px; text-align: left; }
+.page-title { font-size: 18px; font-weight: bold; color: var(--m-deep-green); text-align: center; flex: 1; }
+.header-placeholder { width: 40px; } /* 右側佔位 */
 .control-panel { background: #fff; padding: 15px; border-radius: var(--radius); margin-bottom: 20px; border: 1px solid var(--m-clay); box-shadow: 0 2px 10px rgba(0,0,0,0.02); }
-.page-title { font-size: 16px; font-weight: bold; color: var(--m-deep-green); margin-bottom: 15px; border-bottom: 1px solid var(--m-sand); padding-bottom: 5px; }
 .symbol-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid #f0f0f0; padding-bottom: 12px; }
 .symbol-group { display: flex; gap: 12px; color: #ccc; align-items: center; }
 .symbol-btn { cursor: pointer; transition: color 0.3s; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 2px; }
@@ -109,12 +113,16 @@ input, select, textarea { width: 100%; padding: 10px; border-radius: var(--radiu
 </div>
 
 <div class="main-content" id="main-content">
-    <div id="back-btn" onclick="handleBack()" style="font-size:11px; color: var(--m-brown); cursor:pointer; margin-bottom:25px; font-weight: bold;">← 返回</div>
+    <!-- 注意：原先的 #back-btn 已被移除 -->
     
     <!-- 館藏頁 -->
     <div id="page-gallery" class="page">
+        <div class="page-header">
+            <div class="back-btn-header" onclick="handleBack()">←</div>
+            <div class="page-title">館藏</div>
+            <div class="header-placeholder"></div>
+        </div>
         <div class="control-panel">
-            <div class="page-title">📚 館藏</div>
             <input type="text" class="search-input" id="lib-search" placeholder="搜尋款式或備註..." oninput="renderAll()">
             <div class="symbol-row">
                 <div class="symbol-group">
@@ -149,8 +157,12 @@ input, select, textarea { width: 100%; padding: 10px; border-radius: var(--radiu
 
     <!-- 等候區頁 -->
     <div id="page-pending" class="page">
+        <div class="page-header">
+            <div class="back-btn-header" onclick="handleBack()">←</div>
+            <div class="page-title">等候區</div>
+            <div class="header-placeholder"></div>
+        </div>
         <div class="control-panel">
-            <div class="page-title">⏳ 等候區</div>
             <input type="text" class="search-input" id="wait-search" placeholder="搜尋款式或備註..." oninput="renderAll()">
             <div class="symbol-row">
                 <div class="symbol-group">
@@ -185,8 +197,12 @@ input, select, textarea { width: 100%; padding: 10px; border-radius: var(--radiu
 
     <!-- 願望清單頁 -->
     <div id="page-wish" class="page">
+        <div class="page-header">
+            <div class="back-btn-header" onclick="handleBack()">←</div>
+            <div class="page-title">願望清單</div>
+            <div class="header-placeholder"></div>
+        </div>
         <div class="control-panel">
-            <div class="page-title">✨ 願望清單</div>
             <input type="text" class="search-input" id="wish-search" placeholder="搜尋款式或備註..." oninput="renderAll()">
             <div class="symbol-row">
                 <div class="symbol-group">
@@ -221,8 +237,12 @@ input, select, textarea { width: 100%; padding: 10px; border-radius: var(--radiu
 
     <!-- 新增/編輯頁 -->
     <div id="page-recent" class="page">
+        <div class="page-header">
+            <div class="back-btn-header" onclick="handleBack()">←</div>
+            <div class="page-title">新增/編輯藏品</div>
+            <div class="header-placeholder"></div>
+        </div>
         <div style="background:#fff; padding:15px; border-radius: var(--radius); border:1px solid var(--m-clay);">
-            <div class="page-title" style="margin-bottom:15px;">➕ 新增/編輯藏品</div>
             <form id="merchForm">
                 <input type="hidden" id="editIndex" value="-1">
                 <div class="input-group"><label class="input-label">作品名稱</label><select id="workSelect" onchange="toggleInput('workSelect', 'workInput')"></select><input type="text" id="workInput" style="display:none;" placeholder="輸入新作品名稱"></div>
@@ -249,6 +269,11 @@ input, select, textarea { width: 100%; padding: 10px; border-radius: var(--radiu
 
     <!-- 數據統計頁 -->
     <div id="page-stats" class="page">
+        <div class="page-header">
+            <div class="back-btn-header" onclick="handleBack()">←</div>
+            <div class="page-title">數據統計</div>
+            <div class="header-placeholder"></div>
+        </div>
         <div class="stat-card">
             <div class="stat-title">每月支出走勢(HKD)</div>
             <div id="totalExpense" class="total-expense">總計: HKD 0</div>
@@ -276,10 +301,15 @@ input, select, textarea { width: 100%; padding: 10px; border-radius: var(--radiu
 
     <!-- 系統設定頁 -->
     <div id="page-settings" class="page">
+        <div class="page-header">
+            <div class="back-btn-header" onclick="handleBack()">←</div>
+            <div class="page-title">系統設定</div>
+            <div class="header-placeholder"></div>
+        </div>
         <div class="stat-card">
-            <div class="page-title" style="margin-bottom:15px;">⚙️ 系統設定</div>
             <label class="input-label">網格大小: <span id="gridVal">160</span>px</label>
-            <input type="range" id="gridRange" min="50" max="160" value="160" oninput="updateGridSize(this.value)">
+            <!-- 最大值改為 180 -->
+            <input type="range" id="gridRange" min="50" max="180" value="160" oninput="updateGridSize(this.value)">
             <hr style="border: 0.5px solid #f0f0f0; margin: 25px 0;">
             <button onclick="exportData()" class="btn-main" style="background:var(--m-brown);">匯出資料備份(.json)</button>
             <input type="file" id="importFile" style="display:none" accept=".json" onchange="importData(this)">
@@ -398,7 +428,7 @@ function confirmBatchDelete() {
     let newList = [...merchList];
     indicesToDelete.forEach(idx => newList.splice(idx, 1));
 
-    // 只儲存藏品，字典保持不變（不重新計算）
+    // 只儲存藏品，字典保持不變
     try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(newList));
         localStorage.setItem(DICT_KEY, JSON.stringify(dict));
@@ -414,7 +444,7 @@ function confirmBatchDelete() {
     renderFilters();
     renderAll();
     setBatchMode(false);
-    setTimeout(() => { showModal("🗑️", "已批量刪除"); }, 150);
+    // 移除彈窗
 }
 
 function renderAll() {
