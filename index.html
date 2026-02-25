@@ -225,7 +225,15 @@ function init() {
     renderAll(); 
     updateToolUI();
 }
-
+function liveExchange() {
+    const rates = { HKD: 1, RMB: 1.1, JPY: 0.053 };
+    const c = document.getElementById('currency').value;
+    const p = parseFloat(document.getElementById('inputPrice').value) || 0;
+    const q = parseInt(document.getElementById('qty').value) || 1;
+    const total = (p * rates[c] * q).toFixed(2);
+    document.getElementById('exchangePreview').innerText = `總額: HKD ${total}`;
+    }
+    
 function save() {
     try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(merchList));
@@ -484,13 +492,17 @@ document.getElementById('merchForm').onsubmit = function(e) {
     };
 
     const f = document.getElementById('imgFile').files[0];
-    if(f) { 
-        const fr = new FileReader(); 
-        fr.onload = () => done(fr.result); 
-        fr.readAsDataURL(f); 
-    } else { 
-        done(null); 
-    }
+if (f) {
+    const fr = new FileReader();
+    fr.onload = async () => {
+        // 壓縮圖片後再傳給 done
+        const compressed = await compressImage(fr.result);
+        done(compressed);
+    };
+    fr.readAsDataURL(f);
+} else {
+    done(null);
+}
 };
 
 function deleteCurrentItem() {
