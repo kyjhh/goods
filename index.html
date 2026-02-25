@@ -62,10 +62,16 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: 'PingFang HK', 'M
 .img-box img { width: 100%; height: 100%; object-fit: cover; }
 .info { padding: 10px; flex-grow: 1; overflow: hidden; pointer-events: none; }
 .info .note { display: none; }
-.input-group { margin-bottom: 10px; } /* 縮短間距 */
-.input-label { font-size: 11px; color: var(--m-brown); font-weight: bold; margin-bottom: 5px; display: block; }
-.btn-main { background: var(--m-deep-green); color: white; border: none; padding: 12px; width: 100%; font-size: 13px; cursor: pointer; border-radius: var(--radius); margin-top: 10px; font-weight: bold; } /* 按鈕略小 */
-input, select, textarea { width: 100%; padding: 10px; border-radius: var(--radius); border: 1px solid var(--m-clay); background: #fafafa; font-size: 14px; box-sizing: border-box; outline: none; } /* 輸入框略小 */
+
+/* ===== 新增/編輯頁行距減半 ===== */
+.input-group { margin-bottom: 5px; } /* 原本 10px，減半 */
+.input-label { font-size: 11px; color: var(--m-brown); font-weight: bold; margin-bottom: 5px; display: block; } /* 保持不變 */
+#exchangePreview { margin-bottom: 8px; } /* 原本 15px，減半約 8px */
+.btn-main { background: var(--m-deep-green); color: white; border: none; padding: 12px; width: 100%; font-size: 13px; cursor: pointer; border-radius: var(--radius); margin-top: 5px; font-weight: bold; } /* margin-top 原本 10px，減半為 5px */
+/* 輸入框本身高度不變，維持操作舒適 */
+input, select, textarea { width: 100%; padding: 10px; border-radius: var(--radius); border: 1px solid var(--m-clay); background: #fafafa; font-size: 14px; box-sizing: border-box; outline: none; }
+/* ============================= */
+
 #success-modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 35px; border-radius: 15px; text-align: center; z-index: 9999; display: none; width: 240px; box-shadow: 0 10px 50px rgba(0,0,0,0.3); }
 .overlay { position: fixed; top:0; left:0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 9998; display: none; backdrop-filter: blur(3px); }
 .stat-card { background:#fff; padding:20px; border-radius:var(--radius); border:1px solid var(--m-clay); margin-bottom: 20px; position: relative; }
@@ -217,9 +223,9 @@ input, select, textarea { width: 100%; padding: 10px; border-radius: var(--radiu
         <div id="wishList" class="list-container grid"></div>
     </div>
 
-    <!-- 新增/編輯頁 -->
+    <!-- 新增/編輯頁 (行距已減半) -->
     <div id="page-recent" class="page">
-        <div style="background:#fff; padding:15px; border-radius: var(--radius); border:1px solid var(--m-clay);"> <!-- padding 縮短 -->
+        <div style="background:#fff; padding:15px; border-radius: var(--radius); border:1px solid var(--m-clay);">
             <div class="page-title" style="margin-bottom:15px;">➕ 新增/編輯藏品</div>
             <form id="merchForm">
                 <input type="hidden" id="editIndex" value="-1">
@@ -237,7 +243,7 @@ input, select, textarea { width: 100%; padding: 10px; border-radius: var(--radiu
                     <div><label class="input-label">幣種</label><select id="currency" onchange="liveExchange()"><option value="HKD">HKD</option><option value="RMB">RMB</option><option value="JPY">JPY</option></select></div>
                     <div><label class="input-label">單價</label><input type="number" id="inputPrice" step="0.01" value="0" oninput="liveExchange()"></div>
                 </div>
-                <div id="exchangePreview" style="margin-bottom: 15px; font-size:12px; color:var(--m-deep-green); font-weight:bold;">總額: HKD 0.00</div>
+                <div id="exchangePreview" style="margin-bottom: 8px; font-size:12px; color:var(--m-deep-green); font-weight:bold;">總額: HKD 0.00</div>
                 <div class="input-group"><label class="input-label">藏品照片</label><input type="file" id="imgFile" accept="image/*"></div>
                 <button type="submit" class="btn-main" id="submitBtn">儲存至資料庫</button>
                 <button type="button" id="delBtn" class="btn-main" style="background:#cc9999; display:none;" onclick="deleteCurrentItem()">刪除單項藏品</button>
@@ -260,12 +266,12 @@ input, select, textarea { width: 100%; padding: 10px; border-radius: var(--radiu
             <div class="stat-title">角色支出排行(HKD)</div>
             <canvas id="roleChart"></canvas>
         </div>
-        <!-- 新增類別數量統計 -->
+        <!-- 類別數量統計 -->
         <div class="stat-card">
             <div class="stat-title">類別數量分佈</div>
             <canvas id="typeCountChart"></canvas>
         </div>
-        <!-- 新增角色數量統計 -->
+        <!-- 角色數量統計 -->
         <div class="stat-card">
             <div class="stat-title">角色數量統計</div>
             <canvas id="roleCountChart"></canvas>
