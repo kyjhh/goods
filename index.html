@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Morandi Archive - Master V46</title>
+    <title>Morandi Archive - Master V47</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
@@ -69,11 +69,12 @@
         .btn-main { background: var(--m-deep-green); color: white; border: none; padding: 15px; width: 100%; font-size: 13px; cursor: pointer; border-radius: var(--radius); margin-top: 15px; font-weight: bold; }
         input, select, textarea { width: 100%; padding: 12px; border-radius: var(--radius); border: 1px solid var(--m-clay); background: #fafafa; font-size: 14px; box-sizing: border-box; outline: none; }
         
-        /* 彈窗與統計 */
+        /* 彈窗：強化 z-index 確保在最前方 */
+        #success-modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 35px; border-radius: 15px; text-align: center; z-index: 9999; display: none; width: 240px; box-shadow: 0 10px 50px rgba(0,0,0,0.3); }
+        .overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.6); z-index: 9998; display: none; backdrop-filter: blur(3px); }
+        
         .stat-card { background:#fff; padding:20px; border-radius:var(--radius); border:1px solid var(--m-clay); margin-bottom: 20px; }
         .stat-title { font-size: 13px; font-weight: bold; color: var(--m-brown); margin-bottom: 15px; border-left: 4px solid var(--m-sage); padding-left: 10px; }
-        #success-modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 35px; border-radius: 15px; text-align: center; z-index: 5500; display: none; width: 240px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); }
-        .overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.5); z-index: 5000; display: none; backdrop-filter: blur(2px); }
     </style>
 </head>
 <body>
@@ -88,8 +89,8 @@
 
     <div class="overlay" id="overlay" onclick="closeModal()"></div>
     <div id="success-modal">
-        <div id="modal-icon" style="font-size: 40px; margin-bottom: 15px; color: var(--m-deep-green);">✓</div>
-        <div id="modal-text" style="font-weight: bold; font-size: 16px;">已儲存</div>
+        <div id="modal-icon" style="font-size: 40px; margin-bottom: 15px; color: var(--m-deep-green);">✨</div>
+        <div id="modal-text" style="font-weight: bold; font-size: 16px;">操作成功</div>
         <button class="btn-main" onclick="closeModal()" style="margin-top: 25px;">確定</button>
     </div>
 
@@ -140,11 +141,11 @@
         <div id="page-pending" class="page">
             <div class="control-panel">
                 <input type="text" class="search-input" id="wait-search" placeholder="搜尋款式或備註..." oninput="renderAll()">
+                <div id="wait-filter-box"></div>
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
                     <div id="wait-count" class="count-tag" style="margin: 0;">顯示: 0 / 0</div>
                     <span class="edit-toggle-btn" onclick="setBatchMode(true)">編輯管理</span>
                 </div>
-                <div id="wait-filter-box"></div>
             </div>
             <div id="waitList" class="list-container grid"></div>
         </div>
@@ -235,6 +236,19 @@
 
     function save() { localStorage.setItem(STORAGE_KEY, JSON.stringify(merchList)); localStorage.setItem(DICT_KEY, JSON.stringify(dict)); }
 
+    // 顯示彈窗 (強化 z-index 和顯隱邏輯)
+    function showModal(icon, text) {
+        document.getElementById('modal-icon').innerText = icon;
+        document.getElementById('modal-text').innerText = text;
+        document.getElementById('overlay').style.display = 'block';
+        document.getElementById('success-modal').style.display = 'block';
+    }
+
+    function closeModal() {
+        document.getElementById('overlay').style.display = 'none';
+        document.getElementById('success-modal').style.display = 'none';
+    }
+
     function updateDateLabel() {
         const status = document.getElementById('status').value;
         const label = document.getElementById('dateLabel');
@@ -263,7 +277,7 @@
         if (confirm(`確定刪除選中的 ${selectedIndices.length} 個藏品嗎？`)) {
             selectedIndices.sort((a, b) => b - a).forEach(idx => merchList.splice(idx, 1));
             save(); updateDictData(); setBatchMode(false);
-            showModal("🗑️", "已批量刪除");
+            setTimeout(() => { showModal("🗑️", "已批量刪除"); }, 150);
         }
     }
 
@@ -304,9 +318,7 @@
                     <div class="info">
                         <div style="font-size:9px;color:var(--m-brown);">${i.role || ''} ${i.type ? `| ${i.type}` : ''}</div>
                         <div style="font-weight:bold; font-size:12px; margin:4px 0;">${i.pattern || '無名'}</div>
-                        <div style="color:var(--m-deep-green); font-size:11px; font-weight:bold;">HK$ ${i.totalHkd} 
-                            <span style="color:#aaa;font-weight:normal;font-size:9px;margin-left:5px;">x${i.qty}</span>
-                        </div>
+                        <div style="color:var(--m-deep-green); font-size:11px; font-weight:bold;">HK$ ${i.totalHkd} <span style="color:#aaa;font-weight:normal;font-size:9px;">x${i.qty}</span></div>
                     </div>`;
                 card.onclick = () => isBatchMode ? toggleSelectItem(i.originalIndex) : editItem(i.originalIndex);
                 handleLongPress(card, () => { if (!isBatchMode) { setBatchMode(true); toggleSelectItem(i.originalIndex); } });
@@ -373,9 +385,10 @@
         const idx = parseInt(document.getElementById('editIndex').value);
         if(idx !== -1 && confirm("確定刪除此藏品？")) { 
             merchList.splice(idx, 1); save(); updateDictData(); setBatchMode(false);
-            document.getElementById('merchForm').reset(); document.getElementById('editIndex').value = "-1";
-            switchTab('page-gallery', document.querySelectorAll('.nav-item')[0]); renderAll();
-            setTimeout(() => { showModal("🗑️", "已刪除"); }, 100);
+            document.getElementById('merchForm').reset();
+            document.getElementById('editIndex').value = "-1";
+            switchTab('page-gallery', document.querySelectorAll('.nav-item')[0]);
+            setTimeout(() => { showModal("🗑️", "已刪除"); }, 300);
         }
     }
 
@@ -400,15 +413,6 @@
     function openPage(id) { document.getElementById('cover-page').classList.add('open'); document.getElementById('bottom-nav').style.display='flex'; switchTab(id, document.querySelector(`button[onclick*="${id}"]`)); }
     function closePage() { document.getElementById('cover-page').classList.remove('open'); document.getElementById('bottom-nav').style.display='none'; if(isBatchMode) setBatchMode(false); }
     function updateGridSize(v) { document.documentElement.style.setProperty('--dynamic-grid', v+'px'); document.getElementById('gridVal').innerText = v; localStorage.setItem('archive_grid_size', v); }
-    
-    function showModal(icon, text) { 
-        document.getElementById('modal-icon').innerText = icon; 
-        document.getElementById('modal-text').innerText = text; 
-        document.getElementById('overlay').style.display='block'; 
-        document.getElementById('success-modal').style.display='block'; 
-    }
-    
-    function closeModal() { document.getElementById('overlay').style.display='none'; document.getElementById('success-modal').style.display='none'; }
     
     function liveExchange() {
         const p = parseFloat(document.getElementById('inputPrice').value)||0, q = parseInt(document.getElementById('qty').value)||1, cur = document.getElementById('currency').value;
@@ -451,7 +455,7 @@
     function exportData() { const blob = new Blob([JSON.stringify({merchList, dict})], {type: 'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `archive_backup.json`; a.click(); }
     function importData(input) {
         const f = input.files[0]; if(!f) return;
-        const fr = new FileReader(); fr.onload = (e) => { const d = JSON.parse(e.target.result); merchList = d.merchList; dict = d.dict; save(); init(); showModal("✓", "導入成功"); };
+        const fr = new FileReader(); fr.onload = (e) => { const d = JSON.parse(e.target.result); merchList = d.merchList; dict = d.dict; save(); init(); showModal("✅", "導入成功"); };
         fr.readAsText(f);
     }
 
@@ -489,23 +493,22 @@
             if(editIdx === -1) merchList.unshift(data); else merchList[editIdx] = data;
             save(); updateDictData(); renderAll();
 
-            // 更新：根據模式彈出不同文字的彈窗
             const msg = editIdx === -1 ? "已成功上架" : "已更新儲存";
             const icon = editIdx === -1 ? "✨" : "✅";
             
             if(editIdx === -1) {
-                // 上架模式：重置部分欄位，保持在新增頁面
+                // 上架模式
                 ['pattern', 'note', 'imgFile', 'workInput', 'roleInput', 'typeInput'].forEach(id => document.getElementById(id).value = "");
                 document.getElementById('inputPrice').value = "0";
                 liveExchange();
                 setTimeout(() => { showModal(icon, msg); }, 100);
             } else {
-                // 編輯模式：重置表單，切換回列表
+                // 編輯模式：先切換頁面，延遲觸發彈窗確保顯示
                 document.getElementById('merchForm').reset();
                 document.getElementById('editIndex').value = "-1";
                 document.getElementById('delBtn').style.display = 'none';
                 switchTab('page-gallery', document.querySelectorAll('.nav-item')[0]);
-                setTimeout(() => { showModal(icon, msg); }, 200);
+                setTimeout(() => { showModal(icon, msg); }, 400); 
             }
         };
 
