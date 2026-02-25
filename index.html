@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Morandi Archive - Master V38 Full</title>
+    <title>Morandi Archive - Master V39</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
@@ -214,7 +214,11 @@
     </nav>
 
 <script>
+    // --- 默認數據設定 ---
     const STORAGE_KEY = 'archive_master'; const DICT_KEY = 'archive_dict_master'; const COVER_KEY = 'archive_cover_bg';
+    const DEFAULT_WORKS = ['世界計畫', 'V家', 'Alien Stage'];
+    const DEFAULT_TYPES = ['襟', '色紙', '掛件', '立牌', '拍立得'];
+
     let merchList = [], dict = { works: [], roles: [], types: [] }, filters = { work: 'all', role: 'all', type: 'all' };
     let sortMode = 'date', sortDesc = true, viewMode = 'grid', charts = {};
     let isBatchMode = false, selectedIndices = [];
@@ -230,7 +234,6 @@
 
     function save() { localStorage.setItem(STORAGE_KEY, JSON.stringify(merchList)); localStorage.setItem(DICT_KEY, JSON.stringify(dict)); }
 
-    // 長按功能
     function handleLongPress(element, callback) {
         let timer;
         const start = (e) => { timer = setTimeout(() => { if (window.navigator.vibrate) window.navigator.vibrate(60); callback(); }, 800); };
@@ -242,7 +245,6 @@
         element.addEventListener('contextmenu', e => e.preventDefault());
     }
 
-    // 批量模式
     function toggleBatchMode() {
         isBatchMode = !isBatchMode; selectedIndices = [];
         document.getElementById('batch-panel').style.display = isBatchMode ? 'flex' : 'none';
@@ -267,20 +269,19 @@
     }
 
     function updateDictData() {
-        dict.works = [...new Set(merchList.map(i => i.work).filter(Boolean))].sort();
+        // 更新時不包含默認標籤，只存儲用戶自定義的
+        dict.works = [...new Set(merchList.map(i => i.work).filter(w => w && !DEFAULT_WORKS.includes(w)))].sort();
         dict.roles = [...new Set(merchList.map(i => i.role).filter(Boolean))].sort();
-        dict.types = [...new Set(merchList.map(i => i.type).filter(Boolean))].sort();
+        dict.types = [...new Set(merchList.map(i => i.type).filter(t => t && !DEFAULT_TYPES.includes(t)))].sort();
         save(); renderSelects(); renderFilters();
     }
 
-    // 核心渲染 (含新排序邏輯)
     function renderAll() {
         const conf = { '現貨': 'readyList', '非現貨': 'waitList', '願望': 'wishList' };
         const srch = { '現貨': 'lib-search', '非現貨': 'wait-search', '願望': 'wish-search' };
 
         Object.keys(conf).forEach(status => {
-            const container = document.getElementById(conf[status]);
-            if(!container) return;
+            const container = document.getElementById(conf[status]); if(!container) return;
             const sVal = document.getElementById(srch[status]).value.toLowerCase();
             
             let filtered = merchList.map((item, index) => ({...item, originalIndex: index}))
@@ -292,9 +293,7 @@
             filtered.sort((a,b) => {
                 if(sortMode === 'date') return (b.timestamp - a.timestamp) * multi;
                 if(sortMode === 'price') return (parseFloat(b.totalHkd) - parseFloat(a.totalHkd)) * multi;
-                // 新增：名稱排序
                 if(sortMode === 'name') return (a.pattern.localeCompare(b.pattern, 'zh-TW')) * multi;
-                // 新增：數量排序
                 if(sortMode === 'qty') return (b.qty - a.qty) * multi;
                 return 0;
             });
@@ -327,16 +326,25 @@
     }
 
     function renderFilters() {
-        const build = (list, key) => {
+        const build = (list, key, defaults) => {
+            const combined = [...new Set([...defaults, ...list])];
             let row = document.createElement('div'); row.className = 'filter-row';
             let all = document.createElement('div'); all.className = `filter-chip ${filters[key]==='all'?'active':''}`;
             all.innerText = '全部'; all.onclick = () => { filters[key] = 'all'; renderFilters(); renderAll(); };
             row.appendChild(all);
-            list.forEach(item => {
+            combined.forEach(item => {
                 let chip = document.createElement('div'); chip.className = `filter-chip ${filters[key]===item?'active':''}`;
                 chip.innerText = item; chip.onclick = () => { filters[key] = item; renderFilters(); renderAll(); };
                 handleLongPress(chip, () => {
-                    if(confirm(`刪除標籤「${item}」？`)) { dict[key+'s'] = dict[key+'s'].filter(v => v !== item); if(filters[key]===item) filters[key]='all'; save(); renderFilters(); renderSelects(); renderAll(); }
+                    if(defaults.includes(item)) {
+                        alert("這是系統默認標籤，無法刪除。");
+                        return;
+                    }
+                    if(confirm(`刪除標籤「${item}」？`)) { 
+                        dict[key+'s'] = dict[key+'s'].filter(v => v !== item); 
+                        if(filters[key]===item) filters[key]='all'; 
+                        save(); renderFilters(); renderSelects(); renderAll(); 
+                    }
                 });
                 row.appendChild(chip);
             });
@@ -344,17 +352,19 @@
         };
         ['lib-filter-box', 'wait-filter-box', 'wish-filter-box'].forEach(id => {
             const box = document.getElementById(id); if(!box) return; box.innerHTML = '';
-            ['work', 'role', 'type'].forEach(k => box.appendChild(build(dict[k+'s'], k)));
+            box.appendChild(build(dict.works, 'work', DEFAULT_WORKS));
+            box.appendChild(build(dict.roles, 'role', []));
+            box.appendChild(build(dict.types, 'type', DEFAULT_TYPES));
         });
     }
 
-    // 統計邏輯
     function renderStats() {
         Object.values(charts).forEach(c => c.destroy());
         const statsList = merchList.filter(i => i.status !== '願望');
         const colors = ['#6b7a63', '#acc1ad', '#a68b7c', '#d5cabd', '#e5ddd5', '#c2b2a3'];
         const mData = {}; statsList.forEach(i => { const d = new Date(i.timestamp); const k = `${d.getFullYear()}/${d.getMonth()+1}`; mData[k] = (mData[k] || 0) + parseFloat(i.totalHkd); });
-        charts.monthly = new Chart(document.getElementById('monthlyChart').getContext('2d'), { type: 'line', data: { labels: Object.keys(mData).sort(), datasets: [{ label: 'HKD', data: Object.keys(mData).sort().map(k => mData[k]), borderColor: '#6b7a63', fill: true, tension: 0.3 }] } });
+        const mKeys = Object.keys(mData).sort();
+        charts.monthly = new Chart(document.getElementById('monthlyChart').getContext('2d'), { type: 'line', data: { labels: mKeys, datasets: [{ label: 'HKD', data: mKeys.map(k => mData[k]), borderColor: '#6b7a63', fill: true, tension: 0.3 }] } });
         const wData = {}; statsList.forEach(i => { if(i.work) wData[i.work] = (wData[i.work] || 0) + parseFloat(i.totalHkd); });
         charts.work = new Chart(document.getElementById('workChart').getContext('2d'), { type: 'doughnut', data: { labels: Object.keys(wData), datasets: [{ data: Object.values(wData), backgroundColor: colors }] } });
         const rData = {}; statsList.forEach(i => { if(i.role) rData[i.role] = (rData[i.role] || 0) + parseFloat(i.totalHkd); });
@@ -364,6 +374,7 @@
 
     function editItem(idx) {
         const i = merchList[idx]; document.getElementById('editIndex').value = idx;
+        renderSelects(); // 確保下拉選單包含當前項目的值
         document.getElementById('workSelect').value = i.work || ""; document.getElementById('roleSelect').value = i.role || ""; document.getElementById('typeSelect').value = i.type || "";
         document.getElementById('pattern').value = i.pattern; document.getElementById('note').value = i.note || ""; document.getElementById('status').value = i.status;
         document.getElementById('qty').value = i.qty || 1; document.getElementById('inputPrice').value = i.originalPrice || 0; document.getElementById('currency').value = i.originalCur || "HKD";
@@ -400,10 +411,18 @@
         const fr = new FileReader(); fr.onload = (e) => { document.getElementById('cover-page').style.backgroundImage = `url(${e.target.result})`; localStorage.setItem(COVER_KEY, e.target.result); };
         fr.readAsDataURL(f);
     }
+
     function renderSelects() {
-        const fill = (id, list) => { const s = document.getElementById(id); s.innerHTML = '<option value="">請選擇...</option>' + list.map(x => `<option value="${x}">${x}</option>`).join('') + '<option value="NEW">+ 新增標籤</option>'; };
-        fill('workSelect', dict.works); fill('roleSelect', dict.roles); fill('typeSelect', dict.types);
+        const fill = (id, list, defaults) => { 
+            const s = document.getElementById(id); 
+            const combined = [...new Set([...defaults, ...list])].sort();
+            s.innerHTML = '<option value="">請選擇...</option>' + combined.map(x => `<option value="${x}">${x}</option>`).join('') + '<option value="NEW">+ 新增標籤</option>'; 
+        };
+        fill('workSelect', dict.works, DEFAULT_WORKS);
+        fill('roleSelect', dict.roles, []);
+        fill('typeSelect', dict.types, DEFAULT_TYPES);
     }
+
     function exportData() { const blob = new Blob([JSON.stringify({merchList, dict})], {type: 'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `archive_backup.json`; a.click(); }
     function importData(input) {
         const f = input.files[0]; if(!f) return;
@@ -414,13 +433,19 @@
     document.getElementById('merchForm').onsubmit = function(e) {
         e.preventDefault();
         const editIdx = parseInt(document.getElementById('editIndex').value);
-        const getV = (sid, iid, dk) => {
+        const getV = (sid, iid, dk, def) => {
             let sVal = document.getElementById(sid).value;
-            if(sVal === 'NEW') { let v = document.getElementById(iid).value.trim(); if(v && !dict[dk].includes(v)) { dict[dk].push(v); dict[dk].sort(); } return v; }
+            if(sVal === 'NEW') { 
+                let v = document.getElementById(iid).value.trim(); 
+                if(v && !def.includes(v) && !dict[dk].includes(v)) { dict[dk].push(v); dict[dk].sort(); } 
+                return v; 
+            }
             return sVal;
         };
         const data = {
-            work: getV('workSelect', 'workInput', 'works'), role: getV('roleSelect', 'roleInput', 'roles'), type: getV('typeSelect', 'typeInput', 'types'),
+            work: getV('workSelect', 'workInput', 'works', DEFAULT_WORKS), 
+            role: getV('roleSelect', 'roleInput', 'roles', []), 
+            type: getV('typeSelect', 'typeInput', 'types', DEFAULT_TYPES),
             pattern: document.getElementById('pattern').value, note: document.getElementById('note').value, status: document.getElementById('status').value, 
             qty: parseInt(document.getElementById('qty').value) || 1, originalPrice: parseFloat(document.getElementById('inputPrice').value) || 0, 
             originalCur: document.getElementById('currency').value, totalHkd: liveExchange(), timestamp: editIdx === -1 ? Date.now() : merchList[editIdx].timestamp
