@@ -3,7 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Morandi Archive - 標籤獨立版</title>
+<title>Morandi Archive - 圖像識別版</title>
+<!-- TensorFlow.js 和 MobileNet 模型 -->
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@latest"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
 :root {
@@ -240,7 +243,7 @@ input, select, textarea { width: 100%; padding: 10px; border-radius: var(--radiu
                     <div><label class="input-label">單價</label><input type="number" id="inputPrice" step="0.01" value="0" oninput="liveExchange()"></div>
                 </div>
                 <div id="exchangePreview" style="margin-bottom: 8px; font-size:12px; color:var(--m-deep-green); font-weight:bold;">總額: HKD 0.00</div>
-                <div class="input-group"><label class="input-label">藏品照片</label><input type="file" id="imgFile" accept="image/*"></div>
+                <div class="input-group"><label class="input-label">藏品照片</label><input type="file" id="imgFile" accept="image/*" onchange="autoFillFromImage()"></div>
                 <button type="submit" class="btn-main" id="submitBtn">儲存至資料庫</button>
                 <button type="button" id="delBtn" class="btn-main" style="background:#cc9999; display:none;" onclick="deleteCurrentItem()">刪除單項藏品</button>
             </form>
@@ -306,6 +309,7 @@ const DEFAULT_TYPES = ['襟','色紙','掛件','立牌', '拍立得'];
 let merchList = [], dict = { works: [], roles: [], types: [] }, filters = { work: 'all', role: 'all', type: 'all' };
 let sortMode = 'date', sortDesc = true, viewMode = 'grid', charts = {};
 let isBatchMode = false, selectedIndices = [];
+let mobilenetModel = null; // 儲存加載的 MobileNet 模型
 
 // 壓縮圖片函數
 function compressImage(base64, maxWidth = 800, quality = 0.8) {
@@ -330,6 +334,53 @@ function compressImage(base64, maxWidth = 800, quality = 0.8) {
     });
 }
 
+// 預加載 MobileNet 模型
+async function loadMobilenet() {
+    if (!mobilenetModel) {
+        try {
+            mobilenetModel = await mobilenet.load();
+            console.log('MobileNet 模型加載成功');
+        } catch (e) {
+            console.error('MobileNet 模型加載失敗', e);
+        }
+    }
+    return mobilenetModel;
+}
+
+// 從圖片自動識別並填寫款式名稱
+async function autoFillFromImage() {
+    const fileInput = document.getElementById('imgFile');
+    const patternInput = document.getElementById('pattern');
+    if (!fileInput.files || fileInput.files.length === 0) return;
+    // 僅當款式名稱為空時才自動填寫
+    if (patternInput.value.trim() !== '') return;
+
+    const file = fileInput.files[0];
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+        const img = new Image();
+        img.src = e.target.result;
+        img.onload = async () => {
+            // 顯示提示
+            patternInput.placeholder = '辨識中...';
+            try {
+                const model = await loadMobilenet();
+                const predictions = await model.classify(img);
+                if (predictions && predictions.length > 0) {
+                    // 取第一個預測結果的類別名稱
+                    const className = predictions[0].className;
+                    patternInput.value = className;
+                }
+            } catch (err) {
+                console.error('辨識失敗', err);
+            } finally {
+                patternInput.placeholder = '';
+            }
+        };
+    };
+    reader.readAsDataURL(file);
+}
+
 function init() {
     merchList = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
     dict = JSON.parse(localStorage.getItem(DICT_KEY)) || { works: [], roles: [], types: [] };
@@ -340,6 +391,8 @@ function init() {
     renderFilters(); 
     renderAll(); 
     updateToolUI();
+    // 預加載模型（可選）
+    loadMobilenet();
 }
 
 // 儲存函數（加入錯誤處理，失敗時拋出例外）
@@ -398,7 +451,6 @@ function confirmBatchDelete() {
 
     try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(newList));
-        // 注意：不重新生成 dict，保留原樣
         localStorage.setItem(DICT_KEY, JSON.stringify(dict));
     } catch (e) {
         showModal("❌", "儲存失敗，無法刪除");
@@ -406,22 +458,11 @@ function confirmBatchDelete() {
     }
 
     merchList = newList;
-    // 不更新 dict
     renderSelects();
     renderFilters();
     renderAll();
     setBatchMode(false);
     setTimeout(() => { showModal("🗑️", "已批量刪除"); }, 150);
-}
-
-// 此函數已不再使用，但保留以免呼叫錯誤；內部僅儲存 dict（確保同步）
-function updateDictData() {
-    // 不做任何基於 merchList 的更新，僅儲存當前 dict
-    try {
-        localStorage.setItem(DICT_KEY, JSON.stringify(dict));
-    } catch (e) {
-        showModal("⚠️", "標籤儲存失敗");
-    }
 }
 
 function renderAll() {
@@ -487,7 +528,6 @@ function getCurrentStatus() {
 
 function renderFilters() {
     const build = (list, key, defaults) => {
-        // 合併預設標籤與 dict 中的標籤，預設標籤永遠存在
         const combined = [...new Set([...defaults, ...list])];
         const currentStatus = getCurrentStatus();
         let row = document.createElement('div'); row.className = 'filter-row';
@@ -497,19 +537,16 @@ function renderFilters() {
         all.onclick = () => { filters[key] = 'all'; renderFilters(); renderAll(); };
         row.appendChild(all);
         combined.forEach(item => {
-            // 計算該標籤在當前狀態下的數量（基於藏品資料，而非 dict）
             const count = currentStatus ? merchList.filter(i => i.status === currentStatus && i[key] === item).length : 0;
             let chip = document.createElement('div');
             chip.className = `filter-chip ${filters[key]===item?'active':''}`;
             chip.innerText = `${item} (${count})`;
             chip.onclick = () => { filters[key] = item; renderFilters(); renderAll(); };
-            // 長按刪除標籤（僅允許刪除非預設標籤）
             if (!defaults.includes(item)) {
                 handleLongPress(chip, () => {
                     if(confirm(`確定刪除標籤「${item}」嗎？\n此操作不會影響任何藏品，但將無法再用此標籤篩選。`)) {
                         const dk = key==='work'?'works':(key==='role'?'roles':'types');
                         dict[dk] = dict[dk].filter(x => x !== item);
-                        // 儲存 dict
                         try {
                             localStorage.setItem(DICT_KEY, JSON.stringify(dict));
                         } catch (e) {
@@ -557,7 +594,6 @@ function editItem(idx) {
     switchTab('page-recent');
 }
 
-// 重置表單為新增模式，並恢復上次輸入
 function resetFormForNew() {
     document.getElementById('merchForm').reset();
     document.getElementById('editIndex').value = "-1";
@@ -637,7 +673,6 @@ document.getElementById('merchForm').onsubmit = function(e) {
         if(sVal === 'NEW') {
             let v = document.getElementById(iid).value.trim();
             if(v) {
-                // 將新標籤加入 dict（若不存在且非預設）
                 if (!def.includes(v) && !dict[dk].includes(v)) {
                     dict[dk].push(v);
                     dict[dk].sort();
@@ -678,14 +713,13 @@ document.getElementById('merchForm').onsubmit = function(e) {
 
         try {
             localStorage.setItem(STORAGE_KEY, JSON.stringify(newList));
-            localStorage.setItem(DICT_KEY, JSON.stringify(dict)); // 儲存 dict（可能已新增標籤）
+            localStorage.setItem(DICT_KEY, JSON.stringify(dict));
         } catch (e) {
             showModal("❌", "儲存失敗，可能圖片過大或空間不足");
             return;
         }
 
         merchList = newList;
-        // 不重新生成 dict
 
         const lastInput = {
             work: data.work,
@@ -724,13 +758,12 @@ function deleteCurrentItem() {
         newList.splice(idx, 1);
         try {
             localStorage.setItem(STORAGE_KEY, JSON.stringify(newList));
-            localStorage.setItem(DICT_KEY, JSON.stringify(dict)); // dict 不變
+            localStorage.setItem(DICT_KEY, JSON.stringify(dict));
         } catch (e) {
             showModal("❌", "刪除失敗，無法儲存");
             return;
         }
         merchList = newList;
-        // 不更新 dict
         renderSelects();
         renderFilters();
         renderAll();
