@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Morandi Archive - V29 Stats Chinese</title>
+    <title>Morandi Archive - V31 Full</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
@@ -43,10 +43,12 @@
 
         .control-panel { background: #fff; padding: 12px; border-radius: var(--radius); margin-bottom: 20px; border: 1px solid var(--m-clay); }
         .symbol-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid #f0f0f0; padding-bottom: 8px; }
-        .symbol-group { display: flex; gap: 15px; color: #ccc; }
+        .symbol-group { display: flex; gap: 15px; color: #ccc; align-items: center; }
         .symbol-btn { cursor: pointer; transition: color 0.3s; display: flex; align-items: center; }
         .symbol-btn svg { width: 18px; height: 18px; fill: currentColor; }
         .symbol-btn.active { color: var(--m-deep-green); }
+        
+        .order-toggle { font-size: 11px; font-weight: bold; padding: 4px 8px; border: 1px solid #eee; border-radius: 6px; cursor: pointer; color: var(--m-brown); background: #fafafa; }
 
         .search-input { margin-bottom: 10px; padding: 8px 12px; font-size: 12px; border: 1px solid #eee; background: #fafafa; border-radius: 6px; width: 100%; box-sizing: border-box; }
 
@@ -58,8 +60,7 @@
 
         .list-container.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(var(--dynamic-grid), 1fr)); gap: 15px; }
         .list-container.list { display: flex; flex-direction: column; gap: 10px; }
-        .item-card { background: #fff; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--m-clay); user-select: none; -webkit-user-select: none; display: flex; flex-direction: column; cursor: pointer; transition: transform 0.1s; }
-        .item-card:active { transform: scale(0.98); }
+        .item-card { background: #fff; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--m-clay); user-select: none; -webkit-user-select: none; display: flex; flex-direction: column; cursor: pointer; }
         .list .item-card { flex-direction: row; align-items: center; height: 90px; }
         .list .img-box { width: 90px; height: 90px; flex-shrink: 0; }
         .list .info { padding: 0 15px; }
@@ -114,9 +115,9 @@
                 <input type="text" class="search-input" id="lib-search" placeholder="搜尋款式或備註..." oninput="renderAll()">
                 <div class="symbol-row">
                     <div class="symbol-group">
-                        <span class="symbol-btn sort-date" onclick="toggleSort('date')"><svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg></span>
-                        <span class="symbol-btn sort-price" onclick="toggleSort('price')"><svg viewBox="0 0 24 24"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg></span>
-                        <span class="symbol-btn sort-qty" onclick="toggleSort('qty')"><svg viewBox="0 0 24 24"><path d="M4 10.5c-.83 0-1.5.67-1.5 1.5s.67 1.5 1.5 1.5 1.5-.67 1.5-1.5-.67-1.5-1.5-1.5zm0-6c-.83 0-1.5.67-1.5 1.5S3.17 7.5 4 7.5 5.5 6.83 5.5 6 4.83 4.5 4 4.5zm0 12c-.83 0-1.5.68-1.5 1.5s.68 1.5 1.5 1.5 1.5-.68 1.5-1.5-.67-1.5-1.5-1.5zM7 19h14v-2H7v2zm0-6h14v-2H7v2zm0-7v2h14V6H7z"/></svg></span>
+                        <span class="symbol-btn sort-date" onclick="setSort('date')"><svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg></span>
+                        <span class="symbol-btn sort-price" onclick="setSort('price')"><svg viewBox="0 0 24 24"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg></span>
+                        <span class="order-toggle" id="order-btn-lib" onclick="toggleOrder()">倒序 ↓</span>
                     </div>
                     <div class="symbol-group">
                         <span class="symbol-btn view-grid" onclick="setView('grid')"><svg viewBox="0 0 24 24"><path d="M4 11h5V5H4v6zm0 7h5v-6H4v6zm7 0h5v-6h-5v6zm0-13v6h5V5h-5z"/></svg></span>
@@ -153,39 +154,39 @@
                     <input type="hidden" id="editIndex" value="-1">
                     <div class="input-group"><label class="input-label">作品名稱</label><select id="workSelect" onchange="toggleInput('workSelect', 'workInput')"></select><input type="text" id="workInput" style="display:none;" placeholder="輸入新作品名稱"></div>
                     <div class="input-group"><label class="input-label">角色名稱</label><select id="roleSelect" onchange="toggleInput('roleSelect', 'roleInput')"></select><input type="text" id="roleInput" style="display:none;" placeholder="輸入新角色名稱"></div>
-                    <div class="input-group"><label class="input-label">藏品類別</label><select id="typeSelect" onchange="toggleInput('typeSelect', 'typeInput')"></select><input type="text" id="typeInput" style="display:none;" placeholder="例如: 徽章/立牌"></div>
-                    <div class="input-group"><label class="input-label">款式/柄圖名字</label><input type="text" id="pattern" placeholder="例如: 周年慶限定"></div>
-                    <div class="input-group"><label class="input-label">備註</label><textarea id="note" placeholder="詳細資料"></textarea></div>
+                    <div class="input-group"><label class="input-label">藏品類別</label><select id="typeSelect" onchange="toggleInput('typeSelect', 'typeInput')"></select><input type="text" id="typeInput" style="display:none;" placeholder="徽章/立牌"></div>
+                    <div class="input-group"><label class="input-label">款式名稱</label><input type="text" id="pattern"></div>
+                    <div class="input-group"><label class="input-label">備註</label><textarea id="note"></textarea></div>
                     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-bottom: 15px;">
-                        <div><label class="input-label">目前狀態</label><select id="status"><option value="現貨">現貨</option><option value="非現貨">非現貨</option><option value="願望">願望</option></select></div>
-                        <div><label class="input-label">購買數量</label><input type="number" id="qty" value="1"></div>
+                        <div><label class="input-label">狀態</label><select id="status"><option value="現貨">現貨</option><option value="非現貨">非現貨</option><option value="願望">願望</option></select></div>
+                        <div><label class="input-label">數量</label><input type="number" id="qty" value="1"></div>
                     </div>
                     <div style="display:grid; grid-template-columns: 1fr 2fr; gap:12px; margin-bottom: 5px;">
                         <div><label class="input-label">幣種</label><select id="currency" onchange="liveExchange()"><option value="HKD">HKD</option><option value="RMB">RMB</option><option value="JPY">JPY</option></select></div>
-                        <div><label class="input-label">單價</label><input type="number" id="inputPrice" step="0.01" oninput="liveExchange()" placeholder="0.00"></div>
+                        <div><label class="input-label">單價</label><input type="number" id="inputPrice" step="0.01" oninput="liveExchange()"></div>
                     </div>
                     <div id="exchangePreview" style="margin-bottom:15px; font-size:12px; color:var(--m-deep-green); font-weight:bold;">總額: HKD 0.00</div>
                     <div class="input-group"><label class="input-label">藏品照片</label><input type="file" id="imgFile"></div>
-                    <button type="submit" class="btn-main">儲存至資料庫</button>
-                    <button type="button" id="delBtn" class="btn-main" style="background:#cc9999; display:none;" onclick="deleteCurrentItem()">刪除此項目</button>
+                    <button type="submit" class="btn-main">儲存資料庫</button>
+                    <button type="button" id="delBtn" class="btn-main" style="background:#cc9999; display:none;" onclick="deleteCurrentItem()">刪除</button>
                 </form>
             </div>
         </div>
 
         <div id="page-stats" class="page">
-            <div class="stat-card"><div class="stat-title">每月支出走勢 (HKD)</div><canvas id="monthlyChart"></canvas></div>
-            <div class="stat-card"><div class="stat-title">作品支出佔比</div><canvas id="workChart"></canvas></div>
-            <div class="stat-card"><div class="stat-title">角色支出排行</div><canvas id="roleChart"></canvas></div>
+            <div class="stat-card"><div class="stat-title">每月支出 (HKD)</div><canvas id="monthlyChart"></canvas></div>
+            <div class="stat-card"><div class="stat-title">作品佔比</div><canvas id="workChart"></canvas></div>
+            <div class="stat-card"><div class="stat-title">角色排行</div><canvas id="roleChart"></canvas></div>
         </div>
 
         <div id="page-settings" class="page">
             <div style="background:#fff; padding:20px; border-radius:var(--radius); border:1px solid var(--m-clay);">
                 <label class="form-label">網格大小: <span id="gridVal">160</span>px</label>
-                <input type="range" id="gridRange" min="120" max="220" oninput="updateGridSize(this.value)">
+                <input type="range" id="gridRange" min="120" max="220" value="160" oninput="updateGridSize(this.value)">
                 <hr style="border:0.5px solid #eee; margin:25px 0;">
-                <button onclick="exportData()" class="btn-main" style="background:var(--m-brown);">匯出 JSON 備份</button>
+                <button onclick="exportData()" class="btn-main" style="background:var(--m-brown);">匯出備份</button>
                 <input type="file" id="importFile" style="display:none" onchange="importData(this)">
-                <button onclick="document.getElementById('importFile').click()" class="btn-main" style="background:var(--m-sage);">匯入 JSON 檔案</button>
+                <button onclick="document.getElementById('importFile').click()" class="btn-main" style="background:var(--m-sage);">匯入備份</button>
             </div>
         </div>
     </div>
@@ -201,7 +202,6 @@
 
 <script>
     const STORAGE_KEY = 'archive_master'; const DICT_KEY = 'archive_dict_master'; const COVER_KEY = 'archive_cover_bg';
-    const rates = { RMB: 1.08, JPY: 0.052, HKD: 1.0 };
     let merchList = [], dict = { works: [], roles: [], types: [] }, filters = { work: 'all', role: 'all', type: 'all' };
     let sortMode = 'date', sortDesc = true, viewMode = 'grid', charts = {};
 
@@ -210,65 +210,73 @@
         dict = JSON.parse(localStorage.getItem(DICT_KEY)) || { works: [], roles: [], types: [] };
         const savedCover = localStorage.getItem(COVER_KEY);
         if (savedCover) document.getElementById('cover-page').style.backgroundImage = `url(${savedCover})`;
-        const savedGrid = localStorage.getItem('archive_grid_size') || '160';
-        updateGridSize(savedGrid);
+        updateGridSize(localStorage.getItem('archive_grid_size') || '160');
         renderAll(); renderSelects(); renderFilters(); updateToolUI();
-    }
-
-    function updateCover(input) {
-        const file = input.files[0]; if (!file) return;
-        const reader = new FileReader();
-        reader.onload = (e) => { document.getElementById('cover-page').style.backgroundImage = `url(${e.target.result})`; localStorage.setItem(COVER_KEY, e.target.result); showModal("✓", "封面更新成功"); };
-        reader.readAsDataURL(file);
     }
 
     function save() { localStorage.setItem(STORAGE_KEY, JSON.stringify(merchList)); localStorage.setItem(DICT_KEY, JSON.stringify(dict)); }
 
-    function switchTab(id, btn) {
-        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
-        if(btn) { document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); btn.classList.add('active'); }
-        if(id === 'page-stats') renderStats();
-    }
-
-    function openPage(id) { document.getElementById('cover-page').classList.add('open'); document.getElementById('bottom-nav').style.display='flex'; switchTab(id, document.querySelector(`button[onclick*="${id}"]`)); }
-    function closePage() { document.getElementById('cover-page').classList.remove('open'); document.getElementById('bottom-nav').style.display='none'; }
-    function toggleInput(s, i) { document.getElementById(i).style.display = document.getElementById(s).value === 'NEW' ? 'block' : 'none'; }
-    function liveExchange() { const p = parseFloat(document.getElementById('inputPrice').value)||0, q = parseInt(document.getElementById('qty').value)||1, cur = document.getElementById('currency').value; const t = (p * q * rates[cur]).toFixed(2); document.getElementById('exchangePreview').innerText = `總額: HKD ${t}`; return t; }
-
-    // 通用的長按處理邏輯
+    // --- 長按處理 (適用於標籤與卡片) ---
     function handleLongPress(element, callback) {
         let timer;
-        const start = (e) => { 
-            timer = setTimeout(() => { 
-                if (window.navigator.vibrate) window.navigator.vibrate(50); 
-                callback(); 
-            }, 800); 
-        };
+        const start = (e) => { timer = setTimeout(() => { if (window.navigator.vibrate) window.navigator.vibrate(60); callback(); }, 800); };
         const cancel = () => clearTimeout(timer);
-        element.addEventListener('touchstart', start, {passive: true}); 
+        element.addEventListener('touchstart', start, {passive: true});
         element.addEventListener('touchend', cancel);
-        element.addEventListener('mousedown', start); 
+        element.addEventListener('mousedown', start);
         element.addEventListener('mouseup', cancel);
         element.addEventListener('contextmenu', e => e.preventDefault());
     }
 
-    function confirmDeleteTag(key, value) {
-        if (value === 'all') return;
-        if (confirm(`確定刪除標籤「${value}」嗎？`)) {
-            dict[key + 's'] = dict[key + 's'].filter(v => v !== value);
-            if (filters[key] === value) filters[key] = 'all';
-            save(); renderFilters(); renderSelects(); renderAll();
-        }
+    function renderAll() {
+        const conf = { '現貨': 'readyList', '非現貨': 'waitList', '願望': 'wishList' };
+        const srch = { '現貨': 'lib-search', '非現貨': 'wait-search', '願望': 'wish-search' };
+
+        Object.keys(conf).forEach(status => {
+            const container = document.getElementById(conf[status]);
+            const searchVal = document.getElementById(srch[status]).value.toLowerCase();
+            
+            let filtered = merchList.map((item, index) => ({...item, originalIndex: index}))
+                .filter(i => i.status === status)
+                .filter(i => (filters.work==='all' || i.work===filters.work) && (filters.role==='all' || i.role===filters.role) && (filters.type==='all' || i.type===filters.type))
+                .filter(i => (i.pattern + (i.note || "") + (i.role || "")).toLowerCase().includes(searchVal));
+
+            const multi = sortDesc ? 1 : -1;
+            filtered.sort((a,b) => {
+                if(sortMode === 'date') return (b.timestamp - a.timestamp) * multi;
+                if(sortMode === 'price') return (parseFloat(b.totalHkd) - parseFloat(a.totalHkd)) * multi;
+                return 0;
+            });
+
+            container.innerHTML = ''; container.className = `list-container ${viewMode}`;
+            filtered.forEach(i => {
+                const card = document.createElement('div'); card.className = 'item-card';
+                card.innerHTML = `<div class="img-box"><img src="${i.img || ''}"></div>
+                    <div class="info"><div style="font-size:9px;color:var(--m-brown);">${i.role || ''}</div>
+                    <div style="font-weight:bold; font-size:11px;">${i.pattern || '無名'}</div>
+                    <div style="color:var(--m-deep-green); font-size:11px;">HK$ ${i.totalHkd} <small>x${i.qty}</small></div></div>`;
+                
+                card.onclick = () => editItem(i.originalIndex);
+                handleLongPress(card, () => {
+                    if(confirm(`刪除「${i.pattern || '此項目'}」？`)) {
+                        merchList.splice(i.originalIndex, 1);
+                        save(); renderAll(); showModal("🗑️", "已刪除");
+                    }
+                });
+                container.appendChild(card);
+            });
+            const totalCount = merchList.filter(i => i.status === status).length;
+            const countId = status === '現貨' ? 'lib-count' : (status === '非現貨' ? 'wait-count' : 'wish-count');
+            document.getElementById(countId).innerText = `顯示: ${filtered.length} / ${totalCount}`;
+        });
     }
 
-    function renderSelects() {
-        const setup = (id, list) => {
-            const s = document.getElementById(id); const cur = s.value;
-            s.innerHTML = `<option value="">選擇標籤...</option>` + list.map(i => `<option value="${i}">${i}</option>`).join('') + `<option value="NEW">+ 新增...</option>`;
-            s.value = cur;
-        };
-        setup('workSelect', dict.works); setup('roleSelect', dict.roles); setup('typeSelect', dict.types);
+    function setSort(mode) { sortMode = mode; updateToolUI(); renderAll(); }
+    function toggleOrder() { 
+        sortDesc = !sortDesc; 
+        const txt = sortDesc ? "倒序 ↓" : "正序 ↑";
+        document.getElementById('order-btn-lib').innerText = txt;
+        renderAll(); 
     }
 
     function renderFilters() {
@@ -280,116 +288,92 @@
             list.forEach(item => {
                 let chip = document.createElement('div'); chip.className = `filter-chip ${filters[key]===item?'active':''}`;
                 chip.innerText = item; chip.onclick = () => { filters[key] = item; renderFilters(); renderAll(); };
-                handleLongPress(chip, () => confirmDeleteTag(key, item));
+                handleLongPress(chip, () => {
+                    if(confirm(`刪除標籤「${item}」？`)) {
+                        dict[key+'s'] = dict[key+'s'].filter(v => v !== item);
+                        if(filters[key] === item) filters[key] = 'all';
+                        save(); renderFilters(); renderSelects(); renderAll();
+                    }
+                });
                 row.appendChild(chip);
             });
             return row;
         };
         ['lib-filter-box', 'wait-filter-box', 'wish-filter-box'].forEach(id => {
-            const box = document.getElementById(id); if(!box) return; box.innerHTML = '';
+            const box = document.getElementById(id); box.innerHTML = '';
             ['work', 'role', 'type'].forEach(k => box.appendChild(build(dict[k+'s'], k)));
         });
     }
 
-    function renderAll() {
-        const rList = document.getElementById('readyList'); const wList = document.getElementById('waitList'); const hList = document.getElementById('wishList');
-        const libSearch = document.getElementById('lib-search').value.toLowerCase();
-        const waitSearch = document.getElementById('wait-search').value.toLowerCase();
-        const wishSearch = document.getElementById('wish-search').value.toLowerCase();
-        
-        const processList = (targetStatus, searchVal) => {
-            let filtered = merchList.map((item, index) => ({...item, originalIndex: index}))
-                .filter(i => i.status === targetStatus)
-                .filter(i => (filters.work==='all' || i.work===filters.work) && (filters.role==='all' || i.role===filters.role) && (filters.type==='all' || i.type===filters.type))
-                .filter(i => (i.pattern + (i.note || "")).toLowerCase().includes(searchVal));
-            const multi = sortDesc ? 1 : -1;
-            if(sortMode==='date') filtered.sort((a,b)=> (b.timestamp - a.timestamp) * multi);
-            else if(sortMode==='price') filtered.sort((a,b)=> (parseFloat(b.totalHkd) - parseFloat(a.totalHkd)) * multi);
-            else if(sortMode==='qty') filtered.sort((a,b)=> (b.qty - a.qty) * multi);
-            return filtered;
-        };
-
-        const renderItems = (items, container) => {
-            container.innerHTML = ''; container.className = `list-container ${viewMode}`;
-            items.forEach(i => {
-                const card = document.createElement('div'); card.className = 'item-card';
-                card.innerHTML = `<div class="img-box"><img src="${i.img || 'https://via.placeholder.com/200/f2efeb/888'}"></div>
-                    <div class="info"><div style="font-size:9px;color:var(--m-brown);">${i.role || ''} ${i.type || ''}</div>
-                    <div style="font-size:11px;font-weight:bold;">${i.pattern || '無標題'}</div>
-                    <div style="font-size:11px;color:var(--m-deep-green);">HK$ ${i.totalHkd} <small>x${i.qty}</small></div></div>`;
-                
-                // 點擊編輯
-                card.onclick = () => editItem(i.originalIndex);
-                // 長按刪除
-                handleLongPress(card, () => {
-                    if(confirm(`確定刪除「${i.pattern || '未命名'}」？`)) {
-                        merchList.splice(i.originalIndex, 1);
-                        save();
-                        renderAll();
-                        showModal("🗑️", "項目已刪除");
-                    }
-                });
-                
-                container.appendChild(card);
-            });
-        };
-
-        const readyItems = processList('現貨', libSearch); const waitItems = processList('非現貨', waitSearch); const wishItems = processList('願望', wishSearch);
-        document.getElementById('lib-count').innerText = `顯示: ${readyItems.length} / ${merchList.filter(i=>i.status==='現貨').length}`;
-        document.getElementById('wait-count').innerText = `顯示: ${waitItems.length} / ${merchList.filter(i=>i.status==='非現貨').length}`;
-        document.getElementById('wish-count').innerText = `顯示: ${wishItems.length} / ${merchList.filter(i=>i.status==='願望').length}`;
-        renderItems(readyItems, rList); renderItems(waitItems, wList); renderItems(wishItems, hList);
-    }
-
-    function editItem(idx) {
-        const i = merchList[idx]; document.getElementById('editIndex').value = idx;
-        document.getElementById('workSelect').value = i.work; document.getElementById('roleSelect').value = i.role; document.getElementById('typeSelect').value = i.type;
-        document.getElementById('pattern').value = i.pattern; document.getElementById('note').value = i.note; document.getElementById('status').value = i.status;
-        document.getElementById('qty').value = i.qty; document.getElementById('currency').value = i.originalCur; document.getElementById('inputPrice').value = i.originalPrice;
-        document.getElementById('delBtn').style.display = 'block'; openPage('page-recent'); liveExchange();
-    }
-
-    function deleteCurrentItem() {
-        const idx = parseInt(document.getElementById('editIndex').value);
-        if(idx !== -1 && confirm("確定刪除此藏品？")) { merchList.splice(idx, 1); save(); showModal("🗑️", "項目已刪除"); document.getElementById('editIndex').value = "-1"; document.getElementById('delBtn').style.display = 'none'; document.getElementById('merchForm').reset(); switchTab('page-gallery', document.querySelectorAll('.nav-item')[0]); renderAll(); }
-    }
-
     function renderStats() {
         Object.values(charts).forEach(c => c.destroy());
-        const colors = ['#6b7a63', '#acc1ad', '#a68b7c', '#d5cabd', '#e5ddd5', '#c2b2a3', '#96a48b'];
         const statsList = merchList.filter(i => i.status !== '願望');
-        const monthData = {};
-        statsList.forEach(i => { const date = new Date(i.timestamp); const key = `${date.getFullYear()}/${date.getMonth()+1}月`; monthData[key] = (monthData[key] || 0) + parseFloat(i.totalHkd); });
-        const monthKeys = Object.keys(monthData).sort();
-        charts.monthly = new Chart(document.getElementById('monthlyChart'), { type: 'line', data: { labels: monthKeys, datasets: [{ label: 'HKD', data: monthKeys.map(k => monthData[k]), borderColor: '#6b7a63', fill: true, backgroundColor: 'rgba(107, 122, 99, 0.1)' }] } });
-        const workData = {}; statsList.forEach(i => { if(i.work) workData[i.work] = (workData[i.work] || 0) + parseFloat(i.totalHkd); });
-        charts.work = new Chart(document.getElementById('workChart'), { type: 'pie', data: { labels: Object.keys(workData), datasets: [{ data: Object.values(workData), backgroundColor: colors }] } });
-        const roleData = {}; statsList.forEach(i => { if(i.role) roleData[i.role] = (roleData[i.role] || 0) + parseFloat(i.totalHkd); });
-        const topRoles = Object.entries(roleData).sort((a,b) => b[1] - a[1]).slice(0, 7);
-        charts.role = new Chart(document.getElementById('roleChart'), { type: 'bar', data: { labels: topRoles.map(r => r[0]), datasets: [{ data: topRoles.map(r => r[1]), backgroundColor: '#acc1ad' }] }, options: { indexAxis: 'y' } });
+        const colors = ['#6b7a63', '#acc1ad', '#a68b7c', '#d5cabd', '#e5ddd5', '#c2b2a3'];
+        
+        // 每月趨勢
+        const mData = {}; statsList.forEach(i => { const d = new Date(i.timestamp); const k = `${d.getFullYear()}/${d.getMonth()+1}月`; mData[k] = (mData[k] || 0) + parseFloat(i.totalHkd); });
+        const mKeys = Object.keys(mData).sort();
+        charts.monthly = new Chart(document.getElementById('monthlyChart'), { type: 'line', data: { labels: mKeys, datasets: [{ label: 'HKD', data: mKeys.map(k => mData[k]), borderColor: '#6b7a63', fill: false }] } });
+        
+        // 作品佔比
+        const wData = {}; statsList.forEach(i => { if(i.work) wData[i.work] = (wData[i.work] || 0) + parseFloat(i.totalHkd); });
+        charts.work = new Chart(document.getElementById('workChart'), { type: 'pie', data: { labels: Object.keys(wData), datasets: [{ data: Object.values(wData), backgroundColor: colors }] } });
+        
+        // 角色排行
+        const rData = {}; statsList.forEach(i => { if(i.role) rData[i.role] = (rData[i.role] || 0) + parseFloat(i.totalHkd); });
+        const topR = Object.entries(rData).sort((a,b) => b[1]-a[1]).slice(0, 5);
+        charts.role = new Chart(document.getElementById('roleChart'), { type: 'bar', data: { labels: topR.map(x=>x[0]), datasets: [{ label: 'HKD', data: topR.map(x=>x[1]), backgroundColor: '#acc1ad' }] }, options: { indexAxis: 'y' } });
     }
 
-    function toggleSort(s) { if (sortMode === s) { sortDesc = !sortDesc; } else { sortMode = s; sortDesc = true; } updateToolUI(); renderAll(); }
+    // --- 其他核心邏輯 ---
+    function editItem(idx) {
+        const i = merchList[idx]; document.getElementById('editIndex').value = idx;
+        document.getElementById('workSelect').value = i.work; document.getElementById('roleSelect').value = i.role;
+        document.getElementById('pattern').value = i.pattern; document.getElementById('status').value = i.status;
+        document.getElementById('delBtn').style.display = 'block'; openPage('page-recent'); liveExchange();
+    }
+    function deleteCurrentItem() {
+        const idx = parseInt(document.getElementById('editIndex').value);
+        if(idx !== -1 && confirm("確定刪除此藏品？")) { merchList.splice(idx, 1); save(); showModal("🗑️", "已刪除"); switchTab('page-gallery', document.querySelectorAll('.nav-item')[0]); renderAll(); }
+    }
+    function switchTab(id, btn) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        if(btn) { document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); btn.classList.add('active'); }
+        if(id === 'page-stats') renderStats();
+    }
+    function openPage(id) { document.getElementById('cover-page').classList.add('open'); document.getElementById('bottom-nav').style.display='flex'; switchTab(id, document.querySelector(`button[onclick*="${id}"]`)); }
+    function closePage() { document.getElementById('cover-page').classList.remove('open'); document.getElementById('bottom-nav').style.display='none'; }
     function setView(v) { viewMode = v; updateToolUI(); renderAll(); }
     function updateToolUI() {
         document.querySelectorAll('.symbol-btn').forEach(b => b.classList.remove('active'));
-        const targetSort = document.querySelector('.sort-' + sortMode); if(targetSort) targetSort.classList.add('active');
-        const targetView = document.querySelector('.view-' + viewMode); if(targetView) targetView.classList.add('active');
+        document.querySelector(`.sort-${sortMode}`)?.classList.add('active');
+        document.querySelector(`.view-${viewMode}`)?.classList.add('active');
     }
-    function updateGridSize(val) { document.documentElement.style.setProperty('--dynamic-grid', val + 'px'); document.getElementById('gridVal').innerText = val; localStorage.setItem('archive_grid_size', val); }
+    function updateGridSize(v) { document.documentElement.style.setProperty('--dynamic-grid', v+'px'); document.getElementById('gridVal').innerText = v; localStorage.setItem('archive_grid_size', v); }
     function showModal(icon, text) { document.getElementById('modal-icon').innerText = icon; document.getElementById('modal-text').innerText = text; document.getElementById('overlay').style.display='block'; document.getElementById('success-modal').style.display='block'; }
     function closeModal() { document.getElementById('overlay').style.display='none'; document.getElementById('success-modal').style.display='none'; }
-    function exportData() { const blob = new Blob([JSON.stringify({merchList, dict})], {type: 'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `archive_master.json`; a.click(); }
+    function liveExchange() {
+        const p = parseFloat(document.getElementById('inputPrice').value)||0, q = parseInt(document.getElementById('qty').value)||1, cur = document.getElementById('currency').value;
+        const rates = { RMB: 1.08, JPY: 0.052, HKD: 1.0 };
+        const t = (p * q * rates[cur]).toFixed(2);
+        document.getElementById('exchangePreview').innerText = `總額: HKD ${t}`; return t;
+    }
+    function toggleInput(s, i) { document.getElementById(i).style.display = document.getElementById(s).value === 'NEW' ? 'block' : 'none'; }
+    function updateCover(input) {
+        const f = input.files[0]; if(!f) return;
+        const fr = new FileReader(); fr.onload = (e) => { document.getElementById('cover-page').style.backgroundImage = `url(${e.target.result})`; localStorage.setItem(COVER_KEY, e.target.result); };
+        fr.readAsDataURL(f);
+    }
+    function renderSelects() {
+        const fill = (id, list) => { const s = document.getElementById(id); s.innerHTML = '<option value="">選擇...</option>' + list.map(x => `<option value="${x}">${x}</option>`).join('') + '<option value="NEW">+ 新增</option>'; };
+        fill('workSelect', dict.works); fill('roleSelect', dict.roles); fill('typeSelect', dict.types);
+    }
+    function exportData() { const blob = new Blob([JSON.stringify({merchList, dict})], {type: 'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `archive_backup.json`; a.click(); }
     function importData(input) {
-        const file = input.files[0]; if(!file) return;
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            try {
-                const d = JSON.parse(e.target.result);
-                if(d.merchList) { merchList = d.merchList; dict = d.dict || { works: [], roles: [], types: [] }; save(); renderSelects(); renderFilters(); renderAll(); showModal("✓", "導入成功"); input.value = ""; } else { alert("JSON 格式不正確"); }
-            } catch(err) { alert("讀取檔案失敗：" + err); }
-        };
-        reader.readAsText(file);
+        const f = input.files[0]; if(!f) return;
+        const fr = new FileReader(); fr.onload = (e) => { const d = JSON.parse(e.target.result); merchList = d.merchList; dict = d.dict; save(); init(); showModal("✓", "導入成功"); };
+        fr.readAsText(f);
     }
 
     document.getElementById('merchForm').onsubmit = function(e) {
@@ -397,25 +381,21 @@
         const editIdx = parseInt(document.getElementById('editIndex').value);
         const getV = (sid, iid, dk) => {
             let sVal = document.getElementById(sid).value;
-            if(sVal === 'NEW') { let inputVal = document.getElementById(iid).value.trim(); if(inputVal) { if(!dict[dk].includes(inputVal)) { dict[dk].push(inputVal); dict[dk].sort(); } return inputVal; } }
+            if(sVal === 'NEW') { let v = document.getElementById(iid).value.trim(); if(v && !dict[dk].includes(v)) { dict[dk].push(v); dict[dk].sort(); } return v; }
             return sVal;
         };
         const data = {
             work: getV('workSelect', 'workInput', 'works'), role: getV('roleSelect', 'roleInput', 'roles'), type: getV('typeSelect', 'typeInput', 'types'),
             pattern: document.getElementById('pattern').value, note: document.getElementById('note').value, status: document.getElementById('status').value, 
             qty: parseInt(document.getElementById('qty').value) || 1, originalPrice: parseFloat(document.getElementById('inputPrice').value) || 0, 
-            originalCur: document.getElementById('currency').value, totalHkd: liveExchange(), img: null, timestamp: editIdx === -1 ? Date.now() : merchList[editIdx].timestamp
+            originalCur: document.getElementById('currency').value, totalHkd: liveExchange(), timestamp: editIdx === -1 ? Date.now() : merchList[editIdx].timestamp
         };
         const done = (b64) => {
-            if(b64) data.img = b64; else if(editIdx !== -1) data.img = merchList[editIdx].img;
+            data.img = b64 || (editIdx !== -1 ? merchList[editIdx].img : '');
             if(editIdx === -1) merchList.unshift(data); else merchList[editIdx] = data;
-            save(); 
-            document.getElementById('merchForm').reset(); 
-            document.getElementById('editIndex').value = "-1"; 
-            document.getElementById('delBtn').style.display = 'none';
-            renderSelects(); renderFilters(); renderAll(); 
-            // 修正順序：先顯示彈窗，再跳轉
+            save(); renderAll(); renderSelects(); renderFilters();
             showModal("✓", "已儲存");
+            document.getElementById('merchForm').reset();
             switchTab('page-gallery', document.querySelectorAll('.nav-item')[0]);
         };
         const f = document.getElementById('imgFile').files[0];
