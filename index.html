@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Morandi Archive - 最終版</title>
+<title>Morandi Archive - 標籤獨立版</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
 :root {
@@ -67,12 +67,12 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: 'PingFang HK', 'M
 .info { padding: 10px; flex-grow: 1; overflow: hidden; pointer-events: none; }
 .info .note { display: none; }
 
-/* 新增頁行距減半，且輸入框高度縮減五分之一 */
+/* 新增頁行距減半，輸入框高度縮減 */
 .input-group { margin-bottom: 5px; }
 .input-label { font-size: 11px; color: var(--m-brown); font-weight: bold; margin-bottom: 5px; display: block; }
 #exchangePreview { margin-bottom: 8px; }
 .btn-main { background: var(--m-deep-green); color: white; border: none; padding: 12px; width: 100%; font-size: 13px; cursor: pointer; border-radius: var(--radius); margin-top: 5px; font-weight: bold; }
-input, select, textarea { width: 100%; padding: 8px; border-radius: var(--radius); border: 1px solid var(--m-clay); background: #fafafa; font-size: 14px; box-sizing: border-box; outline: none; } /* 高度縮減 10px -> 8px */
+input, select, textarea { width: 100%; padding: 8px; border-radius: var(--radius); border: 1px solid var(--m-clay); background: #fafafa; font-size: 14px; box-sizing: border-box; outline: none; }
 
 #success-modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 35px; border-radius: 15px; text-align: center; z-index: 9999; display: none; width: 240px; box-shadow: 0 10px 50px rgba(0,0,0,0.3); }
 .overlay { position: fixed; top:0; left:0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 9998; display: none; backdrop-filter: blur(3px); }
@@ -237,7 +237,7 @@ input, select, textarea { width: 100%; padding: 8px; border-radius: var(--radius
     <div id="page-recent" class="page">
         <div class="page-header">
             <div class="back-btn-header" onclick="handleBack()">←</div>
-            <div class="page-title" id="recent-page-title">新增藏品</div> <!-- 動態標題 -->
+            <div class="page-title" id="recent-page-title">新增藏品</div>
             <div class="header-placeholder"></div>
         </div>
         <div style="background:#fff; padding:15px; border-radius: var(--radius); border:1px solid var(--m-clay);">
@@ -360,10 +360,22 @@ function compressImage(base64, maxWidth = 800, quality = 0.8) {
 
 function init() {
     merchList = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-    dict = JSON.parse(localStorage.getItem(DICT_KEY)) || { works: [], roles: [], types: [] };
 
-    if (dict.works.length === 0) dict.works = [...DEFAULT_WORKS];
-    if (dict.types.length === 0) dict.types = [...DEFAULT_TYPES];
+    // 讀取字典，若無則建立含預設值的字典；若有則直接使用（即使為空陣列）
+    const savedDict = JSON.parse(localStorage.getItem(DICT_KEY));
+    if (savedDict) {
+        dict = {
+            works: savedDict.works || [],
+            roles: savedDict.roles || [],
+            types: savedDict.types || []
+        };
+    } else {
+        dict = {
+            works: [...DEFAULT_WORKS],
+            roles: [],
+            types: [...DEFAULT_TYPES]
+        };
+    }
 
     const savedCover = localStorage.getItem(COVER_KEY);
     if (savedCover) document.getElementById('cover-page').style.backgroundImage = `url(${savedCover})`;
@@ -583,7 +595,6 @@ function editItem(idx) {
     document.getElementById('delBtn').style.display = 'block';
     liveExchange();
     updateDateLabel();
-    // 切換到編輯頁前更新標題
     document.getElementById('recent-page-title').innerText = '編輯藏品';
     switchTab('page-recent');
 }
@@ -604,7 +615,6 @@ function resetFormForNew() {
 
     liveExchange();
     updateDateLabel();
-    // 重置為新增模式時更新標題
     document.getElementById('recent-page-title').innerText = '新增藏品';
 }
 
@@ -726,7 +736,7 @@ document.getElementById('merchForm').onsubmit = function(e) {
         renderSelects();
         renderFilters();
         renderAll();
-        resetFormForNew(); // 重置表單，也會將標題設回「新增藏品」
+        resetFormForNew();
         switchTab('page-gallery', document.querySelectorAll('.nav-item')[0]);
         setTimeout(() => { showModal("✨", editIdx > -1 ? "更新成功" : "已存入庫"); }, 400);
     };
@@ -808,9 +818,13 @@ function importData(input) {
         try {
             const data = JSON.parse(e.target.result);
             merchList = data.merchList || [];
+            // 匯入時，若 dict 存在則使用，否則設為空物件（不會自動補預設值）
             dict = data.dict || { works: [], roles: [], types: [] };
-            if (dict.works.length === 0) dict.works = [...DEFAULT_WORKS];
-            if (dict.types.length === 0) dict.types = [...DEFAULT_TYPES];
+            // 但為了相容，如果 dict 中缺少某個屬性，補空陣列
+            if (!dict.works) dict.works = [];
+            if (!dict.roles) dict.roles = [];
+            if (!dict.types) dict.types = [];
+            
             if(data.cover) localStorage.setItem(COVER_KEY, data.cover);
             save();
             location.reload();
