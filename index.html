@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Morandi Archive - Master V47</title>
+<title>Morandi Archive - Master V47 (穩定版)</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
 :root {
@@ -41,7 +41,6 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: 'PingFang HK', 'M
 .count-tag { font-size: 10px; color: #aaa; text-align: right; margin-bottom: 5px; }
 .list-container.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(var(--dynamic-grid), 1fr)); gap: 15px; }
 .list-container.list { display: flex; flex-direction: column; gap: 12px; }
-/* 新增純圖片視圖樣式 */
 .list-container.image {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(var(--dynamic-grid), 1fr));
@@ -124,7 +123,6 @@ input, select, textarea { width: 100%; padding: 12px; border-radius: var(--radiu
                 <div class="symbol-group">
                     <span class="symbol-btn view-grid" onclick="setView('grid')"><svg viewBox="0 0 24 24"><path d="M4 11h5V5H4v6zm0 7h5v-6H4v6zm7 0h5v-6h-5v6zm0-13v6h5V5h-5z"/></svg></span>
                     <span class="symbol-btn view-list" onclick="setView('list')"><svg viewBox="0 0 24 24"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zm0-10v2h14V7H7z"/></svg></span>
-                    <!-- 新增純圖片視圖按鈕 -->
                     <span class="symbol-btn view-image" onclick="setView('image')"><svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg><span>圖片</span></span>
                 </div>
             </div>
@@ -260,9 +258,15 @@ function init() {
     updateToolUI();
 }
 
-function save() { 
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(merchList)); 
-    localStorage.setItem(DICT_KEY, JSON.stringify(dict)); 
+// 儲存函數（加入錯誤處理，失敗時拋出例外）
+function save() {
+    try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(merchList));
+        localStorage.setItem(DICT_KEY, JSON.stringify(dict));
+    } catch (e) {
+        showModal("❌", "儲存失敗，可能圖片過大或空間不足");
+        throw e; // 讓呼叫者知道失敗
+    }
 }
 
 function showModal(icon, text) {
@@ -302,18 +306,53 @@ function toggleSelectItem(idx) {
 
 function confirmBatchDelete() {
     if (selectedIndices.length === 0) return;
-    if (confirm(`確定刪除選中的${selectedIndices.length}個藏品嗎?`)) {
-        selectedIndices.sort((a, b) => b - a).forEach(idx => merchList.splice(idx, 1));
-        save(); updateDictData(); setBatchMode(false);
-        setTimeout(() => { showModal("🗑️","已批量刪除"); }, 150);
+    if (!confirm(`確定刪除選中的${selectedIndices.length}個藏品嗎?`)) return;
+
+    // 建立新列表（刪除選中的項目）
+    const indicesToDelete = [...selectedIndices].sort((a, b) => b - a); // 由大到小
+    let newList = [...merchList];
+    indicesToDelete.forEach(idx => newList.splice(idx, 1));
+
+    // 計算新 dict
+    const newWorks = [...new Set(newList.map(i => i.work))].filter(w => w && !DEFAULT_WORKS.includes(w)).sort();
+    const newRoles = [...new Set(newList.map(i => i.role))].filter(Boolean).sort();
+    const newTypes = [...new Set(newList.map(i => i.type))].filter(t => t && !DEFAULT_TYPES.includes(t)).sort();
+    const newDict = { works: newWorks, roles: newRoles, types: newTypes };
+
+    // 嘗試儲存
+    try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(newList));
+        localStorage.setItem(DICT_KEY, JSON.stringify(newDict));
+    } catch (e) {
+        showModal("❌", "儲存失敗，無法刪除");
+        return;
     }
+
+    // 更新全域變數
+    merchList = newList;
+    dict = newDict;
+
+    // 更新 UI
+    renderSelects();
+    renderFilters();
+    renderAll();
+    setBatchMode(false);
+    setTimeout(() => { showModal("🗑️", "已批量刪除"); }, 150);
 }
 
 function updateDictData() {
-    dict.works = [...new Set(merchList.map(i => i.work))].filter(w => w && !DEFAULT_WORKS.includes(w)).sort();
-    dict.roles = [...new Set(merchList.map(i => i.role))].filter(Boolean).sort();
-    dict.types = [...new Set(merchList.map(i => i.type))].filter(t => t && !DEFAULT_TYPES.includes(t)).sort();
-    save(); renderSelects(); renderFilters();
+    // 此函數保留供其他部分呼叫，但內部直接修改 dict 並呼叫 save（可能失敗）
+    // 為了安全，我們也使用 try-catch 並顯示錯誤，但不拋出（避免中斷其他流程）
+    const newWorks = [...new Set(merchList.map(i => i.work))].filter(w => w && !DEFAULT_WORKS.includes(w)).sort();
+    const newRoles = [...new Set(merchList.map(i => i.role))].filter(Boolean).sort();
+    const newTypes = [...new Set(merchList.map(i => i.type))].filter(t => t && !DEFAULT_TYPES.includes(t)).sort();
+    const newDict = { works: newWorks, roles: newRoles, types: newTypes };
+    dict = newDict;
+    try {
+        localStorage.setItem(DICT_KEY, JSON.stringify(dict));
+    } catch (e) {
+        showModal("⚠️", "標籤儲存失敗，但藏品資料已儲存");
+    }
 }
 
 function renderAll() {
@@ -354,8 +393,7 @@ function renderAll() {
         const countLabel = document.getElementById(cld);
         if(countLabel) countLabel.innerText = `顯示: ${filtered.length} / ${merchList.filter(x=>x.status===status).length}`;
     });
-    // 每次渲染列表後更新過濾器數量
-    renderFilters();
+    renderFilters(); // 更新過濾器數量
 }
 
 function setSort(mode) { sortMode = mode; updateToolUI(); renderAll(); }
@@ -369,7 +407,7 @@ function updateToolUI() {
     document.querySelectorAll('.order-toggle').forEach(b => b.innerText = sortDesc?"倒序↓":"正序↑");
 }
 
-// 輔助函數：獲取當前頁面對應的狀態
+// 取得當前頁面對應的狀態
 function getCurrentStatus() {
     if (document.getElementById('page-gallery').classList.contains('active')) return '現貨';
     if (document.getElementById('page-pending').classList.contains('active')) return '非現貨';
@@ -382,14 +420,13 @@ function renderFilters() {
         const combined = [...new Set([...defaults, ...list])];
         const currentStatus = getCurrentStatus();
         let row = document.createElement('div'); row.className = 'filter-row';
-        // 全部標籤：計算當前狀態下的總數
+        // 全部標籤
         const totalCount = currentStatus ? merchList.filter(i => i.status === currentStatus).length : 0;
         let all = document.createElement('div'); all.className = `filter-chip ${filters[key]==='all'?'active':''}`;
         all.innerText = `全部 (${totalCount})`;
         all.onclick = () => { filters[key] = 'all'; renderFilters(); renderAll(); };
         row.appendChild(all);
         combined.forEach(item => {
-            // 計算該標籤在當前狀態下的數量
             const count = currentStatus ? merchList.filter(i => i.status === currentStatus && i[key] === item).length : 0;
             let chip = document.createElement('div');
             chip.className = `filter-chip ${filters[key]===item?'active':''}`;
@@ -399,7 +436,13 @@ function renderFilters() {
                 if(confirm(`確定刪除標籤「${item}」嗎？`)) {
                     const dk = key==='work'?'works':(key==='role'?'roles':'types');
                     dict[dk] = dict[dk].filter(x => x !== item);
-                    save(); renderFilters(); renderSelects();
+                    // 儲存 dict
+                    try {
+                        localStorage.setItem(DICT_KEY, JSON.stringify(dict));
+                    } catch (e) {
+                        showModal("⚠️", "標籤刪除後儲存失敗");
+                    }
+                    renderFilters(); renderSelects();
                 }
             });
             row.appendChild(chip);
@@ -408,8 +451,6 @@ function renderFilters() {
     };
     ['lib-filter-box', 'wait-filter-box', 'wish-filter-box'].forEach(id => {
         const box = document.getElementById(id); if(!box) return; box.innerHTML = '';
-        // 僅當該頁面對應的狀態與當前狀態一致時才更新，避免干擾（但三個盒子同時存在，我們可以根據當前active頁面只更新對應的盒子）
-        // 簡單做法：只更新與當前狀態相關的盒子
         const currentStatus = getCurrentStatus();
         if ((id === 'lib-filter-box' && currentStatus === '現貨') ||
             (id === 'wait-filter-box' && currentStatus === '非現貨') ||
@@ -465,8 +506,7 @@ function switchTab(id, btn) {
     document.getElementById(id).classList.add('active');
     if(btn) { document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); btn.classList.add('active'); }
     if(id === 'page-stats') renderStats();
-    // 切換頁面時更新過濾器（以顯示正確數量）
-    renderFilters();
+    renderFilters(); // 切換頁面時更新過濾器數量
     if(isBatchMode) setBatchMode(false);
 }
 
@@ -496,7 +536,7 @@ function liveExchange() {
     document.getElementById('exchangePreview').innerText = `總額: HKD ${total}`;
 }
 
-// 表單提交事件（包含圖片壓縮）
+// 表單提交事件（包含圖片壓縮與安全儲存）
 document.getElementById('merchForm').onsubmit = function(e) {
     e.preventDefault();
     const editIdx = parseInt(document.getElementById('editIndex').value);
@@ -532,8 +572,38 @@ document.getElementById('merchForm').onsubmit = function(e) {
             timestamp: (editIdx > -1) ? merchList[editIdx].timestamp : Date.now()
         };
 
-        if(editIdx > -1) merchList[editIdx] = data; else merchList.push(data);
-        save(); updateDictData(); renderAll();
+        // 建立新列表（不直接修改原變數）
+        let newList;
+        if (editIdx > -1) {
+            newList = [...merchList];
+            newList[editIdx] = data;
+        } else {
+            newList = [...merchList, data];
+        }
+
+        // 計算新的 dict
+        const newWorks = [...new Set(newList.map(i => i.work))].filter(w => w && !DEFAULT_WORKS.includes(w)).sort();
+        const newRoles = [...new Set(newList.map(i => i.role))].filter(Boolean).sort();
+        const newTypes = [...new Set(newList.map(i => i.type))].filter(t => t && !DEFAULT_TYPES.includes(t)).sort();
+        const newDict = { works: newWorks, roles: newRoles, types: newTypes };
+
+        // 嘗試儲存
+        try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(newList));
+            localStorage.setItem(DICT_KEY, JSON.stringify(newDict));
+        } catch (e) {
+            showModal("❌", "儲存失敗，可能圖片過大或空間不足");
+            return; // 中斷後續，不更新畫面
+        }
+
+        // 成功：更新全域變數
+        merchList = newList;
+        dict = newDict;
+
+        // 更新 UI
+        renderSelects();
+        renderFilters();
+        renderAll();
         resetFormForNew();
         switchTab('page-gallery', document.querySelectorAll('.nav-item')[0]);
         setTimeout(() => { showModal("✨", editIdx > -1 ? "更新成功" : "已存入庫"); }, 400);
@@ -543,7 +613,7 @@ document.getElementById('merchForm').onsubmit = function(e) {
     if (f) {
         const fr = new FileReader();
         fr.onload = async () => {
-            const compressed = await compressImage(fr.result);  // 壓縮圖片
+            const compressed = await compressImage(fr.result);
             done(compressed);
         };
         fr.readAsDataURL(f);
@@ -555,8 +625,25 @@ document.getElementById('merchForm').onsubmit = function(e) {
 function deleteCurrentItem() {
     const idx = parseInt(document.getElementById('editIndex').value);
     if(idx > -1 && confirm("確定刪除此藏品？")) {
-        merchList.splice(idx, 1);
-        save(); updateDictData(); renderAll();
+        // 類似批量刪除的安全儲存
+        let newList = [...merchList];
+        newList.splice(idx, 1);
+        const newWorks = [...new Set(newList.map(i => i.work))].filter(w => w && !DEFAULT_WORKS.includes(w)).sort();
+        const newRoles = [...new Set(newList.map(i => i.role))].filter(Boolean).sort();
+        const newTypes = [...new Set(newList.map(i => i.type))].filter(t => t && !DEFAULT_TYPES.includes(t)).sort();
+        const newDict = { works: newWorks, roles: newRoles, types: newTypes };
+        try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(newList));
+            localStorage.setItem(DICT_KEY, JSON.stringify(newDict));
+        } catch (e) {
+            showModal("❌", "刪除失敗，無法儲存");
+            return;
+        }
+        merchList = newList;
+        dict = newDict;
+        renderSelects();
+        renderFilters();
+        renderAll();
         resetFormForNew();
         switchTab('page-gallery', document.querySelectorAll('.nav-item')[0]);
     }
@@ -602,17 +689,24 @@ function exportData() {
 function importData(input) {
     const reader = new FileReader();
     reader.onload = (e) => {
-        const data = JSON.parse(e.target.result);
-        merchList = data.merchList || [];
-        dict = data.dict || { works: [], roles: [], types: [] };
-        if(data.cover) localStorage.setItem(COVER_KEY, data.cover);
-        save(); location.reload();
+        try {
+            const data = JSON.parse(e.target.result);
+            merchList = data.merchList || [];
+            dict = data.dict || { works: [], roles: [], types: [] };
+            if(data.cover) localStorage.setItem(COVER_KEY, data.cover);
+            save(); // 使用 save 儲存（已包含錯誤處理）
+            location.reload();
+        } catch (ex) {
+            showModal("❌", "匯入檔案格式錯誤");
+        }
     };
     reader.readAsText(input.files[0]);
 }
 
 function renderStats() {
-    Object.values(charts).forEach(c => c.destroy());
+    if (charts.monthly) charts.monthly.destroy();
+    if (charts.work) charts.work.destroy();
+    if (charts.role) charts.role.destroy();
     const statsList = merchList.filter(i => i.status !== '願望');
     const colors = ['#6b7a63', '#acc1ad', '#a68b7c', '#d5cabd', '#e5ddd5', '#c2b2a3'];
     
