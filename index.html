@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Morandi Archive - 完整版</title>
+<title>Morandi Archive - 最終版</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
 :root {
@@ -39,8 +39,9 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: 'PingFang HK', 'M
 .filter-chip { background: var(--m-clay); padding: 6px 14px; border-radius: 15px; font-size: 11px; cursor: pointer; color: #8a8a8a; user-select: none; transition: 0.2s; }
 .filter-chip.active { background: var(--m-sage); color: white; }
 .count-tag { font-size: 10px; color: #aaa; text-align: right; margin-bottom: 5px; }
-.list-container.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(var(--dynamic-grid), 1fr)); gap: 15px; }
-.list-container.list { display: flex; flex-direction: column; gap: 12px; }
+/* 間距減半 */
+.list-container.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(var(--dynamic-grid), 1fr)); gap: 7px; }
+.list-container.list { display: flex; flex-direction: column; gap: 7px; }
 .list-container.list .item-card { min-height: 95px; height: auto; flex-direction: row; }
 .list-container.list .img-box { width: 95px; height: 95px; flex-shrink: 0; }
 .list-container.list .info { padding: 10px; overflow: hidden; }
@@ -48,7 +49,7 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: 'PingFang HK', 'M
 .list-container.image {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(var(--dynamic-grid), 1fr));
-    gap: 15px;
+    gap: 7px;
 }
 .list-container.image .item-card .info {
     display: none;
@@ -195,14 +196,13 @@ input, select, textarea { width: 100%; padding: 12px; border-radius: var(--radiu
             <div id="totalExpense" class="total-expense">總計: HKD 0</div>
             <canvas id="monthlyChart"></canvas>
         </div>
-        <div class="stat-card"><div class="stat-title">作品佔比分析</div><canvas id="workChart"></canvas></div>
-        <div class="stat-card"><div class="stat-title">角色支出排行</div><canvas id="roleChart"></canvas></div>
+        <div class="stat-card"><div class="stat-title">作品佔比分析(HKD)</div><canvas id="workChart"></canvas></div>
+        <div class="stat-card"><div class="stat-title">角色支出排行(HKD)</div><canvas id="roleChart"></canvas></div>
     </div>
 
     <div id="page-settings" class="page">
         <div class="stat-card">
             <label class="input-label">網格大小: <span id="gridVal">160</span>px</label>
-            <!-- 最大值改為 160 -->
             <input type="range" id="gridRange" min="50" max="160" value="160" oninput="updateGridSize(this.value)">
             <hr style="border: 0.5px solid #f0f0f0; margin: 25px 0;">
             <button onclick="exportData()" class="btn-main" style="background:var(--m-brown);">匯出資料備份(.json)</button>
@@ -225,7 +225,7 @@ input, select, textarea { width: 100%; padding: 12px; border-radius: var(--radiu
 const STORAGE_KEY = 'archive_master'; 
 const DICT_KEY = 'archive_dict_master';
 const COVER_KEY = 'archive_cover_bg';
-const LAST_INPUT_KEY = 'archive_last_input'; // 新增：記住上次輸入
+const LAST_INPUT_KEY = 'archive_last_input';
 const DEFAULT_WORKS = ['世界計畫', 'V家', 'Alien Stage'];
 const DEFAULT_TYPES = ['襟','色紙','掛件','立牌', '拍立得'];
 
@@ -484,7 +484,7 @@ function editItem(idx) {
     switchTab('page-recent');
 }
 
-// 重置表單為新增模式，並嘗試恢復上次輸入
+// 重置表單為新增模式，並恢復上次輸入
 function resetFormForNew() {
     document.getElementById('merchForm').reset();
     document.getElementById('editIndex').value = "-1";
@@ -492,7 +492,6 @@ function resetFormForNew() {
     document.getElementById('delBtn').style.display = 'none';
     document.getElementById('exchangePreview').innerText = "總額: HKD 0.00";
 
-    // 恢復上次輸入（作品、角色、類別、狀態、幣種）
     const lastInput = JSON.parse(localStorage.getItem(LAST_INPUT_KEY) || '{}');
     if (lastInput.work) document.getElementById('workSelect').value = lastInput.work;
     if (lastInput.role) document.getElementById('roleSelect').value = lastInput.role;
@@ -500,7 +499,6 @@ function resetFormForNew() {
     if (lastInput.status) document.getElementById('status').value = lastInput.status;
     if (lastInput.currency) document.getElementById('currency').value = lastInput.currency;
 
-    // 重新計算匯率預覽（因為幣種可能改變）
     liveExchange();
     updateDateLabel();
 }
@@ -533,10 +531,8 @@ function openPage(id) {
 function handleBack() {
     const activePage = document.querySelector('.page.active')?.id;
     if (activePage === 'page-recent') {
-        // 從編輯頁回到圖書館
         switchTab('page-gallery', document.querySelector('.nav-item'));
     } else {
-        // 其他頁面回到封面
         document.getElementById('cover-page').classList.remove('open');
         document.getElementById('bottom-nav').style.display = 'none';
     }
@@ -557,7 +553,7 @@ function liveExchange() {
     document.getElementById('exchangePreview').innerText = `總額: HKD ${total}`;
 }
 
-// 表單提交事件（包含圖片壓縮與安全儲存）
+// 表單提交事件
 document.getElementById('merchForm').onsubmit = function(e) {
     e.preventDefault();
     const editIdx = parseInt(document.getElementById('editIndex').value);
@@ -617,7 +613,6 @@ document.getElementById('merchForm').onsubmit = function(e) {
         merchList = newList;
         dict = newDict;
 
-        // 儲存本次輸入（記住作品、角色、類別、狀態、幣種）
         const lastInput = {
             work: data.work,
             role: data.role,
@@ -739,6 +734,7 @@ function renderStats() {
 
     const colors = ['#6b7a63', '#acc1ad', '#a68b7c', '#d5cabd', '#e5ddd5', '#c2b2a3'];
     
+    // 每月支出走勢（金額）
     const mData = {}; 
     statsList.forEach(i => { 
         const d = new Date(i.timestamp); 
@@ -750,13 +746,21 @@ function renderStats() {
         data: { labels: Object.keys(mData), datasets: [{ label: 'HKD', data: Object.values(mData), borderColor: '#6b7a63', tension: 0.3 }] }
     });
 
-    const wData = {}; statsList.forEach(i => { wData[i.work] = (wData[i.work] || 0) + 1; });
+    // 作品佔比分析（改為金額）
+    const wData = {}; 
+    statsList.forEach(i => { 
+        wData[i.work] = (wData[i.work] || 0) + parseFloat(i.totalHkd); 
+    });
     charts.work = new Chart(document.getElementById('workChart'), {
         type: 'doughnut',
         data: { labels: Object.keys(wData), datasets: [{ data: Object.values(wData), backgroundColor: colors }] }
     });
 
-    const rData = {}; statsList.forEach(i => { rData[i.role] = (rData[i.role] || 0) + parseFloat(i.totalHkd); });
+    // 角色支出排行（金額）
+    const rData = {}; 
+    statsList.forEach(i => { 
+        rData[i.role] = (rData[i.role] || 0) + parseFloat(i.totalHkd); 
+    });
     const rSorted = Object.entries(rData).sort((a,b) => b[1]-a[1]).slice(0, 5);
     charts.role = new Chart(document.getElementById('roleChart'), {
         type: 'bar',
