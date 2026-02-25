@@ -226,11 +226,15 @@ function init() {
     updateToolUI();
 }
 
-function save() { 
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(merchList)); 
-    localStorage.setItem(DICT_KEY, JSON.stringify(dict)); 
-}
-
+function save() {
+    try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(merchList));
+        localStorage.setItem(DICT_KEY, JSON.stringify(dict));
+    } catch (e) {
+        showModal("❌", "保存失敗，可能圖片過大或儲存空間不足");
+        throw e; // 中斷後續操作，避免資料不一致
+    }
+        }
 function showModal(icon, text) {
     document.getElementById('modal-icon').innerText = icon;
     document.getElementById('modal-text').innerText = text;
