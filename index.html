@@ -63,7 +63,7 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: 'PingFang HK', 'M
 .info { padding: 10px; flex-grow: 1; overflow: hidden; pointer-events: none; }
 .info .note { display: none; }
 
-/* 新增/編輯頁行距減半 */
+/* 新增頁行距減半 */
 .input-group { margin-bottom: 5px; }
 .input-label { font-size: 11px; color: var(--m-brown); font-weight: bold; margin-bottom: 5px; display: block; }
 #exchangePreview { margin-bottom: 8px; }
@@ -219,7 +219,7 @@ input, select, textarea { width: 100%; padding: 10px; border-radius: var(--radiu
         <div id="wishList" class="list-container grid"></div>
     </div>
 
-    <!-- 新增/編輯頁 (行距已減半) -->
+    <!-- 新增/編輯頁 -->
     <div id="page-recent" class="page">
         <div style="background:#fff; padding:15px; border-radius: var(--radius); border:1px solid var(--m-clay);">
             <div class="page-title" style="margin-bottom:15px;">➕ 新增/編輯藏品</div>
@@ -262,10 +262,12 @@ input, select, textarea { width: 100%; padding: 10px; border-radius: var(--radiu
             <div class="stat-title">角色支出排行(HKD)</div>
             <canvas id="roleChart"></canvas>
         </div>
+        <!-- 類別數量統計 -->
         <div class="stat-card">
             <div class="stat-title">類別數量分佈</div>
             <canvas id="typeCountChart"></canvas>
         </div>
+        <!-- 角色數量統計 -->
         <div class="stat-card">
             <div class="stat-title">角色數量統計</div>
             <canvas id="roleCountChart"></canvas>
@@ -396,9 +398,9 @@ function confirmBatchDelete() {
     let newList = [...merchList];
     indicesToDelete.forEach(idx => newList.splice(idx, 1));
 
+    // 只儲存藏品，字典保持不變（不重新計算）
     try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(newList));
-        // 注意：不重新生成 dict，保留原樣
         localStorage.setItem(DICT_KEY, JSON.stringify(dict));
     } catch (e) {
         showModal("❌", "儲存失敗，無法刪除");
@@ -406,22 +408,13 @@ function confirmBatchDelete() {
     }
 
     merchList = newList;
-    // 不更新 dict
+    // dict 不變
+
     renderSelects();
     renderFilters();
     renderAll();
     setBatchMode(false);
     setTimeout(() => { showModal("🗑️", "已批量刪除"); }, 150);
-}
-
-// 此函數已不再使用，但保留以免呼叫錯誤；內部僅儲存 dict（確保同步）
-function updateDictData() {
-    // 不做任何基於 merchList 的更新，僅儲存當前 dict
-    try {
-        localStorage.setItem(DICT_KEY, JSON.stringify(dict));
-    } catch (e) {
-        showModal("⚠️", "標籤儲存失敗");
-    }
 }
 
 function renderAll() {
@@ -487,7 +480,6 @@ function getCurrentStatus() {
 
 function renderFilters() {
     const build = (list, key, defaults) => {
-        // 合併預設標籤與 dict 中的標籤，預設標籤永遠存在
         const combined = [...new Set([...defaults, ...list])];
         const currentStatus = getCurrentStatus();
         let row = document.createElement('div'); row.className = 'filter-row';
@@ -497,28 +489,24 @@ function renderFilters() {
         all.onclick = () => { filters[key] = 'all'; renderFilters(); renderAll(); };
         row.appendChild(all);
         combined.forEach(item => {
-            // 計算該標籤在當前狀態下的數量（基於藏品資料，而非 dict）
             const count = currentStatus ? merchList.filter(i => i.status === currentStatus && i[key] === item).length : 0;
             let chip = document.createElement('div');
             chip.className = `filter-chip ${filters[key]===item?'active':''}`;
             chip.innerText = `${item} (${count})`;
             chip.onclick = () => { filters[key] = item; renderFilters(); renderAll(); };
-            // 長按刪除標籤（僅允許刪除非預設標籤）
-            if (!defaults.includes(item)) {
-                handleLongPress(chip, () => {
-                    if(confirm(`確定刪除標籤「${item}」嗎？\n此操作不會影響任何藏品，但將無法再用此標籤篩選。`)) {
-                        const dk = key==='work'?'works':(key==='role'?'roles':'types');
-                        dict[dk] = dict[dk].filter(x => x !== item);
-                        // 儲存 dict
-                        try {
-                            localStorage.setItem(DICT_KEY, JSON.stringify(dict));
-                        } catch (e) {
-                            showModal("⚠️", "標籤刪除後儲存失敗");
-                        }
-                        renderFilters(); renderSelects();
+            handleLongPress(chip, () => {
+                if(confirm(`確定刪除標籤「${item}」嗎？`)) {
+                    const dk = key==='work'?'works':(key==='role'?'roles':'types');
+                    dict[dk] = dict[dk].filter(x => x !== item);
+                    // 只儲存字典，不影響藏品
+                    try {
+                        localStorage.setItem(DICT_KEY, JSON.stringify(dict));
+                    } catch (e) {
+                        showModal("⚠️", "標籤刪除後儲存失敗");
                     }
-                });
-            }
+                    renderFilters(); renderSelects();
+                }
+            });
             row.appendChild(chip);
         });
         return row;
@@ -636,12 +624,9 @@ document.getElementById('merchForm').onsubmit = function(e) {
         let sVal = document.getElementById(sid).value;
         if(sVal === 'NEW') {
             let v = document.getElementById(iid).value.trim();
-            if(v) {
-                // 將新標籤加入 dict（若不存在且非預設）
-                if (!def.includes(v) && !dict[dk].includes(v)) {
-                    dict[dk].push(v);
-                    dict[dk].sort();
-                }
+            if(v && !def.includes(v) && !dict[dk].includes(v)) { 
+                dict[dk].push(v); 
+                dict[dk].sort(); 
             }
             return v;
         }
@@ -676,16 +661,17 @@ document.getElementById('merchForm').onsubmit = function(e) {
             newList = [...merchList, data];
         }
 
+        // 字典已可能透過 getV 新增標籤，直接儲存
         try {
             localStorage.setItem(STORAGE_KEY, JSON.stringify(newList));
-            localStorage.setItem(DICT_KEY, JSON.stringify(dict)); // 儲存 dict（可能已新增標籤）
+            localStorage.setItem(DICT_KEY, JSON.stringify(dict));
         } catch (e) {
             showModal("❌", "儲存失敗，可能圖片過大或空間不足");
             return;
         }
 
         merchList = newList;
-        // 不重新生成 dict
+        // dict 已更新
 
         const lastInput = {
             work: data.work,
@@ -722,15 +708,16 @@ function deleteCurrentItem() {
     if(idx > -1 && confirm("確定刪除此藏品？")) {
         let newList = [...merchList];
         newList.splice(idx, 1);
+        // 字典保持不變
         try {
             localStorage.setItem(STORAGE_KEY, JSON.stringify(newList));
-            localStorage.setItem(DICT_KEY, JSON.stringify(dict)); // dict 不變
+            localStorage.setItem(DICT_KEY, JSON.stringify(dict));
         } catch (e) {
             showModal("❌", "刪除失敗，無法儲存");
             return;
         }
         merchList = newList;
-        // 不更新 dict
+        // dict 不變
         renderSelects();
         renderFilters();
         renderAll();
