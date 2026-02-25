@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Morandi Archive - Master V39</title>
+    <title>Morandi Archive - Master V40</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
@@ -116,14 +116,14 @@
             <div class="control-panel">
                 <input type="text" class="search-input" id="lib-search" placeholder="搜尋款式或備註..." oninput="renderAll()">
                 <div class="symbol-row">
-                    <div class="symbol-group">
+                    <div class="symbol-group sort-tools">
                         <span class="symbol-btn sort-date active" onclick="setSort('date')"><svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg><span>時間</span></span>
                         <span class="symbol-btn sort-price" onclick="setSort('price')"><svg viewBox="0 0 24 24"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg><span>金額</span></span>
                         <span class="symbol-btn sort-name" onclick="setSort('name')"><svg viewBox="0 0 24 24"><path d="M12.75 3h-1.5L6.5 14h1.5l1.12-3h5.75l1.12 3h1.5L12.75 3zm-3.13 6.5L12 3.25l2.38 6.25H9.62zM18 17H6v2h12v-2z"/></svg><span>名稱</span></span>
                         <span class="symbol-btn sort-qty" onclick="setSort('qty')"><svg viewBox="0 0 24 24"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zm0-10v2h14V7H7z"/></svg><span>數量</span></span>
-                        <span class="order-toggle" id="order-btn-lib" onclick="toggleOrder()">倒序 ↓</span>
+                        <span class="order-toggle" onclick="toggleOrder()">倒序 ↓</span>
                     </div>
-                    <div class="symbol-group">
+                    <div class="symbol-group view-tools">
                         <span class="symbol-btn view-grid active" onclick="setView('grid')"><svg viewBox="0 0 24 24"><path d="M4 11h5V5H4v6zm0 7h5v-6H4v6zm7 0h5v-6h-5v6zm0-13v6h5V5h-5z"/></svg></span>
                         <span class="symbol-btn view-list" onclick="setView('list')"><svg viewBox="0 0 24 24"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zm0-10v2h14V7H7z"/></svg></span>
                     </div>
@@ -140,6 +140,15 @@
         <div id="page-pending" class="page">
             <div class="control-panel">
                 <input type="text" class="search-input" id="wait-search" placeholder="搜尋款式或備註..." oninput="renderAll()">
+                <div class="symbol-row">
+                    <div class="symbol-group sort-tools">
+                        <span class="symbol-btn sort-date active" onclick="setSort('date')"><svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg><span>時間</span></span>
+                        <span class="symbol-btn sort-price" onclick="setSort('price')"><svg viewBox="0 0 24 24"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg><span>金額</span></span>
+                        <span class="symbol-btn sort-name" onclick="setSort('name')"><svg viewBox="0 0 24 24"><path d="M12.75 3h-1.5L6.5 14h1.5l1.12-3h5.75l1.12 3h1.5L12.75 3zm-3.13 6.5L12 3.25l2.38 6.25H9.62zM18 17H6v2h12v-2z"/></svg><span>名稱</span></span>
+                        <span class="symbol-btn sort-qty" onclick="setSort('qty')"><svg viewBox="0 0 24 24"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zm0-10v2h14V7H7z"/></svg><span>數量</span></span>
+                        <span class="order-toggle" onclick="toggleOrder()">倒序 ↓</span>
+                    </div>
+                </div>
                 <div id="wait-filter-box"></div>
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
                     <div id="wait-count" class="count-tag" style="margin: 0;">顯示: 0 / 0</div>
@@ -152,6 +161,15 @@
         <div id="page-wish" class="page">
             <div class="control-panel">
                 <input type="text" class="search-input" id="wish-search" placeholder="搜尋款式或備註..." oninput="renderAll()">
+                <div class="symbol-row">
+                    <div class="symbol-group sort-tools">
+                        <span class="symbol-btn sort-date active" onclick="setSort('date')"><svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg><span>時間</span></span>
+                        <span class="symbol-btn sort-price" onclick="setSort('price')"><svg viewBox="0 0 24 24"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg><span>金額</span></span>
+                        <span class="symbol-btn sort-name" onclick="setSort('name')"><svg viewBox="0 0 24 24"><path d="M12.75 3h-1.5L6.5 14h1.5l1.12-3h5.75l1.12 3h1.5L12.75 3zm-3.13 6.5L12 3.25l2.38 6.25H9.62zM18 17H6v2h12v-2z"/></svg><span>名稱</span></span>
+                        <span class="symbol-btn sort-qty" onclick="setSort('qty')"><svg viewBox="0 0 24 24"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zm0-10v2h14V7H7z"/></svg><span>數量</span></span>
+                        <span class="order-toggle" onclick="toggleOrder()">倒序 ↓</span>
+                    </div>
+                </div>
                 <div id="wish-filter-box"></div>
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
                     <div id="wish-count" class="count-tag" style="margin: 0;">顯示: 0 / 0</div>
@@ -269,20 +287,21 @@
     }
 
     function updateDictData() {
-        // 更新時不包含默認標籤，只存儲用戶自定義的
         dict.works = [...new Set(merchList.map(i => i.work).filter(w => w && !DEFAULT_WORKS.includes(w)))].sort();
         dict.roles = [...new Set(merchList.map(i => i.role).filter(Boolean))].sort();
         dict.types = [...new Set(merchList.map(i => i.type).filter(t => t && !DEFAULT_TYPES.includes(t)))].sort();
         save(); renderSelects(); renderFilters();
     }
 
+    // --- 核心渲染 logic (排序將應用於所有容器) ---
     function renderAll() {
         const conf = { '現貨': 'readyList', '非現貨': 'waitList', '願望': 'wishList' };
         const srch = { '現貨': 'lib-search', '非現貨': 'wait-search', '願望': 'wish-search' };
 
         Object.keys(conf).forEach(status => {
             const container = document.getElementById(conf[status]); if(!container) return;
-            const sVal = document.getElementById(srch[status]).value.toLowerCase();
+            const searchBox = document.getElementById(srch[status]);
+            const sVal = searchBox ? searchBox.value.toLowerCase() : "";
             
             let filtered = merchList.map((item, index) => ({...item, originalIndex: index}))
                 .filter(i => i.status === status)
@@ -312,17 +331,28 @@
                 handleLongPress(card, () => { if (!isBatchMode) { toggleBatchMode(); toggleSelectItem(i.originalIndex); } });
                 container.appendChild(card);
             });
-            document.getElementById(status === '現貨' ? 'lib-count' : (status === '非現貨' ? 'wait-count' : 'wish-count')).innerHTML = `顯示: ${filtered.length} / ${merchList.filter(x=>x.status===status).length}`;
+            const countId = status === '現貨' ? 'lib-count' : (status === '非現貨' ? 'wait-count' : 'wish-count');
+            document.getElementById(countId).innerHTML = `顯示: ${filtered.length} / ${merchList.filter(x=>x.status===status).length}`;
         });
     }
 
+    // --- 排序狀態同步更新 ---
     function setSort(mode) { sortMode = mode; updateToolUI(); renderAll(); }
-    function toggleOrder() { sortDesc = !sortDesc; document.getElementById('order-btn-lib').innerText = sortDesc ? "倒序 ↓" : "正序 ↑"; renderAll(); }
+    function toggleOrder() { sortDesc = !sortDesc; updateToolUI(); renderAll(); }
     function setView(v) { viewMode = v; updateToolUI(); renderAll(); }
+
     function updateToolUI() {
-        document.querySelectorAll('.symbol-btn').forEach(b => b.classList.remove('active'));
-        document.querySelector(`.sort-${sortMode}`)?.classList.add('active');
-        document.querySelector(`.view-${viewMode}`)?.classList.add('active');
+        // 同步所有排序按鈕的 active 狀態
+        document.querySelectorAll('.symbol-btn').forEach(b => {
+            b.classList.remove('active');
+            if (b.classList.contains(`sort-${sortMode}`) || b.classList.contains(`view-${viewMode}`)) {
+                b.classList.add('active');
+            }
+        });
+        // 同步所有正序/倒序按鈕的文字
+        document.querySelectorAll('.order-toggle').forEach(btn => {
+            btn.innerText = sortDesc ? "倒序 ↓" : "正序 ↑";
+        });
     }
 
     function renderFilters() {
@@ -336,10 +366,7 @@
                 let chip = document.createElement('div'); chip.className = `filter-chip ${filters[key]===item?'active':''}`;
                 chip.innerText = item; chip.onclick = () => { filters[key] = item; renderFilters(); renderAll(); };
                 handleLongPress(chip, () => {
-                    if(defaults.includes(item)) {
-                        alert("這是系統默認標籤，無法刪除。");
-                        return;
-                    }
+                    if(defaults.includes(item)) { alert("這是系統默認標籤，無法刪除。"); return; }
                     if(confirm(`刪除標籤「${item}」？`)) { 
                         dict[key+'s'] = dict[key+'s'].filter(v => v !== item); 
                         if(filters[key]===item) filters[key]='all'; 
@@ -374,7 +401,7 @@
 
     function editItem(idx) {
         const i = merchList[idx]; document.getElementById('editIndex').value = idx;
-        renderSelects(); // 確保下拉選單包含當前項目的值
+        renderSelects();
         document.getElementById('workSelect').value = i.work || ""; document.getElementById('roleSelect').value = i.role || ""; document.getElementById('typeSelect').value = i.type || "";
         document.getElementById('pattern').value = i.pattern; document.getElementById('note').value = i.note || ""; document.getElementById('status').value = i.status;
         document.getElementById('qty').value = i.qty || 1; document.getElementById('inputPrice').value = i.originalPrice || 0; document.getElementById('currency').value = i.originalCur || "HKD";
