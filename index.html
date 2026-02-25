@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Morandi Archive - Master V45</title>
+    <title>Morandi Archive - Master V46</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
@@ -72,8 +72,8 @@
         /* 彈窗與統計 */
         .stat-card { background:#fff; padding:20px; border-radius:var(--radius); border:1px solid var(--m-clay); margin-bottom: 20px; }
         .stat-title { font-size: 13px; font-weight: bold; color: var(--m-brown); margin-bottom: 15px; border-left: 4px solid var(--m-sage); padding-left: 10px; }
-        #success-modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 35px; border-radius: 15px; text-align: center; z-index: 5000; display: none; width: 240px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); }
-        .overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.5); z-index: 4500; display: none; backdrop-filter: blur(2px); }
+        #success-modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 35px; border-radius: 15px; text-align: center; z-index: 5500; display: none; width: 240px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); }
+        .overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.5); z-index: 5000; display: none; backdrop-filter: blur(2px); }
     </style>
 </head>
 <body>
@@ -140,24 +140,11 @@
         <div id="page-pending" class="page">
             <div class="control-panel">
                 <input type="text" class="search-input" id="wait-search" placeholder="搜尋款式或備註..." oninput="renderAll()">
-                <div class="symbol-row">
-                    <div class="symbol-group">
-                        <span class="symbol-btn sort-date active" onclick="setSort('date')"><svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg><span>時間</span></span>
-                        <span class="symbol-btn sort-price" onclick="setSort('price')"><svg viewBox="0 0 24 24"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg><span>金額</span></span>
-                        <span class="symbol-btn sort-name" onclick="setSort('name')"><svg viewBox="0 0 24 24"><path d="M12.75 3h-1.5L6.5 14h1.5l1.12-3h5.75l1.12 3h1.5L12.75 3zm-3.13 6.5L12 3.25l2.38 6.25H9.62zM18 17H6v2h12v-2z"/></svg><span>名稱</span></span>
-                        <span class="symbol-btn sort-qty" onclick="setSort('qty')"><svg viewBox="0 0 24 24"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zm0-10v2h14V7H7z"/></svg><span>數量</span></span>
-                        <span class="order-toggle" onclick="toggleOrder()">倒序 ↓</span>
-                    </div>
-                    <div class="symbol-group">
-                        <span class="symbol-btn view-grid active" onclick="setView('grid')"><svg viewBox="0 0 24 24"><path d="M4 11h5V5H4v6zm0 7h5v-6H4v6zm7 0h5v-6h-5v6zm0-13v6h5V5h-5z"/></svg></span>
-                        <span class="symbol-btn view-list" onclick="setView('list')"><svg viewBox="0 0 24 24"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zm0-10v2h14V7H7z"/></svg></span>
-                    </div>
-                </div>
-                <div id="wait-filter-box"></div>
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
                     <div id="wait-count" class="count-tag" style="margin: 0;">顯示: 0 / 0</div>
                     <span class="edit-toggle-btn" onclick="setBatchMode(true)">編輯管理</span>
                 </div>
+                <div id="wait-filter-box"></div>
             </div>
             <div id="waitList" class="list-container grid"></div>
         </div>
@@ -165,19 +152,6 @@
         <div id="page-wish" class="page">
             <div class="control-panel">
                 <input type="text" class="search-input" id="wish-search" placeholder="搜尋款式或備註..." oninput="renderAll()">
-                <div class="symbol-row">
-                    <div class="symbol-group">
-                        <span class="symbol-btn sort-date active" onclick="setSort('date')"><svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg><span>時間</span></span>
-                        <span class="symbol-btn sort-price" onclick="setSort('price')"><svg viewBox="0 0 24 24"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg><span>金額</span></span>
-                        <span class="symbol-btn sort-name" onclick="setSort('name')"><svg viewBox="0 0 24 24"><path d="M12.75 3h-1.5L6.5 14h1.5l1.12-3h5.75l1.12 3h1.5L12.75 3zm-3.13 6.5L12 3.25l2.38 6.25H9.62zM18 17H6v2h12v-2z"/></svg><span>名稱</span></span>
-                        <span class="symbol-btn sort-qty" onclick="setSort('qty')"><svg viewBox="0 0 24 24"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zm0-10v2h14V7H7z"/></svg><span>數量</span></span>
-                        <span class="order-toggle" onclick="toggleOrder()">倒序 ↓</span>
-                    </div>
-                    <div class="symbol-group">
-                        <span class="symbol-btn view-grid active" onclick="setView('grid')"><svg viewBox="0 0 24 24"><path d="M4 11h5V5H4v6zm0 7h5v-6H4v6zm7 0h5v-6h-5v6zm0-13v6h5V5h-5z"/></svg></span>
-                        <span class="symbol-btn view-list" onclick="setView('list')"><svg viewBox="0 0 24 24"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zm0-10v2h14V7H7z"/></svg></span>
-                    </div>
-                </div>
                 <div id="wish-filter-box"></div>
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
                     <div id="wish-count" class="count-tag" style="margin: 0;">顯示: 0 / 0</div>
@@ -201,12 +175,7 @@
                         <div><label class="input-label">狀態</label><select id="status" onchange="updateDateLabel()"><option value="現貨">現貨</option><option value="非現貨">非現貨</option><option value="願望">願望</option></select></div>
                         <div><label class="input-label">數量</label><input type="number" id="qty" value="1" min="1"></div>
                     </div>
-
-                    <div class="input-group">
-                        <label class="input-label" id="dateLabel">購買日期 (選填)</label>
-                        <input type="date" id="buyDate">
-                    </div>
-
+                    <div class="input-group"><label class="input-label" id="dateLabel">購買日期 (選填)</label><input type="date" id="buyDate"></div>
                     <div style="display:grid; grid-template-columns: 1fr 2fr; gap:15px; margin-bottom: 8px;">
                         <div><label class="input-label">幣種</label><select id="currency" onchange="liveExchange()"><option value="HKD">HKD</option><option value="RMB">RMB</option><option value="JPY">JPY</option></select></div>
                         <div><label class="input-label">單價</label><input type="number" id="inputPrice" step="0.01" value="0" oninput="liveExchange()"></div>
@@ -274,7 +243,6 @@
         else label.innerText = '購買日期 (選填)';
     }
 
-    // 更新：將 BatchMode 設定為獨立函式以供呼叫
     function setBatchMode(on) {
         isBatchMode = on; selectedIndices = [];
         document.getElementById('batch-panel').style.display = isBatchMode ? 'flex' : 'none';
@@ -294,8 +262,7 @@
         if (selectedIndices.length === 0) return;
         if (confirm(`確定刪除選中的 ${selectedIndices.length} 個藏品嗎？`)) {
             selectedIndices.sort((a, b) => b - a).forEach(idx => merchList.splice(idx, 1));
-            save(); updateDictData(); 
-            setBatchMode(false); // 刪除完自動退出
+            save(); updateDictData(); setBatchMode(false);
             showModal("🗑️", "已批量刪除");
         }
     }
@@ -313,7 +280,7 @@
 
         Object.keys(conf).forEach(status => {
             const container = document.getElementById(conf[status]); if(!container) return;
-            const sVal = document.getElementById(srch[status]).value.toLowerCase();
+            const sVal = document.getElementById(srch[status]) ? document.getElementById(srch[status]).value.toLowerCase() : "";
             
             let filtered = merchList.map((item, index) => ({...item, originalIndex: index}))
                 .filter(i => i.status === status)
@@ -339,7 +306,6 @@
                         <div style="font-weight:bold; font-size:12px; margin:4px 0;">${i.pattern || '無名'}</div>
                         <div style="color:var(--m-deep-green); font-size:11px; font-weight:bold;">HK$ ${i.totalHkd} 
                             <span style="color:#aaa;font-weight:normal;font-size:9px;margin-left:5px;">x${i.qty}</span>
-                            ${i.buyDate ? `<span style="display:block;color:#ccc;font-size:8px;margin-top:2px;">📅 ${i.buyDate}</span>` : ''}
                         </div>
                     </div>`;
                 card.onclick = () => isBatchMode ? toggleSelectItem(i.originalIndex) : editItem(i.originalIndex);
@@ -372,14 +338,6 @@
             combined.forEach(item => {
                 let chip = document.createElement('div'); chip.className = `filter-chip ${filters[key]===item?'active':''}`;
                 chip.innerText = item; chip.onclick = () => { filters[key] = item; renderFilters(); renderAll(); };
-                handleLongPress(chip, () => {
-                    if(defaults.includes(item)) { alert("這是系統默認標籤，無法刪除。"); return; }
-                    if(confirm(`刪除標籤「${item}」？`)) { 
-                        dict[key+'s'] = dict[key+'s'].filter(v => v !== item); 
-                        if(filters[key]===item) filters[key]='all'; 
-                        save(); renderFilters(); renderSelects(); renderAll(); 
-                    }
-                });
                 row.appendChild(chip);
             });
             return row;
@@ -411,18 +369,12 @@
         openPage('page-recent'); liveExchange();
     }
 
-    // 更新：單項刪除後自動退出編輯模式
     function deleteCurrentItem() {
         const idx = parseInt(document.getElementById('editIndex').value);
         if(idx !== -1 && confirm("確定刪除此藏品？")) { 
-            merchList.splice(idx, 1); 
-            save(); 
-            updateDictData(); 
-            setBatchMode(false); // 刪除後確保退出編輯模式
-            document.getElementById('merchForm').reset();
-            document.getElementById('editIndex').value = "-1";
-            switchTab('page-gallery', document.querySelectorAll('.nav-item')[0]);
-            renderAll();
+            merchList.splice(idx, 1); save(); updateDictData(); setBatchMode(false);
+            document.getElementById('merchForm').reset(); document.getElementById('editIndex').value = "-1";
+            switchTab('page-gallery', document.querySelectorAll('.nav-item')[0]); renderAll();
             setTimeout(() => { showModal("🗑️", "已刪除"); }, 100);
         }
     }
@@ -435,7 +387,6 @@
         element.addEventListener('touchend', cancel);
         element.addEventListener('mousedown', start);
         element.addEventListener('mouseup', cancel);
-        element.addEventListener('contextmenu', e => e.preventDefault());
     }
 
     function switchTab(id, btn) {
@@ -443,7 +394,7 @@
         document.getElementById(id).classList.add('active');
         if(btn) { document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); btn.classList.add('active'); }
         if(id === 'page-stats') renderStats();
-        if(isBatchMode) setBatchMode(false); // 切換頁面時退出編輯模式
+        if(isBatchMode) setBatchMode(false);
     }
 
     function openPage(id) { document.getElementById('cover-page').classList.add('open'); document.getElementById('bottom-nav').style.display='flex'; switchTab(id, document.querySelector(`button[onclick*="${id}"]`)); }
@@ -536,32 +487,26 @@
         const done = (b64) => {
             data.img = b64 || (editIdx !== -1 ? merchList[editIdx].img : '');
             if(editIdx === -1) merchList.unshift(data); else merchList[editIdx] = data;
-            save(); renderAll(); renderSelects(); renderFilters();
+            save(); updateDictData(); renderAll();
 
-            const msg = editIdx === -1 ? "已新增" : "已更新";
+            // 更新：根據模式彈出不同文字的彈窗
+            const msg = editIdx === -1 ? "已成功上架" : "已更新儲存";
+            const icon = editIdx === -1 ? "✨" : "✅";
             
             if(editIdx === -1) {
-                document.getElementById('pattern').value = "";
-                document.getElementById('note').value = "";
+                // 上架模式：重置部分欄位，保持在新增頁面
+                ['pattern', 'note', 'imgFile', 'workInput', 'roleInput', 'typeInput'].forEach(id => document.getElementById(id).value = "");
                 document.getElementById('inputPrice').value = "0";
-                document.getElementById('imgFile').value = "";
-                document.getElementById('workInput').value = "";
-                document.getElementById('roleInput').value = "";
-                document.getElementById('typeInput').value = "";
-                document.getElementById('workSelect').value = work;
-                document.getElementById('roleSelect').value = role;
-                document.getElementById('typeSelect').value = type;
-                document.getElementById('status').value = status;
-                document.getElementById('workInput').style.display = 'none';
-                document.getElementById('roleInput').style.display = 'none';
-                document.getElementById('typeInput').style.display = 'none';
                 liveExchange();
+                setTimeout(() => { showModal(icon, msg); }, 100);
             } else {
+                // 編輯模式：重置表單，切換回列表
                 document.getElementById('merchForm').reset();
-                document.getElementById('editIndex').value = "-1"; 
+                document.getElementById('editIndex').value = "-1";
+                document.getElementById('delBtn').style.display = 'none';
                 switchTab('page-gallery', document.querySelectorAll('.nav-item')[0]);
+                setTimeout(() => { showModal(icon, msg); }, 200);
             }
-            setTimeout(() => { showModal("✓", msg); }, 50);
         };
 
         const f = document.getElementById('imgFile').files[0];
