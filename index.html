@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Morandi Archive - Master V37 Full</title>
+    <title>Morandi Archive - Master V38 Full</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
@@ -17,7 +17,6 @@
         #batch-panel { display: none; background: var(--m-deep-green); color: white; padding: 15px 20px; position: fixed; top: 0; left: 0; width: 100%; box-sizing: border-box; z-index: 2500; justify-content: space-between; align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.15); transition: 0.3s; }
         .batch-btn { background: #cc9999; border: none; color: white; padding: 6px 15px; border-radius: 4px; font-size: 13px; cursor: pointer; font-weight: bold; }
         .edit-toggle-btn { font-size: 11px; color: var(--m-deep-green); border: 1px solid var(--m-deep-green); padding: 3px 10px; border-radius: 6px; cursor: pointer; margin-left: 10px; font-weight: bold; transition: 0.2s; }
-        .edit-toggle-btn:active { background: var(--m-deep-green); color: white; }
 
         /* 封面與導覽 */
         #cover-page { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #d2cdc1; background-size: cover; background-position: center; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; z-index: 2000; transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
@@ -38,59 +37,51 @@
         /* 控制面板與篩選器 */
         .control-panel { background: #fff; padding: 15px; border-radius: var(--radius); margin-bottom: 20px; border: 1px solid var(--m-clay); box-shadow: 0 2px 10px rgba(0,0,0,0.02); }
         .symbol-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid #f0f0f0; padding-bottom: 12px; }
-        .symbol-group { display: flex; gap: 15px; color: #ccc; align-items: center; }
-        .symbol-btn { cursor: pointer; transition: color 0.3s; display: flex; align-items: center; justify-content: center; }
-        .symbol-btn svg { width: 20px; height: 20px; fill: currentColor; }
+        .symbol-group { display: flex; gap: 12px; color: #ccc; align-items: center; }
+        .symbol-btn { cursor: pointer; transition: color 0.3s; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 2px; }
+        .symbol-btn svg { width: 18px; height: 18px; fill: currentColor; }
+        .symbol-btn span { font-size: 8px; font-weight: bold; }
         .symbol-btn.active { color: var(--m-deep-green); }
         .order-toggle { font-size: 11px; font-weight: bold; padding: 4px 10px; border: 1px solid #eee; border-radius: 6px; cursor: pointer; color: var(--m-brown); background: #fafafa; }
-        .search-input { margin-bottom: 12px; padding: 10px 12px; font-size: 12px; border: 1px solid #eee; background: #fafafa; border-radius: 6px; width: 100%; box-sizing: border-box; outline: none; transition: 0.2s; }
-        .search-input:focus { border-color: var(--m-sage); }
         
+        .search-input { margin-bottom: 12px; padding: 10px 12px; font-size: 12px; border: 1px solid #eee; background: #fafafa; border-radius: 6px; width: 100%; box-sizing: border-box; outline: none; }
         .filter-row { display: flex; overflow-x: auto; white-space: nowrap; gap: 8px; margin-bottom: 10px; scrollbar-width: none; }
         .filter-chip { background: var(--m-clay); padding: 6px 14px; border-radius: 15px; font-size: 11px; cursor: pointer; color: #8a8a8a; user-select: none; transition: 0.2s; }
         .filter-chip.active { background: var(--m-sage); color: white; }
-        .count-tag { font-size: 10px; color: #aaa; text-align: right; margin-bottom: 5px; letter-spacing: 1px; }
+        .count-tag { font-size: 10px; color: #aaa; text-align: right; margin-bottom: 5px; }
 
         /* 列表與卡片 */
         .list-container.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(var(--dynamic-grid), 1fr)); gap: 15px; }
         .list-container.list { display: flex; flex-direction: column; gap: 12px; }
-        .item-card { background: #fff; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--m-clay); user-select: none; display: flex; flex-direction: column; cursor: pointer; transition: transform 0.2s, border 0.2s; position: relative; }
-        
-        /* 批量選中狀態 */
+        .item-card { background: #fff; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--m-clay); user-select: none; display: flex; flex-direction: column; cursor: pointer; position: relative; transition: 0.2s; }
         .item-card.selected { border: 3px solid var(--m-deep-green); transform: scale(0.96); }
-        .item-card.selected::after { content: "✓"; position: absolute; top: 10px; right: 10px; background: var(--m-deep-green); color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: bold; z-index: 10; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        .item-card.selected::after { content: "✓"; position: absolute; top: 10px; right: 10px; background: var(--m-deep-green); color: white; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; z-index: 10; }
 
-        .list .item-card { flex-direction: row; align-items: center; height: 100px; }
-        .list .img-box { width: 100px; height: 100px; flex-shrink: 0; }
-        .list .info { padding: 0 15px; }
-
-        .img-box { width: 100%; aspect-ratio: 1; background: #f5f5f5; overflow: hidden; pointer-events: none; }
+        .list .item-card { flex-direction: row; height: 90px; }
+        .list .img-box { width: 90px; height: 90px; }
+        .img-box { width: 100%; aspect-ratio: 1; background: #f5f5f5; pointer-events: none; }
         .img-box img { width: 100%; height: 100%; object-fit: cover; }
-        .info { padding: 12px; flex-grow: 1; overflow: hidden; pointer-events: none; }
+        .info { padding: 10px; flex-grow: 1; overflow: hidden; pointer-events: none; }
 
-        /* 表單與按鈕 */
+        /* 表單 */
         .input-group { margin-bottom: 15px; }
-        .input-label { font-size: 11px; color: var(--m-brown); font-weight: bold; margin-bottom: 5px; display: block; letter-spacing: 1px; }
-        .btn-main { background: var(--m-deep-green); color: white; border: none; padding: 15px; width: 100%; font-size: 13px; cursor: pointer; border-radius: var(--radius); margin-top: 15px; font-weight: bold; transition: opacity 0.2s; }
-        .btn-main:active { opacity: 0.8; }
+        .input-label { font-size: 11px; color: var(--m-brown); font-weight: bold; margin-bottom: 5px; display: block; }
+        .btn-main { background: var(--m-deep-green); color: white; border: none; padding: 15px; width: 100%; font-size: 13px; cursor: pointer; border-radius: var(--radius); margin-top: 15px; font-weight: bold; }
         input, select, textarea { width: 100%; padding: 12px; border-radius: var(--radius); border: 1px solid var(--m-clay); background: #fafafa; font-size: 14px; box-sizing: border-box; outline: none; }
-        textarea { height: 80px; resize: none; font-family: inherit; }
         
-        /* 統計卡片 */
-        .stat-card { background:#fff; padding:20px; border-radius:var(--radius); border:1px solid var(--m-clay); margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.02); }
-        .stat-title { font-size: 13px; font-weight: bold; color: var(--m-brown); margin-bottom: 15px; letter-spacing: 1px; border-left: 4px solid var(--m-sage); padding-left: 10px; }
-
-        /* 彈窗 */
-        #success-modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 35px; border-radius: 15px; text-align: center; z-index: 4000; box-shadow: 0 15px 50px rgba(0,0,0,0.15); display: none; width: 240px; }
+        /* 彈窗與統計 */
+        .stat-card { background:#fff; padding:20px; border-radius:var(--radius); border:1px solid var(--m-clay); margin-bottom: 20px; }
+        .stat-title { font-size: 13px; font-weight: bold; color: var(--m-brown); margin-bottom: 15px; border-left: 4px solid var(--m-sage); padding-left: 10px; }
+        #success-modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 35px; border-radius: 15px; text-align: center; z-index: 4000; display: none; width: 240px; }
         .overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.5); z-index: 3500; display: none; backdrop-filter: blur(2px); }
     </style>
 </head>
 <body>
 
     <div id="batch-panel">
-        <span id="batch-count" style="font-weight: bold; font-size: 15px;">已選擇 0 項</span>
+        <span id="batch-count" style="font-weight: bold;">已選擇 0 項</span>
         <div>
-            <span onclick="toggleBatchMode()" style="cursor:pointer; margin-right:20px; font-size:14px; font-weight: bold; opacity: 0.9;">取消</span>
+            <span onclick="toggleBatchMode()" style="cursor:pointer; margin-right:20px; font-size:14px; font-weight: bold;">取消</span>
             <button class="batch-btn" onclick="confirmBatchDelete()">刪除選中</button>
         </div>
     </div>
@@ -98,7 +89,7 @@
     <div class="overlay" id="overlay" onclick="closeModal()"></div>
     <div id="success-modal">
         <div id="modal-icon" style="font-size: 40px; margin-bottom: 15px; color: var(--m-deep-green);">✓</div>
-        <div id="modal-text" style="font-weight: bold; font-size: 16px; letter-spacing: 2px;">已儲存</div>
+        <div id="modal-text" style="font-weight: bold; font-size: 16px;">已儲存</div>
         <button class="btn-main" onclick="closeModal()" style="margin-top: 25px;">確定</button>
     </div>
 
@@ -108,7 +99,7 @@
         </div>
         <input type="file" id="coverInput" style="display:none;" accept="image/*" onchange="updateCover(this)">
         <div class="cover-menu">
-            <h4 style="text-align:center; font-weight:400; letter-spacing:6px; margin-bottom:25px; color: var(--m-deep-green); font-size: 16px;">M.ARCHIVE</h4>
+            <h4 style="text-align:center; font-weight:400; letter-spacing:6px; margin-bottom:25px; color: var(--m-deep-green);">M.ARCHIVE</h4>
             <div class="menu-btn" onclick="openPage('page-gallery')">圖書館</div>
             <div class="menu-btn" onclick="openPage('page-pending')">等候區</div>
             <div class="menu-btn" onclick="openPage('page-wish')">願望清單</div>
@@ -119,15 +110,17 @@
     </div>
 
     <div class="main-content" id="main-content">
-        <div id="back-btn" onclick="closePage()" style="font-size:11px; color: var(--m-brown); cursor:pointer; margin-bottom:25px; letter-spacing:2px; font-weight: bold;">← 返回首頁</div>
+        <div id="back-btn" onclick="closePage()" style="font-size:11px; color: var(--m-brown); cursor:pointer; margin-bottom:25px; font-weight: bold;">← 返回首頁</div>
 
         <div id="page-gallery" class="page">
             <div class="control-panel">
                 <input type="text" class="search-input" id="lib-search" placeholder="搜尋款式或備註..." oninput="renderAll()">
                 <div class="symbol-row">
                     <div class="symbol-group">
-                        <span class="symbol-btn sort-date active" onclick="setSort('date')"><svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg></span>
-                        <span class="symbol-btn sort-price" onclick="setSort('price')"><svg viewBox="0 0 24 24"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg></span>
+                        <span class="symbol-btn sort-date active" onclick="setSort('date')"><svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg><span>時間</span></span>
+                        <span class="symbol-btn sort-price" onclick="setSort('price')"><svg viewBox="0 0 24 24"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg><span>金額</span></span>
+                        <span class="symbol-btn sort-name" onclick="setSort('name')"><svg viewBox="0 0 24 24"><path d="M12.75 3h-1.5L6.5 14h1.5l1.12-3h5.75l1.12 3h1.5L12.75 3zm-3.13 6.5L12 3.25l2.38 6.25H9.62zM18 17H6v2h12v-2z"/></svg><span>名稱</span></span>
+                        <span class="symbol-btn sort-qty" onclick="setSort('qty')"><svg viewBox="0 0 24 24"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zm0-10v2h14V7H7z"/></svg><span>數量</span></span>
                         <span class="order-toggle" id="order-btn-lib" onclick="toggleOrder()">倒序 ↓</span>
                     </div>
                     <div class="symbol-group">
@@ -169,7 +162,7 @@
         </div>
 
         <div id="page-recent" class="page">
-            <div style="background:#fff; padding:25px; border-radius: var(--radius); border:1px solid var(--m-clay); box-shadow: 0 2px 10px rgba(0,0,0,0.02);">
+            <div style="background:#fff; padding:25px; border-radius: var(--radius); border:1px solid var(--m-clay);">
                 <form id="merchForm">
                     <input type="hidden" id="editIndex" value="-1">
                     <div class="input-group"><label class="input-label">作品名稱</label><select id="workSelect" onchange="toggleInput('workSelect', 'workInput')"></select><input type="text" id="workInput" style="display:none;" placeholder="輸入新作品名稱"></div>
@@ -201,8 +194,8 @@
 
         <div id="page-settings" class="page">
             <div class="stat-card">
-                <label class="input-label" style="font-size: 13px;">網格大小: <span id="gridVal">160</span>px</label>
-                <input type="range" id="gridRange" min="120" max="220" value="160" oninput="updateGridSize(this.value)" style="margin-top: 15px; margin-bottom: 25px;">
+                <label class="input-label">網格大小: <span id="gridVal">160</span>px</label>
+                <input type="range" id="gridRange" min="120" max="220" value="160" oninput="updateGridSize(this.value)">
                 <hr style="border: 0.5px solid #f0f0f0; margin: 25px 0;">
                 <button onclick="exportData()" class="btn-main" style="background:var(--m-brown);">匯出資料備份 (.json)</button>
                 <input type="file" id="importFile" style="display:none" accept=".json" onchange="importData(this)">
@@ -221,48 +214,26 @@
     </nav>
 
 <script>
-    // --- 資料庫參數設定 ---
-    const STORAGE_KEY = 'archive_master'; 
-    const DICT_KEY = 'archive_dict_master'; 
-    const COVER_KEY = 'archive_cover_bg';
-    
-    let merchList = [];
-    let dict = { works: [], roles: [], types: [] };
-    let filters = { work: 'all', role: 'all', type: 'all' };
+    const STORAGE_KEY = 'archive_master'; const DICT_KEY = 'archive_dict_master'; const COVER_KEY = 'archive_cover_bg';
+    let merchList = [], dict = { works: [], roles: [], types: [] }, filters = { work: 'all', role: 'all', type: 'all' };
     let sortMode = 'date', sortDesc = true, viewMode = 'grid', charts = {};
-    
-    // --- 批量編輯邏輯變數 ---
-    let isBatchMode = false;
-    let selectedIndices = [];
+    let isBatchMode = false, selectedIndices = [];
 
     function init() {
         merchList = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
         dict = JSON.parse(localStorage.getItem(DICT_KEY)) || { works: [], roles: [], types: [] };
-        
         const savedCover = localStorage.getItem(COVER_KEY);
         if (savedCover) document.getElementById('cover-page').style.backgroundImage = `url(${savedCover})`;
-        
-        const savedGrid = localStorage.getItem('archive_grid_size') || '160';
-        updateGridSize(savedGrid);
-        document.getElementById('gridRange').value = savedGrid;
-        
+        updateGridSize(localStorage.getItem('archive_grid_size') || '160');
         renderSelects(); renderFilters(); renderAll(); updateToolUI();
     }
 
-    function save() { 
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(merchList)); 
-        localStorage.setItem(DICT_KEY, JSON.stringify(dict)); 
-    }
+    function save() { localStorage.setItem(STORAGE_KEY, JSON.stringify(merchList)); localStorage.setItem(DICT_KEY, JSON.stringify(dict)); }
 
-    // --- 長按偵測函數 (核心修復：解決無法刪除標籤/藏品的問題) ---
+    // 長按功能
     function handleLongPress(element, callback) {
         let timer;
-        const start = (e) => {
-            timer = setTimeout(() => {
-                if (window.navigator.vibrate) window.navigator.vibrate(60);
-                callback();
-            }, 800);
-        };
+        const start = (e) => { timer = setTimeout(() => { if (window.navigator.vibrate) window.navigator.vibrate(60); callback(); }, 800); };
         const cancel = () => clearTimeout(timer);
         element.addEventListener('touchstart', start, {passive: true});
         element.addEventListener('touchend', cancel);
@@ -271,10 +242,9 @@
         element.addEventListener('contextmenu', e => e.preventDefault());
     }
 
-    // --- 批量操作邏輯函數 ---
+    // 批量模式
     function toggleBatchMode() {
-        isBatchMode = !isBatchMode;
-        selectedIndices = [];
+        isBatchMode = !isBatchMode; selectedIndices = [];
         document.getElementById('batch-panel').style.display = isBatchMode ? 'flex' : 'none';
         document.getElementById('bottom-nav').style.bottom = isBatchMode ? '-100px' : '25px';
         document.getElementById('main-content').style.marginTop = isBatchMode ? '50px' : '0px';
@@ -283,22 +253,16 @@
 
     function toggleSelectItem(originalIdx) {
         const sIdx = selectedIndices.indexOf(originalIdx);
-        if (sIdx > -1) selectedIndices.splice(sIdx, 1);
-        else selectedIndices.push(originalIdx);
-        
+        if (sIdx > -1) selectedIndices.splice(sIdx, 1); else selectedIndices.push(originalIdx);
         document.getElementById('batch-count').innerText = `已選擇 ${selectedIndices.length} 項`;
         renderAll();
     }
 
     function confirmBatchDelete() {
         if (selectedIndices.length === 0) return;
-        if (confirm(`確定刪除選中的 ${selectedIndices.length} 個藏品嗎？此操作無法復原。`)) {
-            selectedIndices.sort((a, b) => b - a);
-            selectedIndices.forEach(idx => merchList.splice(idx, 1));
-            save();
-            updateDictData();
-            toggleBatchMode();
-            showModal("🗑️", "已批量刪除");
+        if (confirm(`確定刪除選中的 ${selectedIndices.length} 個藏品嗎？`)) {
+            selectedIndices.sort((a, b) => b - a).forEach(idx => merchList.splice(idx, 1));
+            save(); updateDictData(); toggleBatchMode(); showModal("🗑️", "已批量刪除");
         }
     }
 
@@ -309,7 +273,7 @@
         save(); renderSelects(); renderFilters();
     }
 
-    // --- 核心渲染系統 ---
+    // 核心渲染 (含新排序邏輯)
     function renderAll() {
         const conf = { '現貨': 'readyList', '非現貨': 'waitList', '願望': 'wishList' };
         const srch = { '現貨': 'lib-search', '非現貨': 'wait-search', '願望': 'wish-search' };
@@ -317,25 +281,27 @@
         Object.keys(conf).forEach(status => {
             const container = document.getElementById(conf[status]);
             if(!container) return;
-            
-            const searchVal = document.getElementById(srch[status]).value.toLowerCase();
+            const sVal = document.getElementById(srch[status]).value.toLowerCase();
             
             let filtered = merchList.map((item, index) => ({...item, originalIndex: index}))
                 .filter(i => i.status === status)
                 .filter(i => (filters.work==='all' || i.work===filters.work) && (filters.role==='all' || i.role===filters.role) && (filters.type==='all' || i.type===filters.type))
-                .filter(i => (i.pattern + (i.note || "") + (i.role || "")).toLowerCase().includes(searchVal));
+                .filter(i => (i.pattern + (i.note || "") + (i.role || "")).toLowerCase().includes(sVal));
 
             const multi = sortDesc ? 1 : -1;
             filtered.sort((a,b) => {
                 if(sortMode === 'date') return (b.timestamp - a.timestamp) * multi;
                 if(sortMode === 'price') return (parseFloat(b.totalHkd) - parseFloat(a.totalHkd)) * multi;
+                // 新增：名稱排序
+                if(sortMode === 'name') return (a.pattern.localeCompare(b.pattern, 'zh-TW')) * multi;
+                // 新增：數量排序
+                if(sortMode === 'qty') return (b.qty - a.qty) * multi;
                 return 0;
             });
 
             container.innerHTML = ''; container.className = `list-container ${viewMode}`;
-            
             filtered.forEach(i => {
-                const card = document.createElement('div'); 
+                const card = document.createElement('div');
                 card.className = `item-card ${isBatchMode && selectedIndices.includes(i.originalIndex) ? 'selected' : ''}`;
                 card.innerHTML = `<div class="img-box"><img src="${i.img || ''}"></div>
                     <div class="info">
@@ -343,41 +309,16 @@
                         <div style="font-weight:bold; font-size:12px; margin:4px 0;">${i.pattern || '無名'}</div>
                         <div style="color:var(--m-deep-green); font-size:11px; font-weight:bold;">HK$ ${i.totalHkd} <span style="color:#aaa;font-weight:normal;font-size:9px;">x${i.qty}</span></div>
                     </div>`;
-                
-                // 點擊事件分流 (編輯單項 vs 批量選取)
-                card.onclick = () => {
-                    if (isBatchMode) {
-                        toggleSelectItem(i.originalIndex);
-                    } else {
-                        editItem(i.originalIndex);
-                    }
-                };
-
-                // 長按卡片自動進入批量模式並選中
-                handleLongPress(card, () => {
-                    if (!isBatchMode) {
-                        toggleBatchMode();
-                        toggleSelectItem(i.originalIndex);
-                    }
-                });
-                
+                card.onclick = () => isBatchMode ? toggleSelectItem(i.originalIndex) : editItem(i.originalIndex);
+                handleLongPress(card, () => { if (!isBatchMode) { toggleBatchMode(); toggleSelectItem(i.originalIndex); } });
                 container.appendChild(card);
             });
-            
-            // 更新計數標籤
-            const totalCount = merchList.filter(i => i.status === status).length;
-            const countId = status === '現貨' ? 'lib-count' : (status === '非現貨' ? 'wait-count' : 'wish-count');
-            document.getElementById(countId).innerHTML = `顯示: ${filtered.length} / ${totalCount}`;
+            document.getElementById(status === '現貨' ? 'lib-count' : (status === '非現貨' ? 'wait-count' : 'wish-count')).innerHTML = `顯示: ${filtered.length} / ${merchList.filter(x=>x.status===status).length}`;
         });
     }
 
-    // --- 篩選器、排序與視圖 ---
     function setSort(mode) { sortMode = mode; updateToolUI(); renderAll(); }
-    function toggleOrder() { 
-        sortDesc = !sortDesc; 
-        document.getElementById('order-btn-lib').innerText = sortDesc ? "倒序 ↓" : "正序 ↑";
-        renderAll(); 
-    }
+    function toggleOrder() { sortDesc = !sortDesc; document.getElementById('order-btn-lib').innerText = sortDesc ? "倒序 ↓" : "正序 ↑"; renderAll(); }
     function setView(v) { viewMode = v; updateToolUI(); renderAll(); }
     function updateToolUI() {
         document.querySelectorAll('.symbol-btn').forEach(b => b.classList.remove('active'));
@@ -391,112 +332,78 @@
             let all = document.createElement('div'); all.className = `filter-chip ${filters[key]==='all'?'active':''}`;
             all.innerText = '全部'; all.onclick = () => { filters[key] = 'all'; renderFilters(); renderAll(); };
             row.appendChild(all);
-            
             list.forEach(item => {
                 let chip = document.createElement('div'); chip.className = `filter-chip ${filters[key]===item?'active':''}`;
-                chip.innerText = item; 
-                chip.onclick = () => { filters[key] = item; renderFilters(); renderAll(); };
-                
-                // 長按刪除標籤 (修復！)
+                chip.innerText = item; chip.onclick = () => { filters[key] = item; renderFilters(); renderAll(); };
                 handleLongPress(chip, () => {
-                    if(confirm(`確定要從系統中刪除標籤「${item}」嗎？`)) {
-                        dict[key+'s'] = dict[key+'s'].filter(v => v !== item);
-                        if(filters[key] === item) filters[key] = 'all';
-                        save(); renderFilters(); renderSelects(); renderAll();
-                    }
+                    if(confirm(`刪除標籤「${item}」？`)) { dict[key+'s'] = dict[key+'s'].filter(v => v !== item); if(filters[key]===item) filters[key]='all'; save(); renderFilters(); renderSelects(); renderAll(); }
                 });
-                
                 row.appendChild(chip);
             });
             return row;
         };
-        
         ['lib-filter-box', 'wait-filter-box', 'wish-filter-box'].forEach(id => {
             const box = document.getElementById(id); if(!box) return; box.innerHTML = '';
             ['work', 'role', 'type'].forEach(k => box.appendChild(build(dict[k+'s'], k)));
         });
     }
 
+    // 統計邏輯
     function renderStats() {
         Object.values(charts).forEach(c => c.destroy());
         const statsList = merchList.filter(i => i.status !== '願望');
-        const colors = ['#6b7a63', '#acc1ad', '#a68b7c', '#d5cabd', '#e5ddd5', '#c2b2a3', '#8a9a83'];
-        
+        const colors = ['#6b7a63', '#acc1ad', '#a68b7c', '#d5cabd', '#e5ddd5', '#c2b2a3'];
         const mData = {}; statsList.forEach(i => { const d = new Date(i.timestamp); const k = `${d.getFullYear()}/${d.getMonth()+1}`; mData[k] = (mData[k] || 0) + parseFloat(i.totalHkd); });
-        const mKeys = Object.keys(mData).sort();
-        charts.monthly = new Chart(document.getElementById('monthlyChart').getContext('2d'), { type: 'line', data: { labels: mKeys, datasets: [{ label: '花費 (HKD)', data: mKeys.map(k => mData[k]), borderColor: '#6b7a63', backgroundColor: 'rgba(107, 122, 99, 0.1)', fill: true, tension: 0.3 }] } });
-        
+        charts.monthly = new Chart(document.getElementById('monthlyChart').getContext('2d'), { type: 'line', data: { labels: Object.keys(mData).sort(), datasets: [{ label: 'HKD', data: Object.keys(mData).sort().map(k => mData[k]), borderColor: '#6b7a63', fill: true, tension: 0.3 }] } });
         const wData = {}; statsList.forEach(i => { if(i.work) wData[i.work] = (wData[i.work] || 0) + parseFloat(i.totalHkd); });
-        charts.work = new Chart(document.getElementById('workChart').getContext('2d'), { type: 'doughnut', data: { labels: Object.keys(wData), datasets: [{ data: Object.values(wData), backgroundColor: colors }] }, options: { plugins: { legend: { position: 'right' } } } });
-        
+        charts.work = new Chart(document.getElementById('workChart').getContext('2d'), { type: 'doughnut', data: { labels: Object.keys(wData), datasets: [{ data: Object.values(wData), backgroundColor: colors }] } });
         const rData = {}; statsList.forEach(i => { if(i.role) rData[i.role] = (rData[i.role] || 0) + parseFloat(i.totalHkd); });
         const topR = Object.entries(rData).sort((a,b) => b[1]-a[1]).slice(0, 5);
-        charts.role = new Chart(document.getElementById('roleChart').getContext('2d'), { type: 'bar', data: { labels: topR.map(x=>x[0]), datasets: [{ label: '總金額 (HKD)', data: topR.map(x=>x[1]), backgroundColor: '#acc1ad', borderRadius: 4 }] }, options: { indexAxis: 'y' } });
+        charts.role = new Chart(document.getElementById('roleChart').getContext('2d'), { type: 'bar', data: { labels: topR.map(x=>x[0]), datasets: [{ label: 'HKD', data: topR.map(x=>x[1]), backgroundColor: '#acc1ad' }] }, options: { indexAxis: 'y' } });
     }
 
-    // --- 單筆編輯與刪除 ---
     function editItem(idx) {
         const i = merchList[idx]; document.getElementById('editIndex').value = idx;
         document.getElementById('workSelect').value = i.work || ""; document.getElementById('roleSelect').value = i.role || ""; document.getElementById('typeSelect').value = i.type || "";
         document.getElementById('pattern').value = i.pattern; document.getElementById('note').value = i.note || ""; document.getElementById('status').value = i.status;
         document.getElementById('qty').value = i.qty || 1; document.getElementById('inputPrice').value = i.originalPrice || 0; document.getElementById('currency').value = i.originalCur || "HKD";
-        document.getElementById('submitBtn').innerText = "更新資料"; document.getElementById('delBtn').style.display = 'block'; 
-        openPage('page-recent'); liveExchange();
+        document.getElementById('submitBtn').innerText = "更新資料"; document.getElementById('delBtn').style.display = 'block'; openPage('page-recent'); liveExchange();
     }
 
     function deleteCurrentItem() {
         const idx = parseInt(document.getElementById('editIndex').value);
-        if(idx !== -1 && confirm("確定刪除此藏品？")) { 
-            merchList.splice(idx, 1); 
-            save(); 
-            updateDictData(); 
-            showModal("🗑️", "已刪除"); 
-            
-            // 清空表單並返回館藏
-            document.getElementById('merchForm').reset();
-            document.getElementById('editIndex').value = "-1";
-            document.getElementById('delBtn').style.display = 'none';
-            switchTab('page-gallery', document.querySelectorAll('.nav-item')[0]); 
-            renderAll(); 
-        }
+        if(idx !== -1 && confirm("確定刪除此藏品？")) { merchList.splice(idx, 1); save(); updateDictData(); showModal("🗑️", "已刪除"); switchTab('page-gallery', document.querySelectorAll('.nav-item')[0]); renderAll(); }
     }
 
-    // --- 頁面與工具邏輯 ---
     function switchTab(id, btn) {
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
         document.getElementById(id).classList.add('active');
         if(btn) { document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); btn.classList.add('active'); }
         if(id === 'page-stats') renderStats();
-        if(isBatchMode) toggleBatchMode(); // 切換頁面時自動退出批量模式
+        if(isBatchMode) toggleBatchMode();
     }
 
     function openPage(id) { document.getElementById('cover-page').classList.add('open'); document.getElementById('bottom-nav').style.display='flex'; switchTab(id, document.querySelector(`button[onclick*="${id}"]`)); }
     function closePage() { document.getElementById('cover-page').classList.remove('open'); document.getElementById('bottom-nav').style.display='none'; if(isBatchMode) toggleBatchMode(); }
-    
     function updateGridSize(v) { document.documentElement.style.setProperty('--dynamic-grid', v+'px'); document.getElementById('gridVal').innerText = v; localStorage.setItem('archive_grid_size', v); }
     function showModal(icon, text) { document.getElementById('modal-icon').innerText = icon; document.getElementById('modal-text').innerText = text; document.getElementById('overlay').style.display='block'; document.getElementById('success-modal').style.display='block'; }
     function closeModal() { document.getElementById('overlay').style.display='none'; document.getElementById('success-modal').style.display='none'; }
-    
     function liveExchange() {
         const p = parseFloat(document.getElementById('inputPrice').value)||0, q = parseInt(document.getElementById('qty').value)||1, cur = document.getElementById('currency').value;
         const rates = { RMB: 1.08, JPY: 0.052, HKD: 1.0 };
         const t = (p * q * rates[cur]).toFixed(2);
         document.getElementById('exchangePreview').innerText = `總額: HKD ${t}`; return t;
     }
-    
     function toggleInput(s, i) { document.getElementById(i).style.display = document.getElementById(s).value === 'NEW' ? 'block' : 'none'; }
-    
     function updateCover(input) {
         const f = input.files[0]; if(!f) return;
         const fr = new FileReader(); fr.onload = (e) => { document.getElementById('cover-page').style.backgroundImage = `url(${e.target.result})`; localStorage.setItem(COVER_KEY, e.target.result); };
         fr.readAsDataURL(f);
     }
-    
     function renderSelects() {
         const fill = (id, list) => { const s = document.getElementById(id); s.innerHTML = '<option value="">請選擇...</option>' + list.map(x => `<option value="${x}">${x}</option>`).join('') + '<option value="NEW">+ 新增標籤</option>'; };
         fill('workSelect', dict.works); fill('roleSelect', dict.roles); fill('typeSelect', dict.types);
     }
-    
     function exportData() { const blob = new Blob([JSON.stringify({merchList, dict})], {type: 'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `archive_backup.json`; a.click(); }
     function importData(input) {
         const f = input.files[0]; if(!f) return;
@@ -524,14 +431,12 @@
             save(); renderAll(); renderSelects(); renderFilters();
             showModal("✓", editIdx === -1 ? "已新增" : "已更新");
             document.getElementById('merchForm').reset();
-            document.getElementById('submitBtn').innerText = "儲存至資料庫"; document.getElementById('delBtn').style.display = 'none'; document.getElementById('editIndex').value = "-1"; document.getElementById('exchangePreview').innerText = "總額: HKD 0.00";
-            switchTab('page-gallery', document.querySelectorAll('.nav-item')[0]);
+            document.getElementById('editIndex').value = "-1"; switchTab('page-gallery', document.querySelectorAll('.nav-item')[0]);
         };
         const f = document.getElementById('imgFile').files[0];
         if(f) { const fr = new FileReader(); fr.onload = () => done(fr.result); fr.readAsDataURL(f); } else { done(null); }
     };
-
     window.onload = init;
 </script>
 </body>
-                                                                                 </html>
+</html>
