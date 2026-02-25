@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Morandi Archive - Master V43</title>
+    <title>Morandi Archive - Master V45</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
@@ -72,8 +72,8 @@
         /* 彈窗與統計 */
         .stat-card { background:#fff; padding:20px; border-radius:var(--radius); border:1px solid var(--m-clay); margin-bottom: 20px; }
         .stat-title { font-size: 13px; font-weight: bold; color: var(--m-brown); margin-bottom: 15px; border-left: 4px solid var(--m-sage); padding-left: 10px; }
-        #success-modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 35px; border-radius: 15px; text-align: center; z-index: 4000; display: none; width: 240px; }
-        .overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.5); z-index: 3500; display: none; backdrop-filter: blur(2px); }
+        #success-modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 35px; border-radius: 15px; text-align: center; z-index: 5000; display: none; width: 240px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); }
+        .overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.5); z-index: 4500; display: none; backdrop-filter: blur(2px); }
     </style>
 </head>
 <body>
@@ -81,7 +81,7 @@
     <div id="batch-panel">
         <span id="batch-count" style="font-weight: bold;">已選擇 0 項</span>
         <div>
-            <span onclick="toggleBatchMode()" style="cursor:pointer; margin-right:20px; font-size:14px; font-weight: bold;">取消</span>
+            <span onclick="setBatchMode(false)" style="cursor:pointer; margin-right:20px; font-size:14px; font-weight: bold;">取消</span>
             <button class="batch-btn" onclick="confirmBatchDelete()">刪除選中</button>
         </div>
     </div>
@@ -131,7 +131,7 @@
                 <div id="lib-filter-box"></div>
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
                     <div id="lib-count" class="count-tag" style="margin: 0;">顯示: 0 / 0</div>
-                    <span class="edit-toggle-btn" onclick="toggleBatchMode()">編輯管理</span>
+                    <span class="edit-toggle-btn" onclick="setBatchMode(true)">編輯管理</span>
                 </div>
             </div>
             <div id="readyList" class="list-container grid"></div>
@@ -156,7 +156,7 @@
                 <div id="wait-filter-box"></div>
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
                     <div id="wait-count" class="count-tag" style="margin: 0;">顯示: 0 / 0</div>
-                    <span class="edit-toggle-btn" onclick="toggleBatchMode()">編輯管理</span>
+                    <span class="edit-toggle-btn" onclick="setBatchMode(true)">編輯管理</span>
                 </div>
             </div>
             <div id="waitList" class="list-container grid"></div>
@@ -181,7 +181,7 @@
                 <div id="wish-filter-box"></div>
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
                     <div id="wish-count" class="count-tag" style="margin: 0;">顯示: 0 / 0</div>
-                    <span class="edit-toggle-btn" onclick="toggleBatchMode()">編輯管理</span>
+                    <span class="edit-toggle-btn" onclick="setBatchMode(true)">編輯管理</span>
                 </div>
             </div>
             <div id="wishList" class="list-container grid"></div>
@@ -274,8 +274,9 @@
         else label.innerText = '購買日期 (選填)';
     }
 
-    function toggleBatchMode() {
-        isBatchMode = !isBatchMode; selectedIndices = [];
+    // 更新：將 BatchMode 設定為獨立函式以供呼叫
+    function setBatchMode(on) {
+        isBatchMode = on; selectedIndices = [];
         document.getElementById('batch-panel').style.display = isBatchMode ? 'flex' : 'none';
         document.getElementById('bottom-nav').style.bottom = isBatchMode ? '-100px' : '25px';
         document.getElementById('main-content').style.marginTop = isBatchMode ? '50px' : '0px';
@@ -293,7 +294,9 @@
         if (selectedIndices.length === 0) return;
         if (confirm(`確定刪除選中的 ${selectedIndices.length} 個藏品嗎？`)) {
             selectedIndices.sort((a, b) => b - a).forEach(idx => merchList.splice(idx, 1));
-            save(); updateDictData(); toggleBatchMode(); showModal("🗑️", "已批量刪除");
+            save(); updateDictData(); 
+            setBatchMode(false); // 刪除完自動退出
+            showModal("🗑️", "已批量刪除");
         }
     }
 
@@ -340,11 +343,12 @@
                         </div>
                     </div>`;
                 card.onclick = () => isBatchMode ? toggleSelectItem(i.originalIndex) : editItem(i.originalIndex);
-                handleLongPress(card, () => { if (!isBatchMode) { toggleBatchMode(); toggleSelectItem(i.originalIndex); } });
+                handleLongPress(card, () => { if (!isBatchMode) { setBatchMode(true); toggleSelectItem(i.originalIndex); } });
                 container.appendChild(card);
             });
             const cId = status==='現貨'?'lib-count':(status==='非現貨'?'wait-count':'wish-count');
-            document.getElementById(cId).innerText = `顯示: ${filtered.length} / ${merchList.filter(x=>x.status===status).length}`;
+            const countLabel = document.getElementById(cId);
+            if(countLabel) countLabel.innerText = `顯示: ${filtered.length} / ${merchList.filter(x=>x.status===status).length}`;
         });
     }
 
@@ -407,11 +411,19 @@
         openPage('page-recent'); liveExchange();
     }
 
+    // 更新：單項刪除後自動退出編輯模式
     function deleteCurrentItem() {
         const idx = parseInt(document.getElementById('editIndex').value);
         if(idx !== -1 && confirm("確定刪除此藏品？")) { 
-            merchList.splice(idx, 1); save(); updateDictData(); 
-            showModal("🗑️", "已刪除"); switchTab('page-gallery', document.querySelectorAll('.nav-item')[0]); renderAll(); 
+            merchList.splice(idx, 1); 
+            save(); 
+            updateDictData(); 
+            setBatchMode(false); // 刪除後確保退出編輯模式
+            document.getElementById('merchForm').reset();
+            document.getElementById('editIndex').value = "-1";
+            switchTab('page-gallery', document.querySelectorAll('.nav-item')[0]);
+            renderAll();
+            setTimeout(() => { showModal("🗑️", "已刪除"); }, 100);
         }
     }
 
@@ -431,14 +443,22 @@
         document.getElementById(id).classList.add('active');
         if(btn) { document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); btn.classList.add('active'); }
         if(id === 'page-stats') renderStats();
-        if(isBatchMode) toggleBatchMode();
+        if(isBatchMode) setBatchMode(false); // 切換頁面時退出編輯模式
     }
 
     function openPage(id) { document.getElementById('cover-page').classList.add('open'); document.getElementById('bottom-nav').style.display='flex'; switchTab(id, document.querySelector(`button[onclick*="${id}"]`)); }
-    function closePage() { document.getElementById('cover-page').classList.remove('open'); document.getElementById('bottom-nav').style.display='none'; if(isBatchMode) toggleBatchMode(); }
+    function closePage() { document.getElementById('cover-page').classList.remove('open'); document.getElementById('bottom-nav').style.display='none'; if(isBatchMode) setBatchMode(false); }
     function updateGridSize(v) { document.documentElement.style.setProperty('--dynamic-grid', v+'px'); document.getElementById('gridVal').innerText = v; localStorage.setItem('archive_grid_size', v); }
-    function showModal(icon, text) { document.getElementById('modal-icon').innerText = icon; document.getElementById('modal-text').innerText = text; document.getElementById('overlay').style.display='block'; document.getElementById('success-modal').style.display='block'; }
+    
+    function showModal(icon, text) { 
+        document.getElementById('modal-icon').innerText = icon; 
+        document.getElementById('modal-text').innerText = text; 
+        document.getElementById('overlay').style.display='block'; 
+        document.getElementById('success-modal').style.display='block'; 
+    }
+    
     function closeModal() { document.getElementById('overlay').style.display='none'; document.getElementById('success-modal').style.display='none'; }
+    
     function liveExchange() {
         const p = parseFloat(document.getElementById('inputPrice').value)||0, q = parseInt(document.getElementById('qty').value)||1, cur = document.getElementById('currency').value;
         const rates = { RMB: 1.08, JPY: 0.052, HKD: 1.0 };
@@ -487,6 +507,8 @@
     document.getElementById('merchForm').onsubmit = function(e) {
         e.preventDefault();
         const editIdx = parseInt(document.getElementById('editIndex').value);
+        if(document.activeElement) document.activeElement.blur();
+
         const getV = (sid, iid, dk, def) => {
             let sVal = document.getElementById(sid).value;
             if(sVal === 'NEW') { 
@@ -510,18 +532,22 @@
             originalCur: document.getElementById('currency').value, totalHkd: liveExchange(), 
             timestamp: editIdx === -1 ? Date.now() : merchList[editIdx].timestamp
         };
+
         const done = (b64) => {
             data.img = b64 || (editIdx !== -1 ? merchList[editIdx].img : '');
             if(editIdx === -1) merchList.unshift(data); else merchList[editIdx] = data;
             save(); renderAll(); renderSelects(); renderFilters();
-            showModal("✓", editIdx === -1 ? "已新增" : "已更新");
 
+            const msg = editIdx === -1 ? "已新增" : "已更新";
+            
             if(editIdx === -1) {
-                // 連記模式：保留作品、角色、類別、狀態，清空其他
                 document.getElementById('pattern').value = "";
                 document.getElementById('note').value = "";
                 document.getElementById('inputPrice').value = "0";
                 document.getElementById('imgFile').value = "";
+                document.getElementById('workInput').value = "";
+                document.getElementById('roleInput').value = "";
+                document.getElementById('typeInput').value = "";
                 document.getElementById('workSelect').value = work;
                 document.getElementById('roleSelect').value = role;
                 document.getElementById('typeSelect').value = type;
@@ -535,7 +561,9 @@
                 document.getElementById('editIndex').value = "-1"; 
                 switchTab('page-gallery', document.querySelectorAll('.nav-item')[0]);
             }
+            setTimeout(() => { showModal("✓", msg); }, 50);
         };
+
         const f = document.getElementById('imgFile').files[0];
         if(f) { const fr = new FileReader(); fr.onload = () => done(fr.result); fr.readAsDataURL(f); } else { done(null); }
     };
