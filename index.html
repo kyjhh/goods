@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Morandi Archive - Master V42</title>
+    <title>Morandi Archive - Master V43</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
@@ -298,9 +298,9 @@
     }
 
     function updateDictData() {
-        dict.works = [...new Set(merchList.map(i => i.work).filter(w => w && !DEFAULT_WORKS.includes(w)))].sort();
-        dict.roles = [...new Set(merchList.map(i => i.role).filter(Boolean))].sort();
-        dict.types = [...new Set(merchList.map(i => i.type).filter(t => t && !DEFAULT_TYPES.includes(t)))].sort();
+        dict.works = [...new Set([...dict.works, ...merchList.map(i => i.work)])].filter(w => w && !DEFAULT_WORKS.includes(w)).sort();
+        dict.roles = [...new Set([...dict.roles, ...merchList.map(i => i.role)])].filter(Boolean).sort();
+        dict.types = [...new Set([...dict.types, ...merchList.map(i => i.type)])].filter(t => t && !DEFAULT_TYPES.includes(t)).sort();
         save(); renderSelects(); renderFilters();
     }
 
@@ -496,11 +496,14 @@
             }
             return sVal;
         };
+        const work = getV('workSelect', 'workInput', 'works', DEFAULT_WORKS);
+        const role = getV('roleSelect', 'roleInput', 'roles', []);
+        const type = getV('typeSelect', 'typeInput', 'types', DEFAULT_TYPES);
+        const status = document.getElementById('status').value;
+
         const data = {
-            work: getV('workSelect', 'workInput', 'works', DEFAULT_WORKS), 
-            role: getV('roleSelect', 'roleInput', 'roles', []), 
-            type: getV('typeSelect', 'typeInput', 'types', DEFAULT_TYPES),
-            pattern: document.getElementById('pattern').value, note: document.getElementById('note').value, status: document.getElementById('status').value, 
+            work, role, type, status,
+            pattern: document.getElementById('pattern').value, note: document.getElementById('note').value, 
             qty: parseInt(document.getElementById('qty').value) || 1, 
             buyDate: document.getElementById('buyDate').value,
             originalPrice: parseFloat(document.getElementById('inputPrice').value) || 0, 
@@ -512,9 +515,26 @@
             if(editIdx === -1) merchList.unshift(data); else merchList[editIdx] = data;
             save(); renderAll(); renderSelects(); renderFilters();
             showModal("✓", editIdx === -1 ? "已新增" : "已更新");
-            document.getElementById('merchForm').reset();
-            document.getElementById('editIndex').value = "-1"; 
-            switchTab('page-gallery', document.querySelectorAll('.nav-item')[0]);
+
+            if(editIdx === -1) {
+                // 連記模式：保留作品、角色、類別、狀態，清空其他
+                document.getElementById('pattern').value = "";
+                document.getElementById('note').value = "";
+                document.getElementById('inputPrice').value = "0";
+                document.getElementById('imgFile').value = "";
+                document.getElementById('workSelect').value = work;
+                document.getElementById('roleSelect').value = role;
+                document.getElementById('typeSelect').value = type;
+                document.getElementById('status').value = status;
+                document.getElementById('workInput').style.display = 'none';
+                document.getElementById('roleInput').style.display = 'none';
+                document.getElementById('typeInput').style.display = 'none';
+                liveExchange();
+            } else {
+                document.getElementById('merchForm').reset();
+                document.getElementById('editIndex').value = "-1"; 
+                switchTab('page-gallery', document.querySelectorAll('.nav-item')[0]);
+            }
         };
         const f = document.getElementById('imgFile').files[0];
         if(f) { const fr = new FileReader(); fr.onload = () => done(fr.result); fr.readAsDataURL(f); } else { done(null); }
