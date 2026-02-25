@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Morandi Archive - 多選標籤版</title>
+<title>Morandi Archive - 最終版</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
 :root {
@@ -67,12 +67,12 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: 'PingFang HK', 'M
 .info { padding: 10px; flex-grow: 1; overflow: hidden; pointer-events: none; }
 .info .note { display: none; }
 
-/* 新增頁行距減半 */
+/* 新增頁行距減半，且輸入框高度縮減五分之一 */
 .input-group { margin-bottom: 5px; }
 .input-label { font-size: 11px; color: var(--m-brown); font-weight: bold; margin-bottom: 5px; display: block; }
 #exchangePreview { margin-bottom: 8px; }
 .btn-main { background: var(--m-deep-green); color: white; border: none; padding: 12px; width: 100%; font-size: 13px; cursor: pointer; border-radius: var(--radius); margin-top: 5px; font-weight: bold; }
-input, select, textarea { width: 100%; padding: 10px; border-radius: var(--radius); border: 1px solid var(--m-clay); background: #fafafa; font-size: 14px; box-sizing: border-box; outline: none; }
+input, select, textarea { width: 100%; padding: 8px; border-radius: var(--radius); border: 1px solid var(--m-clay); background: #fafafa; font-size: 14px; box-sizing: border-box; outline: none; } /* 高度縮減 10px -> 8px */
 
 #success-modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 35px; border-radius: 15px; text-align: center; z-index: 9999; display: none; width: 240px; box-shadow: 0 10px 50px rgba(0,0,0,0.3); }
 .overlay { position: fixed; top:0; left:0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 9998; display: none; backdrop-filter: blur(3px); }
@@ -237,7 +237,7 @@ input, select, textarea { width: 100%; padding: 10px; border-radius: var(--radiu
     <div id="page-recent" class="page">
         <div class="page-header">
             <div class="back-btn-header" onclick="handleBack()">←</div>
-            <div class="page-title">新增/編輯藏品</div>
+            <div class="page-title" id="recent-page-title">新增藏品</div> <!-- 動態標題 -->
             <div class="header-placeholder"></div>
         </div>
         <div style="background:#fff; padding:15px; border-radius: var(--radius); border:1px solid var(--m-clay);">
@@ -331,7 +331,6 @@ const DEFAULT_WORKS = ['世界計畫', 'V家', 'Alien Stage'];
 const DEFAULT_TYPES = ['襟','色紙','掛件','立牌', '拍立得'];
 
 let merchList = [], dict = { works: [], roles: [], types: [] };
-// filters 改為陣列形式，初始為空陣列（表示全部）
 let filters = { work: [], role: [], type: [] };
 let sortMode = 'date', sortDesc = true, viewMode = 'grid', charts = {};
 let isBatchMode = false, selectedIndices = [];
@@ -363,10 +362,8 @@ function init() {
     merchList = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
     dict = JSON.parse(localStorage.getItem(DICT_KEY)) || { works: [], roles: [], types: [] };
 
-    // 初始化 dict，若為空則放入預設標籤
     if (dict.works.length === 0) dict.works = [...DEFAULT_WORKS];
     if (dict.types.length === 0) dict.types = [...DEFAULT_TYPES];
-    // roles 無預設值
 
     const savedCover = localStorage.getItem(COVER_KEY);
     if (savedCover) document.getElementById('cover-page').style.backgroundImage = `url(${savedCover})`;
@@ -377,7 +374,6 @@ function init() {
     updateToolUI();
 }
 
-// 儲存函數
 function save() {
     try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(merchList));
@@ -454,7 +450,6 @@ function renderAll() {
         const sVal = document.getElementById(srch[status]) ? document.getElementById(srch[status]).value.toLowerCase() : "";
         let filtered = merchList.map((item, index) => ({...item, originalIndex: index}))
             .filter(i => i.status === status)
-            // 過濾條件：如果 filters.work 為空陣列則全部，否則只要 item.work 在陣列中
             .filter(i => filters.work.length === 0 || filters.work.includes(i.work))
             .filter(i => filters.role.length === 0 || filters.role.includes(i.role))
             .filter(i => filters.type.length === 0 || filters.type.includes(i.type))
@@ -489,7 +484,7 @@ function renderAll() {
         const countLabel = document.getElementById(cld);
         if(countLabel) countLabel.innerText = `顯示: ${filtered.length} / ${merchList.filter(x=>x.status===status).length}`;
     });
-    renderFilters(); // 更新過濾器數量
+    renderFilters();
 }
 
 function setSort(mode) { sortMode = mode; updateToolUI(); renderAll(); }
@@ -512,7 +507,6 @@ function getCurrentStatus() {
 
 function renderFilters() {
     const build = (list, key) => {
-        // list 是 dict 中的陣列，已包含所有可用的標籤
         const currentStatus = getCurrentStatus();
         let row = document.createElement('div'); row.className = 'filter-row';
         const totalCount = currentStatus ? merchList.filter(i => i.status === currentStatus).length : 0;
@@ -530,7 +524,6 @@ function renderFilters() {
             chip.className = `filter-chip ${filters[key].includes(item) ? 'active' : ''}`;
             chip.innerText = `${item} (${count})`;
             chip.onclick = () => {
-                // 多選邏輯：如果已選中則移除，否則加入
                 if (filters[key].includes(item)) {
                     filters[key] = filters[key].filter(v => v !== item);
                 } else {
@@ -548,7 +541,6 @@ function renderFilters() {
                     } catch (e) {
                         showModal("⚠️", "標籤刪除後儲存失敗");
                     }
-                    // 如果刪除的標籤正好在 filters 中，一併移除
                     if (filters[key].includes(item)) {
                         filters[key] = filters[key].filter(v => v !== item);
                     }
@@ -591,6 +583,8 @@ function editItem(idx) {
     document.getElementById('delBtn').style.display = 'block';
     liveExchange();
     updateDateLabel();
+    // 切換到編輯頁前更新標題
+    document.getElementById('recent-page-title').innerText = '編輯藏品';
     switchTab('page-recent');
 }
 
@@ -610,6 +604,8 @@ function resetFormForNew() {
 
     liveExchange();
     updateDateLabel();
+    // 重置為新增模式時更新標題
+    document.getElementById('recent-page-title').innerText = '新增藏品';
 }
 
 function handleLongPress(element, callback) {
@@ -730,7 +726,7 @@ document.getElementById('merchForm').onsubmit = function(e) {
         renderSelects();
         renderFilters();
         renderAll();
-        resetFormForNew();
+        resetFormForNew(); // 重置表單，也會將標題設回「新增藏品」
         switchTab('page-gallery', document.querySelectorAll('.nav-item')[0]);
         setTimeout(() => { showModal("✨", editIdx > -1 ? "更新成功" : "已存入庫"); }, 400);
     };
