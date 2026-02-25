@@ -59,7 +59,7 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: 'PingFang HK', 'M
 .img-box { width: 100%; aspect-ratio: 1; background: #f5f5f5; pointer-events: none; }
 .img-box img { width: 100%; height: 100%; object-fit: cover; }
 .info { padding: 10px; flex-grow: 1; overflow: hidden; pointer-events: none; }
-.info .note { display: none; } /* 預設隱藏備註，只在 list 模式下顯示 */
+.info .note { display: none; }
 .input-group { margin-bottom: 15px; }
 .input-label { font-size: 11px; color: var(--m-brown); font-weight: bold; margin-bottom: 5px; display: block; }
 .btn-main { background: var(--m-deep-green); color: white; border: none; padding: 15px; width: 100%; font-size: 13px; cursor: pointer; border-radius: var(--radius); margin-top: 15px; font-weight: bold; }
@@ -202,7 +202,8 @@ input, select, textarea { width: 100%; padding: 12px; border-radius: var(--radiu
     <div id="page-settings" class="page">
         <div class="stat-card">
             <label class="input-label">網格大小: <span id="gridVal">160</span>px</label>
-            <input type="range" id="gridRange" min="50" max="220" value="160" oninput="updateGridSize(this.value)">
+            <!-- 最大值改為 160 -->
+            <input type="range" id="gridRange" min="50" max="160" value="160" oninput="updateGridSize(this.value)">
             <hr style="border: 0.5px solid #f0f0f0; margin: 25px 0;">
             <button onclick="exportData()" class="btn-main" style="background:var(--m-brown);">匯出資料備份(.json)</button>
             <input type="file" id="importFile" style="display:none" accept=".json" onchange="importData(this)">
@@ -224,6 +225,7 @@ input, select, textarea { width: 100%; padding: 12px; border-radius: var(--radiu
 const STORAGE_KEY = 'archive_master'; 
 const DICT_KEY = 'archive_dict_master';
 const COVER_KEY = 'archive_cover_bg';
+const LAST_INPUT_KEY = 'archive_last_input'; // 新增：記住上次輸入
 const DEFAULT_WORKS = ['世界計畫', 'V家', 'Alien Stage'];
 const DEFAULT_TYPES = ['襟','色紙','掛件','立牌', '拍立得'];
 
@@ -379,7 +381,6 @@ function renderAll() {
         filtered.forEach(i => {
             const card = document.createElement('div');
             card.className = `item-card ${isBatchMode && selectedIndices.includes(i.originalIndex)? 'selected' : ""}`;
-            // 備註內容，若無則留空
             const noteHtml = i.note ? `<div class="note">📝 ${i.note}</div>` : '';
             card.innerHTML = `<div class="img-box"><img src="${i.img || ""}"></div>
                 <div class="info">
@@ -483,12 +484,25 @@ function editItem(idx) {
     switchTab('page-recent');
 }
 
+// 重置表單為新增模式，並嘗試恢復上次輸入
 function resetFormForNew() {
     document.getElementById('merchForm').reset();
     document.getElementById('editIndex').value = "-1";
     document.getElementById('submitBtn').innerText = "儲存至資料庫";
     document.getElementById('delBtn').style.display = 'none';
     document.getElementById('exchangePreview').innerText = "總額: HKD 0.00";
+
+    // 恢復上次輸入（作品、角色、類別、狀態、幣種）
+    const lastInput = JSON.parse(localStorage.getItem(LAST_INPUT_KEY) || '{}');
+    if (lastInput.work) document.getElementById('workSelect').value = lastInput.work;
+    if (lastInput.role) document.getElementById('roleSelect').value = lastInput.role;
+    if (lastInput.type) document.getElementById('typeSelect').value = lastInput.type;
+    if (lastInput.status) document.getElementById('status').value = lastInput.status;
+    if (lastInput.currency) document.getElementById('currency').value = lastInput.currency;
+
+    // 重新計算匯率預覽（因為幣種可能改變）
+    liveExchange();
+    updateDateLabel();
 }
 
 function handleLongPress(element, callback) {
@@ -516,7 +530,6 @@ function openPage(id) {
     switchTab(id, document.querySelectorAll('.nav-item')[['page-gallery','page-pending','page-wish','page-stats','page-recent','page-settings'].indexOf(id)]);
 }
 
-// 修改後的返回按鈕邏輯
 function handleBack() {
     const activePage = document.querySelector('.page.active')?.id;
     if (activePage === 'page-recent') {
@@ -603,6 +616,16 @@ document.getElementById('merchForm').onsubmit = function(e) {
 
         merchList = newList;
         dict = newDict;
+
+        // 儲存本次輸入（記住作品、角色、類別、狀態、幣種）
+        const lastInput = {
+            work: data.work,
+            role: data.role,
+            type: data.type,
+            status: data.status,
+            currency: data.currency
+        };
+        localStorage.setItem(LAST_INPUT_KEY, JSON.stringify(lastInput));
 
         renderSelects();
         renderFilters();
@@ -711,13 +734,11 @@ function renderStats() {
     if (charts.role) charts.role.destroy();
 
     const statsList = merchList.filter(i => i.status !== '願望');
-    // 計算總金額
     const total = statsList.reduce((sum, i) => sum + parseFloat(i.totalHkd || 0), 0).toFixed(2);
     document.getElementById('totalExpense').innerText = `總計: HKD ${total}`;
 
     const colors = ['#6b7a63', '#acc1ad', '#a68b7c', '#d5cabd', '#e5ddd5', '#c2b2a3'];
     
-    // 支出走勢
     const mData = {}; 
     statsList.forEach(i => { 
         const d = new Date(i.timestamp); 
@@ -729,14 +750,12 @@ function renderStats() {
         data: { labels: Object.keys(mData), datasets: [{ label: 'HKD', data: Object.values(mData), borderColor: '#6b7a63', tension: 0.3 }] }
     });
 
-    // 作品佔比
     const wData = {}; statsList.forEach(i => { wData[i.work] = (wData[i.work] || 0) + 1; });
     charts.work = new Chart(document.getElementById('workChart'), {
         type: 'doughnut',
         data: { labels: Object.keys(wData), datasets: [{ data: Object.values(wData), backgroundColor: colors }] }
     });
 
-    // 角色排行
     const rData = {}; statsList.forEach(i => { rData[i.role] = (rData[i.role] || 0) + parseFloat(i.totalHkd); });
     const rSorted = Object.entries(rData).sort((a,b) => b[1]-a[1]).slice(0, 5);
     charts.role = new Chart(document.getElementById('roleChart'), {
