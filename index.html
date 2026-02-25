@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Morandi Archive - Master V48</title>
+    <title>Morandi Archive - Master V49</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
@@ -46,11 +46,11 @@
         .img-box img { width: 100%; height: 100%; object-fit: cover; }
         .info { padding: 10px; flex-grow: 1; overflow: hidden; pointer-events: none; }
 
-        /* 彈窗強化 */
-        #success-modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 35px; border-radius: 15px; text-align: center; z-index: 9999; display: none; width: 240px; box-shadow: 0 10px 50px rgba(0,0,0,0.3); }
-        .overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.6); z-index: 9998; display: none; backdrop-filter: blur(3px); }
+        /* 彈窗強化 - V49 重點修復：確保最高優先級 */
+        #success-modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 35px; border-radius: 15px; text-align: center; z-index: 9999 !important; display: none; width: 240px; box-shadow: 0 10px 50px rgba(0,0,0,0.3); }
+        .overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.6); z-index: 9998 !important; display: none; backdrop-filter: blur(3px); }
 
-        /* 其餘樣式保持... */
+        /* 其餘控制面板與表單樣式保持不變... */
         .control-panel { background: #fff; padding: 15px; border-radius: var(--radius); margin-bottom: 20px; border: 1px solid var(--m-clay); }
         .symbol-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid #f0f0f0; padding-bottom: 12px; }
         .symbol-group { display: flex; gap: 12px; color: #ccc; align-items: center; }
@@ -76,16 +76,13 @@
 
     <div id="batch-panel">
         <span id="batch-count" style="font-weight: bold;">已選擇 0 項</span>
-        <div>
-            <span onclick="setBatchMode(false)" style="cursor:pointer; margin-right:20px; font-size:14px; font-weight: bold;">取消</span>
-            <button class="batch-btn" onclick="confirmBatchDelete()">刪除選中</button>
-        </div>
+        <div><span onclick="setBatchMode(false)" style="cursor:pointer; margin-right:20px; font-size:14px; font-weight: bold;">取消</span><button class="batch-btn" onclick="confirmBatchDelete()">刪除選中</button></div>
     </div>
 
     <div class="overlay" id="overlay" onclick="closeModal()"></div>
     <div id="success-modal">
         <div id="modal-icon" style="font-size: 40px; margin-bottom: 15px; color: var(--m-deep-green);">✨</div>
-        <div id="modal-text" style="font-weight: bold; font-size: 16px;">儲存成功</div>
+        <div id="modal-text" style="font-weight: bold; font-size: 16px;">操作成功</div>
         <button class="btn-main" onclick="closeModal()" style="margin-top: 25px;">確定</button>
     </div>
 
@@ -111,19 +108,7 @@
         <div id="page-gallery" class="page">
             <div class="control-panel">
                 <input type="text" class="search-input" id="lib-search" placeholder="搜尋款式或備註..." oninput="renderAll()">
-                <div class="symbol-row">
-                    <div class="symbol-group">
-                        <span class="symbol-btn sort-date active" onclick="setSort('date')"><svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg><span>時間</span></span>
-                        <span class="symbol-btn sort-price" onclick="setSort('price')"><svg viewBox="0 0 24 24"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg><span>金額</span></span>
-                        <span class="symbol-btn sort-name" onclick="setSort('name')"><svg viewBox="0 0 24 24"><path d="M12.75 3h-1.5L6.5 14h1.5l1.12-3h5.75l1.12 3h1.5L12.75 3zm-3.13 6.5L12 3.25l2.38 6.25H9.62zM18 17H6v2h12v-2z"/></svg><span>名稱</span></span>
-                        <span class="symbol-btn sort-qty" onclick="setSort('qty')"><svg viewBox="0 0 24 24"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zm0-10v2h14V7H7z"/></svg><span>數量</span></span>
-                        <span class="order-toggle" onclick="toggleOrder()">倒序 ↓</span>
-                    </div>
-                    <div class="symbol-group">
-                        <span class="symbol-btn view-grid active" onclick="setView('grid')"><svg viewBox="0 0 24 24"><path d="M4 11h5V5H4v6zm0 7h5v-6H4v6zm7 0h5v-6h-5v6zm0-13v6h5V5h-5z"/></svg></span>
-                        <span class="symbol-btn view-list" onclick="setView('list')"><svg viewBox="0 0 24 24"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zm0-10v2h14V7H7z"/></svg></span>
-                    </div>
-                </div>
+                <div class="symbol-row"><div class="symbol-group"><span class="symbol-btn sort-date active" onclick="setSort('date')"><svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg><span>時間</span></span><span class="symbol-btn sort-price" onclick="setSort('price')"><svg viewBox="0 0 24 24"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg><span>金額</span></span><span class="symbol-btn sort-name" onclick="setSort('name')"><svg viewBox="0 0 24 24"><path d="M12.75 3h-1.5L6.5 14h1.5l1.12-3h5.75l1.12 3h1.5L12.75 3zm-3.13 6.5L12 3.25l2.38 6.25H9.62zM18 17H6v2h12v-2z"/></svg><span>名稱</span></span><span class="symbol-btn sort-qty" onclick="setSort('qty')"><svg viewBox="0 0 24 24"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zm0-10v2h14V7H7z"/></svg><span>數量</span></span><span class="order-toggle" onclick="toggleOrder()">倒序 ↓</span></div><div class="symbol-group"><span class="symbol-btn view-grid active" onclick="setView('grid')"><svg viewBox="0 0 24 24"><path d="M4 11h5V5H4v6zm0 7h5v-6H4v6zm7 0h5v-6h-5v6zm0-13v6h5V5h-5z"/></svg></span><span class="symbol-btn view-list" onclick="setView('list')"><svg viewBox="0 0 24 24"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zm0-10v2h14V7H7z"/></svg></span></div></div>
                 <div id="lib-filter-box"></div>
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
                     <div id="lib-count" class="count-tag" style="margin: 0;">顯示: 0 / 0</div>
@@ -166,7 +151,6 @@
                     <div class="input-group"><label class="input-label">藏品類別</label><select id="typeSelect" onchange="toggleInput('typeSelect', 'typeInput')"></select><input type="text" id="typeInput" style="display:none;" placeholder="徽章/立牌/特典"></div>
                     <div class="input-group"><label class="input-label">款式名稱</label><input type="text" id="pattern" required></div>
                     <div class="input-group"><label class="input-label">備註</label><textarea id="note"></textarea></div>
-                    
                     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; margin-bottom: 15px;">
                         <div><label class="input-label">狀態</label><select id="status" onchange="updateDateLabel()"><option value="現貨">現貨</option><option value="非現貨">非現貨</option><option value="願望">願望</option></select></div>
                         <div><label class="input-label">數量</label><input type="number" id="qty" value="1" min="1"></div>
@@ -184,22 +168,8 @@
             </div>
         </div>
 
-        <div id="page-stats" class="page">
-            <div class="stat-card"><div class="stat-title">每月支出走勢 (HKD)</div><canvas id="monthlyChart"></canvas></div>
-            <div class="stat-card"><div class="stat-title">作品佔比分析</div><canvas id="workChart"></canvas></div>
-            <div class="stat-card"><div class="stat-title">角色支出排行</div><canvas id="roleChart"></canvas></div>
-        </div>
-
-        <div id="page-settings" class="page">
-            <div class="stat-card">
-                <label class="input-label">網格大小: <span id="gridVal">160</span>px</label>
-                <input type="range" id="gridRange" min="120" max="220" value="160" oninput="updateGridSize(this.value)">
-                <hr style="border: 0.5px solid #f0f0f0; margin: 25px 0;">
-                <button onclick="exportData()" class="btn-main" style="background:var(--m-brown);">匯出資料備份 (.json)</button>
-                <input type="file" id="importFile" style="display:none" accept=".json" onchange="importData(this)">
-                <button onclick="document.getElementById('importFile').click()" class="btn-main" style="background:var(--m-sage); margin-top: 10px;">匯入資料備份</button>
-            </div>
-        </div>
+        <div id="page-stats" class="page"><div class="stat-card"><div class="stat-title">每月支出走勢 (HKD)</div><canvas id="monthlyChart"></canvas></div><div class="stat-card"><div class="stat-title">作品佔比分析</div><canvas id="workChart"></canvas></div><div class="stat-card"><div class="stat-title">角色支出排行</div><canvas id="roleChart"></canvas></div></div>
+        <div id="page-settings" class="page"><div class="stat-card"><label class="input-label">網格大小: <span id="gridVal">160</span>px</label><input type="range" id="gridRange" min="120" max="220" value="160" oninput="updateGridSize(this.value)"><hr style="border: 0.5px solid #f0f0f0; margin: 25px 0;"><button onclick="exportData()" class="btn-main" style="background:var(--m-brown);">匯出資料備份 (.json)</button><input type="file" id="importFile" style="display:none" accept=".json" onchange="importData(this)"><button onclick="document.getElementById('importFile').click()" class="btn-main" style="background:var(--m-sage); margin-top: 10px;">匯入資料備份</button></div></div>
     </div>
 
     <nav class="nav-bar" id="bottom-nav" style="display:none;">
@@ -231,11 +201,14 @@
 
     function save() { localStorage.setItem(STORAGE_KEY, JSON.stringify(merchList)); localStorage.setItem(DICT_KEY, JSON.stringify(dict)); }
 
+    // 彈窗核心函式 - 確保強制重置 display 屬性
     function showModal(icon, text) {
+        const overlay = document.getElementById('overlay');
+        const modal = document.getElementById('success-modal');
         document.getElementById('modal-icon').innerText = icon;
         document.getElementById('modal-text').innerText = text;
-        document.getElementById('overlay').style.display = 'block';
-        document.getElementById('success-modal').style.display = 'block';
+        overlay.style.display = 'block';
+        modal.style.display = 'block';
     }
     function closeModal() { document.getElementById('overlay').style.display = 'none'; document.getElementById('success-modal').style.display = 'none'; }
 
@@ -254,15 +227,9 @@
         renderAll();
     }
 
-    // 長按監聽器
     function handleLongPress(element, callback) {
         let timer;
-        const start = (e) => { 
-            timer = setTimeout(() => { 
-                if (window.navigator.vibrate) window.navigator.vibrate(60); 
-                callback(); 
-            }, 700); 
-        };
+        const start = (e) => { timer = setTimeout(() => { if (window.navigator.vibrate) window.navigator.vibrate(60); callback(); }, 700); };
         const cancel = () => clearTimeout(timer);
         element.addEventListener('touchstart', start, {passive: true});
         element.addEventListener('touchend', cancel);
@@ -297,24 +264,9 @@
             filtered.forEach(i => {
                 const card = document.createElement('div');
                 card.className = `item-card ${isBatchMode && selectedIndices.includes(i.originalIndex) ? 'selected' : ''}`;
-                card.innerHTML = `<div class="img-box"><img src="${i.img || ''}"></div>
-                    <div class="info">
-                        <div style="font-size:9px;color:var(--m-brown);">${i.role || ''} ${i.type ? `| ${i.type}` : ''}</div>
-                        <div style="font-weight:bold; font-size:12px; margin:4px 0;">${i.pattern || '無名'}</div>
-                        <div style="color:var(--m-deep-green); font-size:11px; font-weight:bold;">HK$ ${i.totalHkd} <span style="color:#aaa;font-weight:normal;font-size:9px;">x${i.qty}</span></div>
-                    </div>`;
-                
-                // 點擊事件
+                card.innerHTML = `<div class="img-box"><img src="${i.img || ''}"></div><div class="info"><div style="font-size:9px;color:var(--m-brown);">${i.role || ''} ${i.type ? `| ${i.type}` : ''}</div><div style="font-weight:bold; font-size:12px; margin:4px 0;">${i.pattern || '無名'}</div><div style="color:var(--m-deep-green); font-size:11px; font-weight:bold;">HK$ ${i.totalHkd} <span style="color:#aaa;font-weight:normal;font-size:9px;">x${i.qty}</span></div></div>`;
                 card.onclick = () => isBatchMode ? toggleSelectItem(i.originalIndex) : editItem(i.originalIndex);
-                
-                // 重新綁定長按事件
-                handleLongPress(card, () => {
-                    if (!isBatchMode) { 
-                        setBatchMode(true); 
-                        toggleSelectItem(i.originalIndex); 
-                    }
-                });
-                
+                handleLongPress(card, () => { if (!isBatchMode) { setBatchMode(true); toggleSelectItem(i.originalIndex); } });
                 container.appendChild(card);
             });
             const cId = status==='現貨'?'lib-count':(status==='非現貨'?'wait-count':'wish-count');
@@ -349,11 +301,10 @@
             document.getElementById('merchForm').reset();
             document.getElementById('editIndex').value = "-1";
             switchTab('page-gallery', document.querySelectorAll('.nav-item')[0]);
-            setTimeout(() => { showModal("🗑️", "已刪除"); }, 300);
+            setTimeout(() => { showModal("🗑️", "已刪除"); }, 500);
         }
     }
 
-    // 基礎功能...
     function switchTab(id, btn) {
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
         document.getElementById(id).classList.add('active');
@@ -404,21 +355,16 @@
         };
         ['lib-filter-box', 'wait-filter-box', 'wish-filter-box'].forEach(id => {
             const box = document.getElementById(id); if(!box) return; box.innerHTML = '';
-            box.appendChild(build(dict.works, 'work', DEFAULT_WORKS));
-            box.appendChild(build(dict.roles, 'role', []));
-            box.appendChild(build(dict.types, 'type', DEFAULT_TYPES));
+            box.appendChild(build(dict.works, 'work', DEFAULT_WORKS)); box.appendChild(build(dict.roles, 'role', [])); box.appendChild(build(dict.types, 'type', DEFAULT_TYPES));
         });
     }
 
     function renderSelects() {
         const fill = (id, list, defaults) => { 
-            const s = document.getElementById(id); 
-            const combined = [...new Set([...defaults, ...list])].sort();
+            const s = document.getElementById(id); const combined = [...new Set([...defaults, ...list])].sort();
             s.innerHTML = '<option value="">請選擇...</option>' + combined.map(x => `<option value="${x}">${x}</option>`).join('') + '<option value="NEW">+ 新增標籤</option>'; 
         };
-        fill('workSelect', dict.works, DEFAULT_WORKS);
-        fill('roleSelect', dict.roles, []);
-        fill('typeSelect', dict.types, DEFAULT_TYPES);
+        fill('workSelect', dict.works, DEFAULT_WORKS); fill('roleSelect', dict.roles, []); fill('typeSelect', dict.types, DEFAULT_TYPES);
     }
 
     function updateDictData() {
@@ -464,6 +410,7 @@
         fr.readAsText(f);
     }
 
+    // V49 重點優化：表單提交與彈窗觸發
     document.getElementById('merchForm').onsubmit = function(e) {
         e.preventDefault();
         const editIdx = parseInt(document.getElementById('editIndex').value);
@@ -492,30 +439,37 @@
             timestamp: editIdx === -1 ? Date.now() : merchList[editIdx].timestamp
         };
 
-        const done = (b64) => {
+        const finalize = (b64) => {
             data.img = b64 || (editIdx !== -1 ? merchList[editIdx].img : '');
-            if(editIdx === -1) merchList.unshift(data); else merchList[editIdx] = data;
-            save(); updateDictData(); renderAll();
-
-            const msg = editIdx === -1 ? "已成功上架" : "已更新儲存";
-            const icon = editIdx === -1 ? "✨" : "✅";
             
             if(editIdx === -1) {
+                // 上架模式
+                merchList.unshift(data);
+                save(); updateDictData(); renderAll();
                 ['pattern', 'note', 'imgFile', 'workInput', 'roleInput', 'typeInput'].forEach(id => document.getElementById(id).value = "");
                 document.getElementById('inputPrice').value = "0";
                 liveExchange();
-                setTimeout(() => { showModal(icon, msg); }, 100);
+                setTimeout(() => { showModal("✨", "已成功上架"); }, 100);
             } else {
+                // 更新模式
+                merchList[editIdx] = data;
+                save(); updateDictData(); renderAll();
+                // 立即清理表單狀態
                 document.getElementById('merchForm').reset();
                 document.getElementById('editIndex').value = "-1";
                 document.getElementById('delBtn').style.display = 'none';
-                switchTab('page-gallery', document.querySelectorAll('.nav-item')[0]);
-                setTimeout(() => { showModal(icon, msg); }, 400); 
+                
+                // 先切換分頁，再彈窗
+                const targetPage = data.status === '現貨' ? 'page-gallery' : (data.status === '非現貨' ? 'page-pending' : 'page-wish');
+                switchTab(targetPage, document.querySelector(`.nav-item[onclick*="${targetPage}"]`));
+                
+                // 給予較長的延遲確保頁面切換完成
+                setTimeout(() => { showModal("✅", "已更新儲存"); }, 500); 
             }
         };
 
         const f = document.getElementById('imgFile').files[0];
-        if(f) { const fr = new FileReader(); fr.onload = () => done(fr.result); fr.readAsDataURL(f); } else { done(null); }
+        if(f) { const fr = new FileReader(); fr.onload = () => finalize(fr.result); fr.readAsDataURL(f); } else { finalize(null); }
     };
     window.onload = init;
 </script>
