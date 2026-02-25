@@ -41,6 +41,15 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: 'PingFang HK', 'M
 .count-tag { font-size: 10px; color: #aaa; text-align: right; margin-bottom: 5px; }
 .list-container.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(var(--dynamic-grid), 1fr)); gap: 15px; }
 .list-container.list { display: flex; flex-direction: column; gap: 12px; }
+/* 新增純圖片視圖樣式 */
+.list-container.image {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(var(--dynamic-grid), 1fr));
+    gap: 15px;
+}
+.list-container.image .item-card .info {
+    display: none;
+}
 .item-card { background: #fff; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--m-clay); user-select: none; display: flex; flex-direction: column; cursor: pointer; position: relative; transition: 0.2s; }
 .item-card.selected { border: 3px solid var(--m-deep-green); transform: scale(0.96); }
 .item-card.selected::after { content: "✓"; position: absolute; top: 10px; right: 10px; background: var(--m-deep-green); color: white; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; z-index: 10; }
@@ -115,6 +124,8 @@ input, select, textarea { width: 100%; padding: 12px; border-radius: var(--radiu
                 <div class="symbol-group">
                     <span class="symbol-btn view-grid" onclick="setView('grid')"><svg viewBox="0 0 24 24"><path d="M4 11h5V5H4v6zm0 7h5v-6H4v6zm7 0h5v-6h-5v6zm0-13v6h5V5h-5z"/></svg></span>
                     <span class="symbol-btn view-list" onclick="setView('list')"><svg viewBox="0 0 24 24"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zm0-10v2h14V7H7z"/></svg></span>
+                    <!-- 新增純圖片視圖按鈕 -->
+                    <span class="symbol-btn view-image" onclick="setView('image')"><svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg><span>圖片</span></span>
                 </div>
             </div>
             <div id="lib-filter-box"></div>
@@ -185,7 +196,6 @@ input, select, textarea { width: 100%; padding: 12px; border-radius: var(--radiu
     <div id="page-settings" class="page">
         <div class="stat-card">
             <label class="input-label">網格大小: <span id="gridVal">160</span>px</label>
-            <!-- 修改處：min 從 120 改為 100 -->
             <input type="range" id="gridRange" min="100" max="220" value="160" oninput="updateGridSize(this.value)">
             <hr style="border: 0.5px solid #f0f0f0; margin: 25px 0;">
             <button onclick="exportData()" class="btn-main" style="background:var(--m-brown);">匯出資料備份(.json)</button>
@@ -344,6 +354,8 @@ function renderAll() {
         const countLabel = document.getElementById(cld);
         if(countLabel) countLabel.innerText = `顯示: ${filtered.length} / ${merchList.filter(x=>x.status===status).length}`;
     });
+    // 每次渲染列表後更新過濾器數量
+    renderFilters();
 }
 
 function setSort(mode) { sortMode = mode; updateToolUI(); renderAll(); }
@@ -357,17 +369,31 @@ function updateToolUI() {
     document.querySelectorAll('.order-toggle').forEach(b => b.innerText = sortDesc?"倒序↓":"正序↑");
 }
 
+// 輔助函數：獲取當前頁面對應的狀態
+function getCurrentStatus() {
+    if (document.getElementById('page-gallery').classList.contains('active')) return '現貨';
+    if (document.getElementById('page-pending').classList.contains('active')) return '非現貨';
+    if (document.getElementById('page-wish').classList.contains('active')) return '願望';
+    return null;
+}
+
 function renderFilters() {
     const build = (list, key, defaults) => {
         const combined = [...new Set([...defaults, ...list])];
+        const currentStatus = getCurrentStatus();
         let row = document.createElement('div'); row.className = 'filter-row';
+        // 全部標籤：計算當前狀態下的總數
+        const totalCount = currentStatus ? merchList.filter(i => i.status === currentStatus).length : 0;
         let all = document.createElement('div'); all.className = `filter-chip ${filters[key]==='all'?'active':''}`;
-        all.innerText = '全部'; all.onclick = () => { filters[key] = 'all'; renderFilters(); renderAll(); };
+        all.innerText = `全部 (${totalCount})`;
+        all.onclick = () => { filters[key] = 'all'; renderFilters(); renderAll(); };
         row.appendChild(all);
         combined.forEach(item => {
+            // 計算該標籤在當前狀態下的數量
+            const count = currentStatus ? merchList.filter(i => i.status === currentStatus && i[key] === item).length : 0;
             let chip = document.createElement('div');
             chip.className = `filter-chip ${filters[key]===item?'active':''}`;
-            chip.innerText = item;
+            chip.innerText = `${item} (${count})`;
             chip.onclick = () => { filters[key] = item; renderFilters(); renderAll(); };
             handleLongPress(chip, () => {
                 if(confirm(`確定刪除標籤「${item}」嗎？`)) {
@@ -382,9 +408,16 @@ function renderFilters() {
     };
     ['lib-filter-box', 'wait-filter-box', 'wish-filter-box'].forEach(id => {
         const box = document.getElementById(id); if(!box) return; box.innerHTML = '';
-        box.appendChild(build(dict.works, 'work', DEFAULT_WORKS));
-        box.appendChild(build(dict.roles, 'role', []));
-        box.appendChild(build(dict.types, 'type', DEFAULT_TYPES));
+        // 僅當該頁面對應的狀態與當前狀態一致時才更新，避免干擾（但三個盒子同時存在，我們可以根據當前active頁面只更新對應的盒子）
+        // 簡單做法：只更新與當前狀態相關的盒子
+        const currentStatus = getCurrentStatus();
+        if ((id === 'lib-filter-box' && currentStatus === '現貨') ||
+            (id === 'wait-filter-box' && currentStatus === '非現貨') ||
+            (id === 'wish-filter-box' && currentStatus === '願望')) {
+            box.appendChild(build(dict.works, 'work', DEFAULT_WORKS));
+            box.appendChild(build(dict.roles, 'role', []));
+            box.appendChild(build(dict.types, 'type', DEFAULT_TYPES));
+        }
     });
 }
 
@@ -432,6 +465,8 @@ function switchTab(id, btn) {
     document.getElementById(id).classList.add('active');
     if(btn) { document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); btn.classList.add('active'); }
     if(id === 'page-stats') renderStats();
+    // 切換頁面時更新過濾器（以顯示正確數量）
+    renderFilters();
     if(isBatchMode) setBatchMode(false);
 }
 
