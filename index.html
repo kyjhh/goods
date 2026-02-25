@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Morandi Archive - 標籤獨立版</title>
+<title>Morandi Archive - 最終版</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
 :root {
@@ -67,12 +67,13 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: 'PingFang HK', 'M
 .info { padding: 10px; flex-grow: 1; overflow: hidden; pointer-events: none; }
 .info .note { display: none; }
 
-/* 新增頁行距減半，輸入框高度縮減 */
+/* 新增頁行距減半，輸入框高度再減2（6px） */
 .input-group { margin-bottom: 5px; }
 .input-label { font-size: 11px; color: var(--m-brown); font-weight: bold; margin-bottom: 5px; display: block; }
 #exchangePreview { margin-bottom: 8px; }
 .btn-main { background: var(--m-deep-green); color: white; border: none; padding: 12px; width: 100%; font-size: 13px; cursor: pointer; border-radius: var(--radius); margin-top: 5px; font-weight: bold; }
-input, select, textarea { width: 100%; padding: 8px; border-radius: var(--radius); border: 1px solid var(--m-clay); background: #fafafa; font-size: 14px; box-sizing: border-box; outline: none; }
+/* 通用輸入框，影響表單內所有輸入框（搜尋框已有獨立樣式，不受影響） */
+input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius); border: 1px solid var(--m-clay); background: #fafafa; font-size: 14px; box-sizing: border-box; outline: none; }
 
 #success-modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 35px; border-radius: 15px; text-align: center; z-index: 9999; display: none; width: 240px; box-shadow: 0 10px 50px rgba(0,0,0,0.3); }
 .overlay { position: fixed; top:0; left:0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 9998; display: none; backdrop-filter: blur(3px); }
@@ -361,7 +362,6 @@ function compressImage(base64, maxWidth = 800, quality = 0.8) {
 function init() {
     merchList = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
 
-    // 讀取字典，若無則建立含預設值的字典；若有則直接使用（即使為空陣列）
     const savedDict = JSON.parse(localStorage.getItem(DICT_KEY));
     if (savedDict) {
         dict = {
@@ -818,9 +818,7 @@ function importData(input) {
         try {
             const data = JSON.parse(e.target.result);
             merchList = data.merchList || [];
-            // 匯入時，若 dict 存在則使用，否則設為空物件（不會自動補預設值）
             dict = data.dict || { works: [], roles: [], types: [] };
-            // 但為了相容，如果 dict 中缺少某個屬性，補空陣列
             if (!dict.works) dict.works = [];
             if (!dict.roles) dict.roles = [];
             if (!dict.types) dict.types = [];
