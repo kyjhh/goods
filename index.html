@@ -1,2060 +1,2238 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Morandi Archive - 完整版</title>
-<!-- Cropper.js 樣式與腳本 -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css" />
-<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<!-- Chart.js 數據標籤插件 -->
-<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0/dist/chartjs-plugin-datalabels.min.js"></script>
-<style>
-:root {
-    --m-deep-green: #6b7a63; --m-sage: #acc1ad; --m-brown: #a68b7c;
-    --m-sand: #d5cabd; --m-clay: #e5ddd5; --bg: #f2efeb;
-    --text: #4a4a4a; --radius: 8px; --dynamic-grid: 160px;
-    --info-scale: 1;
-}
-/* 主題1（預設） */
-body.theme-1 {
-    --m-deep-green: #6b7a63; --m-sage: #acc1ad; --m-brown: #a68b7c;
-    --m-sand: #d5cabd; --m-clay: #e5ddd5; --bg: #f2efeb;
-    --text: #4a4a4a;
-}
-/* 主題2：暖棕色系 */
-body.theme-2 {
-    --m-deep-green: #8b6e4b; --m-sage: #c9b79b; --m-brown: #a67b5b;
-    --m-sand: #edd9c0; --m-clay: #f0e1d0; --bg: #faf0e6;
-    --text: #4a3b2a;
-}
-/* 主題3：灰藍色系 */
-body.theme-3 {
-    --m-deep-green: #5f7b8c; --m-sage: #a3b9c9; --m-brown: #7f8c8d;
-    --m-sand: #d0dce8; --m-clay: #e5eef7; --bg: #f5f9ff;
-    --text: #2c3e50;
-}
-/* 主題4：復古粉 */
-body.theme-4 {
-    --m-deep-green: #b28b84; --m-sage: #e3c9c0; --m-brown: #c6a69a;
-    --m-sand: #f0ded5; --m-clay: #f9ece5; --bg: #fff7f2;
-    --text: #5e4b46;
-}
-/* 主題5：森林綠 */
-body.theme-5 {
-    --m-deep-green: #3d6b4a; --m-sage: #7aa782; --m-brown: #5f7b6e;
-    --m-sand: #bcd9c7; --m-clay: #e0efe5; --bg: #ecf7f0;
-    --text: #1f3a2b;
-}
-body, html { margin: 0; padding: 0; height: 100%; font-family: 'PingFang HK', 'Microsoft JhengHei', sans-serif; background: var(--bg); color: var(--text); overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
-#batch-panel { display: none; background: var(--m-deep-green); color: white; padding: 15px 20px; position: fixed; top: 0; left: 0; width: 100%; box-sizing: border-box; z-index: 2500; justify-content: space-between; align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.15); transition: 0.3s; }
-.batch-btn { background: #cc9999; border: none; color: white; padding: 6px 15px; border-radius: 4px; font-size: 13px; cursor: pointer; font-weight: bold; }
-.edit-toggle-btn { font-size: 13px; color: var(--m-deep-green); border: 1px solid var(--m-deep-green); padding: 4px 12px; border-radius: 6px; cursor: pointer; margin-left: 10px; font-weight: bold; transition: 0.2s; }
-#cover-page { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #d2cdc1; background-size: cover; background-position: center; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 2000; transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
-#cover-page.open { transform: translateY(-100%); }
-.cover-upload-btn { position: absolute; top: 20px; left: 20px; background: rgba(255, 255, 255, 0.4); backdrop-filter: blur(5px); border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 2100; border: 1px solid rgba(255,255,255,0.3); }
-.cover-menu { width: 160px; display: flex; flex-direction: column; gap: 8px; }
-.menu-btn { background: rgba(255, 255, 255, 0.65); backdrop-filter: blur(12px); padding: 14px; text-align: center; cursor: pointer; border-radius: var(--radius); font-size: 11px; letter-spacing: 2px; border: 1px solid rgba(255,255,255,0.2); }
-.nav-bar { position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%); width: 92%; max-width: 500px; background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); display: flex; justify-content: space-around; padding: 12px 5px; border-radius: 15px; box-shadow: 0 8px 30px rgba(0,0,0,0.08); z-index: 1000; transition: bottom 0.3s; }
-.nav-item { border: none; background: none; color: #b5b5b5; font-size: 10px; font-weight: 600; cursor: pointer; padding: 10px; flex-grow: 1; text-align: center; }
-.nav-item.active { color: var(--m-deep-green); }
-.main-content { padding: 12px 12px 120px 12px; max-width: 800px; margin: 0 auto; transition: margin-top 0.3s; }
-.page { display: none; }
-.page.active { display: block; }
-/* 頁面頂欄 */
-.page-header { display: flex; align-items: center; justify-content: center; margin-bottom: 15px; position: relative; }
-.back-btn-header { font-size: 20px; cursor: pointer; color: var(--m-brown); width: 40px; position: absolute; left: 0; }
-.page-title { font-size: 18px; font-weight: bold; color: var(--m-deep-green); text-align: center; margin: 0 auto; }
-.control-panel { background: #fff; padding: 15px; border-radius: var(--radius); margin-bottom: 10px; border: 1px solid var(--m-clay); box-shadow: 0 2px 10px rgba(0,0,0,0.02); }
-.symbol-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid #f0f0f0; padding-bottom: 12px; }
-.symbol-group { display: flex; gap: 12px; color: #ccc; align-items: center; }
-.symbol-btn { cursor: pointer; transition: color 0.3s; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 2px; }
-.symbol-btn svg { width: 18px; height: 18px; fill: currentColor; }
-.symbol-btn span { font-size: 8px; font-weight: bold; display: block; }
-.symbol-btn.active { color: var(--m-deep-green); }
-.sort-qty span:first-child { font-size: 14px; font-weight: bold; }
-.sort-qty span:last-child { font-size: 8px; font-weight: bold; }
-.sort-qty svg { display: none; }
-.order-toggle { font-size: 11px; font-weight: bold; padding: 4px 10px; border: 1px solid #eee; border-radius: 6px; cursor: pointer; color: var(--m-brown); background: #fafafa; }
-.search-input { margin-bottom: 12px; padding: 10px 12px; font-size: 12px; border: 1px solid #eee; background: #fafafa; border-radius: 6px; width: 100%; box-sizing: border-box; outline: none; }
-.filter-row { display: flex; overflow-x: auto; white-space: nowrap; gap: 8px; margin-bottom: 10px; scrollbar-width: none; }
-.filter-chip { background: var(--m-clay); padding: 6px 14px; border-radius: 15px; font-size: 11px; cursor: pointer; color: #8a8a8a; user-select: none; transition: 0.2s; }
-.filter-chip.active { 
-    background: var(--m-sage); 
-    color: white; 
-    box-shadow: 0 0 0 2px var(--m-deep-green);
-}
-.count-tag { font-size: 10px; color: #aaa; text-align: right; margin-bottom: 5px; }
-.count-tag .number { font-size: 14px; font-weight: bold; color: #aaa; }
-/* 間距減半 */
-.list-container.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(var(--dynamic-grid), 1fr)); gap: 4px; }
-.list-container.list { display: flex; flex-direction: column; gap: 4px; }
-.list-container.list .item-card { min-height: 95px; height: auto; flex-direction: row; }
-.list-container.list .img-box { width: calc(var(--dynamic-grid) * 0.6); height: auto; aspect-ratio: 1; flex-shrink: 0; }
-.list-container.list .info { padding: 10px; overflow: hidden; }
-.list-container.list .note { display: block; font-size: calc(9px * var(--info-scale)); color: #999; margin-top: calc(4px * var(--info-scale)); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.list-container.image {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(var(--dynamic-grid), 1fr));
-    gap: 4px;
-}
-.list-container.image .item-card .info {
-    display: none;
-}
-.item-card { background: #fff; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--m-clay); user-select: none; display: flex; flex-direction: column; cursor: pointer; position: relative; transition: 0.2s; }
-.item-card.selected { border: 3px solid var(--m-deep-green); transform: scale(0.96); }
-.item-card.selected::after { content: "✓"; position: absolute; top: 10px; right: 10px; background: var(--m-deep-green); color: white; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; z-index: 10; }
-.img-box { width: 100%; aspect-ratio: 1; background: #f5f5f5; pointer-events: none; }
-.img-box img { width: 100%; height: 100%; object-fit: cover; }
-.card-qty {
-    position: absolute;
-    bottom: 8px;
-    right: 10px;
-    font-size: calc(12px * var(--info-scale,1));
-    color: var(--m-deep-green);
-    font-weight: bold;
-    z-index: 2;
-}
-.info {
-    padding: 10px;
-    flex-grow: 1;
-    overflow: hidden;
-    pointer-events: none;
-    display: flex;
-    flex-direction: column;
-}
-.info .note { display: none; }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Morandi Archive v.0.86.3</title>
+  <!-- Cropper.js 樣式與腳本 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Chart.js 數據標籤插件 -->
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0/dist/chartjs-plugin-datalabels.min.js"></script>
+  <style>
+    :root {
+      --m-deep-green: #6b7a63;
+      --m-sage: #acc1ad;
+      --m-brown: #a68b7c;
+      --m-sand: #d5cabd;
+      --m-clay: #e5ddd5;
+      --bg: #f2efeb;
+      --text: #4a4a4a;
+      --radius: 8px;
+      --dynamic-grid: 160px;
+      --info-scale: 1;
+    }
+    /* 主題1（預設）*/
+    body.theme-1 {
+      --m-deep-green: #6b7a63;
+      --m-sage: #acc1ad;
+      --m-brown: #a68b7c;
+      --m-sand: #d5cabd;
+      --m-clay: #e5ddd5;
+      --bg: #f2efeb;
+      --text: #4a4a4a;
+    }
+    /* 主題2：暖棕色系 */
+    body.theme-2 {
+      --m-deep-green: #8b6e4b;
+      --m-sage: #c9b79b;
+      --m-brown: #a67b5b;
+      --m-sand: #edd9c0;
+      --m-clay: #f0e1d0;
+      --bg: #faf0e6;
+      --text: #4a3b2a;
+    }
+    /* 主題3：灰藍色系 */
+    body.theme-3 {
+      --m-deep-green: #5f7b8c;
+      --m-sage: #a3b9c9;
+      --m-brown: #7f8c8d;
+      --m-sand: #d0dce8;
+      --m-clay: #e5eef7;
+      --bg: #f5f9ff;
+      --text: #2c3e50;
+    }
+    /* 主題4：復古粉 */
+    body.theme-4 {
+      --m-deep-green: #b28b84;
+      --m-sage: #e3c9c0;
+      --m-brown: #c6a69a;
+      --m-sand: #f0ded5;
+      --m-clay: #f9ece5;
+      --bg: #fff7f2;
+      --text: #5e4b46;
+    }
+    /* 主題5：森林線 */
+    body.theme-5 {
+      --m-deep-green: #3d6b4a;
+      --m-sage: #7aa782;
+      --m-brown: #5f7b6e;
+      --m-sand: #bcd9c7;
+      --m-clay: #e0efe5;
+      --bg: #ecf7f0;
+      --text: #1f3a2b;
+    }
 
-/* 新增頁 */
-.input-group { margin-bottom: 5px; }
-.input-label { font-size: 11px; color: var(--m-brown); font-weight: bold; margin-bottom: 5px; display: block; }
-#exchangePreview { margin-bottom: 8px; }
-.btn-main { background: var(--m-deep-green); color: white; border: none; padding: 12px; width: 100%; font-size: 13px; cursor: pointer; border-radius: var(--radius); margin-top: 5px; font-weight: bold; }
-input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius); border: 1px solid var(--m-clay); background: #fafafa; font-size: 14px; box-sizing: border-box; outline: none; }
+    body, html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: 'PingFang HK', 'Microsoft JhengHei', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      overflow-x: hidden;
+      -webkit-tap-highlight-color: transparent;
+    }
 
-#success-modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 35px; border-radius: 15px; text-align: center; z-index: 9999; display: none; width: 240px; box-shadow: 0 10px 50px rgba(0,0,0,0.3); }
-.overlay { position: fixed; top:0; left:0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 9998; display: none; backdrop-filter: blur(3px); }
+    #batch-panel {
+      display: none;
+      background: var(--m-deep-green);
+      color: white;
+      padding: 15px 20px;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      box-sizing: border-box;
+      z-index: 2500;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+      transition: 0.3s;
+    }
 
-/* 過濾模態框 */
-.filter-modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 25px; border-radius: var(--radius); z-index: 10000; width: 90%; max-width: 600px; max-height: 80vh; overflow-y: auto; box-shadow: 0 10px 40px rgba(0,0,0,0.2); display: none; }
-.filter-modal .filter-section { margin-bottom: 20px; }
-.filter-modal .filter-section-title { font-size: 13px; font-weight: bold; color: var(--m-brown); margin-bottom: 10px; border-left: 4px solid var(--m-sage); padding-left: 8px; display: flex; align-items: center; justify-content: space-between; }
-.filter-modal .filter-section-title .tip {
-    font-size: 11px;
-    font-weight: normal;
-    color: #aaa;
-    background: #f5f5f5;
-    padding: 4px 8px;
-    border-radius: 12px;
-    margin-left: 10px;
-}
-.filter-modal .filter-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 5px; }
-.filter-modal .filter-chip { margin: 2px; }
-.filter-modal .close-btn { background: var(--m-clay); border: none; padding: 10px; width: 100%; border-radius: var(--radius); font-size: 13px; cursor: pointer; margin-top: 10px; }
+    .batch-btn {
+      background: #cc9999;
+      border: none;
+      color: white;
+      padding: 6px 15px;
+      border-radius: 4px;
+      font-size: 13px;
+      cursor: pointer;
+      font-weight: bold;
+    }
 
-/* 裁剪/放大模態框 */
-.crop-modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 25px; border-radius: var(--radius); z-index: 10000; width: 90%; max-width: 600px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); display: none; flex-direction: column; }
-.crop-modal .crop-container { max-height: 60vh; overflow: hidden; margin-bottom: 15px; position: relative; }
-.crop-modal .crop-image { max-width: 100%; display: block; }
-.crop-modal .crop-actions { display: flex; gap: 10px; margin-top: 15px; justify-content: center; }
-.crop-modal .crop-btn { flex: 0 1 auto; background: var(--m-deep-green); color: white; border: none; padding: 10px 20px; border-radius: var(--radius); font-size: 13px; cursor: pointer; }
-.crop-modal .cancel-btn { background: var(--m-clay); color: var(--text); }
-.zoom-nav {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 40px;
-    height: 40px;
-    background: rgba(255,255,255,0.6);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 24px;
-    font-weight: bold;
-    color: var(--m-deep-green);
-    cursor: pointer;
-    z-index: 10;
-    border: 1px solid rgba(0,0,0,0.1);
-    backdrop-filter: blur(2px);
-}
-.zoom-nav.left { left: 10px; }
-.zoom-nav.right { right: 10px; }
-.zoom-nav:hover { background: white; }
-.zoom-info {
-    padding: 15px;
-    background: #fafafa;
-    border-top: 1px solid var(--m-clay);
-    font-size: 12px;
-    color: var(--text);
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-top: 10px;
-}
-.zoom-info-item {
-    background: var(--m-clay);
-    border-radius: 6px;
-    padding: 6px 10px;
-    flex: 1 1 auto;
-    min-width: 100px;
-}
-.zoom-info-item strong {
-    color: var(--m-brown);
-    font-size: 11px;
-    display: block;
-    margin-bottom: 2px;
-}
-.zoom-info-item span {
-    font-weight: bold;
-    color: var(--m-deep-green);
-}
-.zoom-info-row {
-    display: flex;
-    gap: 10px;
-    width: 100%;
-}
-.zoom-info-row .zoom-info-item {
-    flex: 1;
-}
+    .edit-toggle-btn {
+      font-size: 13px;
+      color: var(--m-deep-green);
+      border: 1px solid var(--m-deep-green);
+      padding: 4px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-left: 10px;
+      font-weight: bold;
+      transition: 0.2s;
+    }
 
-.tag-context-menu {
-    position: fixed;
-    background: white;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    padding: 5px 0;
-    z-index: 10001;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    display: none;
-}
-.tag-context-menu div {
-    padding: 10px 20px;
-    cursor: pointer;
-    font-size: 13px;
-    color: var(--text);
-}
-.tag-context-menu div:hover {
-    background: var(--m-clay);
-}
+    #cover-page {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #d2cdc1;
+      background-size: cover;
+      background-position: center;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 2000;
+      transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    }
 
-.stat-card { background:#fff; padding:20px; border-radius:var(--radius); border:1px solid var(--m-clay); margin-bottom: 20px; position: relative; }
-.stat-title { font-size: 13px; font-weight: bold; color: var(--m-brown); margin-bottom: 15px; border-left: 4px solid var(--m-sage); padding-left: 10px; }
-/* 總覽卡片字體放大兩倍 */
-.stat-card:first-child .stat-title {
-    font-size: 26px;
-}
-.stat-card:first-child div {
-    font-size: 20px;
-}
-/* 移除總計標籤（預設隱藏） */
-.total-expense {
-    display: none;
-}
-/* 統計圖表固定高度 */
-#monthlyChart, #roleChart, #roleCountChart, #typeCountChart {
-    height: 250px !important;
-    width: 100%;
-}
-/* 角色排名表格 */
-.rank-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 10px;
-}
-.rank-table th {
-    text-align: left;
-    font-size: 11px;
-    color: var(--m-brown);
-    padding-bottom: 5px;
-    border-bottom: 1px solid var(--m-clay);
-}
-.rank-table td {
-    padding: 8px 0;
-    font-size: 12px;
-    border-bottom: 1px solid #f0f0f0;
-}
-.rank-table tr:last-child td {
-    border-bottom: none;
-}
-.rank-table .rank-1 { color: var(--m-deep-green); font-weight: bold; }
-.rank-table .rank-2 { color: var(--m-sage); font-weight: bold; }
-.rank-table .rank-3 { color: var(--m-brown); font-weight: bold; }
-.image-pending-note { font-size: 11px; color: var(--m-deep-green); margin-top: 5px; font-weight: bold; }
-.filter-btn-bottom {
-    background: transparent;
-    border: 1px solid var(--m-deep-green);
-    border-radius: 6px;
-    padding: 4px 12px;
-    font-size: 13px;
-    color: var(--m-deep-green);
-    cursor: pointer;
-    white-space: nowrap;
-    font-weight: bold;
-}
-.edit-toggle-btn {
-    font-size: 13px;
-    color: var(--m-deep-green);
-    border: 1px solid var(--m-deep-green);
-    padding: 4px 12px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-weight: bold;
-    transition: 0.2s;
-}
-.grid-range-slider {
-    -webkit-appearance: none;
-    width: 80px;
-    height: 4px;
-    background: var(--m-clay);
-    border-radius: 2px;
-    outline: none;
-}
-.grid-range-slider::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    width: 16px;
-    height: 16px;
-    background: var(--m-clay);
-    border-radius: 50%;
-    cursor: pointer;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-}
-.grid-range-slider::-moz-range-thumb {
-    width: 16px;
-    height: 16px;
-    background: var(--m-clay);
-    border-radius: 50%;
-    cursor: pointer;
-    border: none;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-}
-.grid-range-slider::-moz-range-track {
-    height: 4px;
-    background: var(--m-clay);
-    border-radius: 2px;
-}
-/* 版本號樣式 */
-.version-tag {
-    position: absolute;
-    bottom: 10px;
-    left: 10px;
-    font-size: 10px;
-    color: rgba(0,0,0,0.3);
-    background: rgba(255,255,255,0.3);
-    padding: 2px 6px;
-    border-radius: 4px;
-    backdrop-filter: blur(2px);
-}
-</style>
+    #cover-page.open {
+      transform: translateY(-100%);
+    }
+
+    .cover-upload-btn {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      background: rgba(255,255,255,0.4);
+      backdrop-filter: blur(5px);
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 2100;
+      border: 1px solid rgba(255,255,255,0.3);
+    }
+
+    .cover-menu {
+      width: 160px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .menu-btn {
+      background: rgba(255,255,255,0.65);
+      backdrop-filter: blur(12px);
+      padding: 14px;
+      text-align: center;
+      cursor: pointer;
+      border-radius: var(--radius);
+      font-size: 11px;
+      letter-spacing: 2px;
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+
+    .nav-bar {
+      position: fixed;
+      bottom: 25px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 92%;
+      max-width: 500px;
+      background: rgba(255,255,255,0.95);
+      backdrop-filter: blur(10px);
+      display: flex;
+      justify-content: space-around;
+      padding: 12px 5px;
+      border-radius: 15px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+      z-index: 1000;
+      transition: bottom 0.3s;
+    }
+
+    .nav-item {
+      border: none;
+      background: none;
+      color: #b5b5b5;
+      font-size: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 10px;
+      flex-grow: 1;
+      text-align: center;
+    }
+
+    .nav-item.active {
+      color: var(--m-deep-green);
+    }
+
+    .main-content {
+      padding: 12px 12px 120px 12px;
+      max-width: 800px;
+      margin: 0 auto;
+      transition: margin-top 0.3s;
+    }
+
+    .page {
+      display: none;
+    }
+
+    .page.active {
+      display: block;
+    }
+
+    .page-header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 15px;
+      position: relative;
+    }
+
+    .back-btn-header {
+      font-size: 20px;
+      cursor: pointer;
+      color: var(--m-brown);
+      width: 40px;
+      position: absolute;
+      left: 0;
+    }
+
+    .page-title {
+      font-size: 18px;
+      font-weight: bold;
+      color: var(--m-deep-green);
+      text-align: center;
+      margin: 0 auto;
+    }
+
+    .control-panel {
+      background: #fff;
+      padding: 15px 12px;
+      border-radius: var(--radius);
+      border: 1px solid var(--m-clay);
+      box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+      margin-bottom: 10px;
+    }
+
+    .symbol-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      border-bottom: 1px solid #f0f0f0;
+      padding-bottom: 12px;
+    }
+
+    .symbol-group {
+      display: flex;
+      gap: 12px;
+      color: #ccc;
+      align-items: center;
+    }
+
+    .symbol-btn {
+      cursor: pointer;
+      transition: color 0.3s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .symbol-btn svg {
+      width: 18px;
+      height: 18px;
+      fill: currentColor;
+    }
+
+    .symbol-btn span {
+      font-size: 8px;
+      font-weight: bold;
+      display: block;
+    }
+
+    .symbol-btn.active {
+      color: var(--m-deep-green);
+    }
+
+    .sort-qty span:first-child {
+      font-size: 14px;
+      font-weight: bold;
+    }
+
+    .sort-qty span:last-child {
+      font-size: 8px;
+      font-weight: bold;
+    }
+
+    .order-toggle {
+      font-size: 11px;
+      font-weight: bold;
+      padding: 4px 10px;
+      border: 1px solid #eee;
+      border-radius: 6px;
+      cursor: pointer;
+      color: var(--m-brown);
+      background: #fff;
+    }
+
+    .search-input {
+      margin-bottom: 12px;
+      padding: 10px 12px;
+      font-size: 12px;
+      border: 1px solid #eee;
+      background: #fff;
+      border-radius: 6px;
+      width: 100%;
+      box-sizing: border-box;
+      outline: none;
+    }
+
+    .filter-row {
+      display: flex;
+      overflow-x: auto;
+      white-space: nowrap;
+      gap: 8px;
+      margin-bottom: 10px;
+      scrollbar-width: none;
+    }
+
+    .filter-chip {
+      background: var(--m-clay);
+      padding: 6px 14px;
+      border-radius: 15px;
+      font-size: 11px;
+      cursor: pointer;
+      color: #8a8a8a;
+      user-select: none;
+      transition: 0.2s;
+    }
+
+    .filter-chip.active {
+      background: var(--m-sage);
+      color: white;
+      box-shadow: 0 0 0 2px var(--m-deep-green);
+    }
+
+    .count-tag {
+      font-size: 10px;
+      color: #aaa;
+      text-align: right;
+      margin-bottom: 5px;
+    }
+
+    .count-tag .number {
+      font-size: 14px;
+      font-weight: bold;
+      color: #aaa;
+    }
+
+    .list-container.grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(var(--dynamic-grid), 1fr));
+      gap: 4px;
+    }
+
+    .list-container.list {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .list-container.list .item-card {
+      min-height: 95px;
+      height: auto;
+      flex-direction: row;
+    }
+
+    .list-container.list .img-box {
+      width: calc(var(--dynamic-grid) * 0.6);
+      height: auto;
+      aspect-ratio: 1;
+      flex-shrink: 0;
+    }
+
+    .list-container.list .info {
+      padding: 10px;
+      overflow: hidden;
+    }
+
+    .list-container.list .note {
+      display: block;
+      font-size: calc(9px * var(--info-scale));
+      color: #999;
+      margin-top: calc(4px * var(--info-scale));
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .list-container.image {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(var(--dynamic-grid), 1fr));
+      gap: 4px;
+    }
+
+    .list-container.image .item-card .info {
+      display: none;
+    }
+
+    .item-card {
+      background: #fff;
+      border-radius: var(--radius);
+      overflow: hidden;
+      border: 1px solid var(--m-clay);
+      user-select: none;
+      display: flex;
+      flex-direction: column;
+      cursor: pointer;
+      position: relative;
+      transition: 0.2s;
+    }
+
+    .item-card.selected {
+      border: 3px solid var(--m-deep-green);
+      transform: scale(0.96);
+    }
+
+    .item-card.selected::after {
+      content: "✓";
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: var(--m-deep-green);
+      color: white;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: bold;
+      z-index: 10;
+    }
+
+    .img-box {
+      width: 100%;
+      aspect-ratio: 1;
+      background: #f5f5f5;
+      pointer-events: none;
+    }
+
+    .img-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .card-qty {
+      position: absolute;
+      bottom: 8px;
+      right: 10px;
+      font-size: calc(12px * var(--info-scale,1));
+      color: var(--m-deep-green);
+      font-weight: bold;
+      z-index: 2;
+    }
+
+    .info {
+      padding: 10px;
+      flex-grow: 1;
+      overflow: hidden;
+      pointer-events: none;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .info .note {
+      display: none;
+    }
+
+    .input-group {
+      margin-bottom: 5px;
+    }
+
+    .input-label {
+      font-size: 11px;
+      color: var(--m-brown);
+      font-weight: bold;
+      margin-bottom: 5px;
+      display: block;
+    }
+
+    #exchangePreview {
+      margin-bottom: 8px;
+    }
+
+    .btn-main {
+      background: var(--m-deep-green);
+      color: white;
+      border: none;
+      padding: 12px;
+      width: 100%;
+      font-size: 13px;
+      cursor: pointer;
+      border-radius: var(--radius);
+      margin-top: 5px;
+      font-weight: bold;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 6px;
+      border-radius: var(--radius);
+      border: 1px solid var(--m-clay);
+      background: #fafafa;
+      font-size: 14px;
+      box-sizing: border-box;
+      outline: none;
+    }
+
+    #success-modal {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      padding: 35px;
+      border-radius: 15px;
+      text-align: center;
+      z-index: 9999;
+      display: none;
+      width: 240px;
+      box-shadow: 0 10px 50px rgba(0,0,0,0.3);
+    }
+
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.6);
+      z-index: 9998;
+      display: none;
+      backdrop-filter: blur(3px);
+    }
+
+    .filter-modal {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      padding: 25px;
+      border-radius: var(--radius);
+      z-index: 10000;
+      width: 90%;
+      max-width: 600px;
+      max-height: 80vh;
+      overflow-y: auto;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+      display: none;
+    }
+
+    .filter-modal .filter-section {
+      margin-bottom: 20px;
+    }
+
+    .filter-modal .filter-section-title {
+      font-size: 13px;
+      font-weight: bold;
+      color: var(--m-brown);
+      margin-bottom: 10px;
+      border-left: 4px solid var(--m-sage);
+      padding-left: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .filter-modal .filter-section-title .tip {
+      font-size: 11px;
+      font-weight: normal;
+      color: #aaa;
+      background: #f5f5f5;
+      padding: 4px 8px;
+      border-radius: 12px;
+      margin-left: 10px;
+    }
+
+    .filter-modal .filter-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 5px;
+    }
+
+    .filter-modal .filter-chip {
+      margin: 2px;
+    }
+
+    .filter-modal .close-btn {
+      background: var(--m-clay);
+      border: none;
+      padding: 10px;
+      width: 100%;
+      border-radius: var(--radius);
+      font-size: 13px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    .crop-modal {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      padding: 25px;
+      border-radius: var(--radius);
+      z-index: 10000;
+      width: 90%;
+      max-width: 600px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+      display: none;
+      flex-direction: column;
+    }
+
+    .crop-modal .crop-container {
+      max-height: 60vh;
+      overflow: hidden;
+      margin-bottom: 15px;
+      position: relative;
+    }
+
+    .crop-modal .crop-image {
+      max-width: 100%;
+      display: block;
+    }
+
+    .crop-modal .crop-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 15px;
+      justify-content: center;
+    }
+
+    .crop-modal .crop-btn {
+      flex: 0 1 auto;
+      background: var(--m-deep-green);
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: var(--radius);
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    .crop-modal .cancel-btn {
+      background: var(--m-clay);
+      color: var(--text);
+    }
+
+    .zoom-nav {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 40px;
+      height: 40px;
+      background: rgba(255,255,255,0.6);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      font-weight: bold;
+      color: var(--m-deep-green);
+      cursor: pointer;
+      z-index: 10;
+      border: 1px solid rgba(0,0,0,0.1);
+      backdrop-filter: blur(2px);
+    }
+
+    .zoom-nav.left { left: 10px; }
+    .zoom-nav.right { right: 10px; }
+    .zoom-nav:hover { background: white; }
+
+    .zoom-info {
+      padding: 15px;
+      background: #fafafa;
+      border-top: 1px solid var(--m-clay);
+      font-size: 12px;
+      color: var(--text);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .zoom-info-item {
+      background: var(--m-clay);
+      border-radius: 6px;
+      padding: 6px 10px;
+      flex: 1 1 auto;
+      min-width: 0; /* 允許內容收縮 */
+    }
+
+    .zoom-info-item strong {
+      color: var(--m-brown);
+      font-size: 11px;
+      display: block;
+      margin-bottom: 2px;
+    }
+
+    .zoom-info-item span {
+      font-weight: bold;
+      color: var(--m-deep-green);
+    }
+
+    .zoom-info-row {
+      display: flex;
+      gap: 10px;
+      width: 100%;
+      flex-wrap: nowrap; /* 強制不換行 */
+    }
+
+    .zoom-info-row .zoom-info-item {
+      flex: 1; /* 兩個框均分寬度 */
+      min-width: 0; /* 允許縮小 */
+    }
+
+    .tag-context-menu {
+      position: fixed;
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 5px 0;
+      z-index: 10001;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      display: none;
+    }
+
+    .tag-context-menu div {
+      padding: 10px 20px;
+      cursor: pointer;
+      font-size: 13px;
+      color: var(--text);
+    }
+
+    .tag-context-menu div:hover {
+      background: var(--m-clay);
+    }
+
+    .stat-card {
+      background: #fff;
+      padding: 20px;
+      border-radius: var(--radius);
+      border: 1px solid var(--m-clay);
+      margin-bottom: 20px;
+      position: relative;
+    }
+
+    .stat-title {
+      font-size: 13px;
+      font-weight: bold;
+      color: var(--m-brown);
+      margin-bottom: 15px;
+      border-left: 4px solid var(--m-sage);
+      padding-left: 10px;
+    }
+
+    /* 調整統計頁避免無限延伸 */
+    #page-stats {
+      max-height: none;
+      overflow-y: visible;
+      padding-bottom: 20px;
+    }
+
+    .stat-card:first-child .stat-title {
+      font-size: 26px;
+    }
+
+    .stat-card:first-child div {
+      font-size: 20px;
+    }
+
+    .total-expense {
+      display: none;
+    }
+
+    #monthlyChart, #roleChart, #roleCountChart, #typeCountChart {
+      height: 250px;
+      width: 100%;
+    }
+
+    .rank-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+
+    .rank-table th {
+      text-align: left;
+      font-size: 11px;
+      color: var(--m-brown);
+      padding-bottom: 5px;
+      border-bottom: 1px solid var(--m-clay);
+    }
+
+    .rank-table td {
+      padding: 8px 0;
+      font-size: 12px;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    .rank-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .rank-table .rank-1 { color: var(--m-deep-green); font-weight: bold; }
+    .rank-table .rank-2 { color: var(--m-sage); font-weight: bold; }
+    .rank-table .rank-3 { color: var(--m-brown); font-weight: bold; }
+
+    .image-pending-note {
+      font-size: 11px;
+      color: var(--m-deep-green);
+      margin-top: 5px;
+      font-weight: bold;
+    }
+
+    .filter-btn-bottom {
+      background: transparent;
+      border: 1px solid var(--m-deep-green);
+      border-radius: 6px;
+      padding: 4px 12px;
+      font-size: 13px;
+      color: var(--m-deep-green);
+      cursor: pointer;
+      white-space: nowrap;
+      font-weight: bold;
+    }
+
+    .edit-toggle-btn {
+      font-size: 13px;
+      color: var(--m-deep-green);
+      border: 1px solid var(--m-deep-green);
+      padding: 4px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: 0.2s;
+    }
+
+    .grid-range-slider {
+      -webkit-appearance: none;
+      width: 80px;
+      height: 4px;
+      background: var(--m-clay);
+      border-radius: 2px;
+      outline: none;
+    }
+
+    .grid-range-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px;
+      height: 16px;
+      background: var(--m-clay);
+      border-radius: 50%;
+      cursor: pointer;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    }
+
+    .grid-range-slider::-moz-range-thumb {
+      width: 16px;
+      height: 16px;
+      background: var(--m-clay);
+      border-radius: 50%;
+      cursor: pointer;
+      border: none;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    }
+
+    .grid-range-slider::-moz-range-track {
+      height: 4px;
+      background: var(--m-clay);
+      border-radius: 2px;
+    }
+
+    .version-tag {
+      position: absolute;
+      bottom: 10px;
+      left: 10px;
+      font-size: 10px;
+      color: rgba(0,0,0,0.3);
+      background: rgba(255,255,255,0.3);
+      padding: 2px 6px;
+      border-radius: 4px;
+      backdrop-filter: blur(2px);
+    }
+  </style>
 </head>
 <body class="theme-1">
+
 <div id="batch-panel">
-    <span id="batch-count" style="font-weight: bold;">已選擇0項</span>
-    <div>
-        <span onclick="setBatchMode(false)" style="cursor:pointer; margin-right:20px; font-size:14px; font-weight: bold;">取消</span>
-        <button class="batch-btn" onclick="confirmBatchDelete()">刪除選中</button>
-    </div>
-</div>
-<div class="overlay" id="overlay"></div>
-<div id="success-modal">
-    <div id="modal-icon" style="font-size: 40px; margin-bottom: 15px; color: var(--m-deep-green);"></div>
-    <div id="modal-text" style="font-weight: bold; font-size: 16px;">操作成功</div>
-    <button class="btn-main" onclick="closeModal()" style="margin-top: 25px;">確定</button>
+  <span id="batch-count" style="font-weight: bold;">已選0項</span>
+  <div>
+    <span onclick="setBatchMode(false)" style="cursor:pointer; margin-right:20px; font-size:14px; font-weight: bold;">取消</span>
+    <button class="batch-btn" onclick="confirmBatchDelete()">刪除選中</button>
+  </div>
 </div>
 
-<!-- 過濾條件模態框 -->
+<div class="overlay" id="overlay"></div>
+
+<div id="success-modal">
+  <div id="modal-icon" style="font-size: 40px; margin-bottom: 15px; color: var(--m-deep-green);"></div>
+  <div id="modal-text" style="font-weight: bold; font-size: 16px;">操作成功</div>
+  <button class="btn-main" onclick="closeModal()" style="margin-top: 25px;">確定</button>
+</div>
+
+<!-- 過濾模態框 -->
 <div class="filter-modal" id="filterModal">
-    <div id="filterModalContent"></div>
-    <button class="close-btn" onclick="closeFilterModal()">關閉</button>
+  <div id="filterModalContent"></div>
+  <button class="close-btn" onclick="closeFilterModal()">關閉</button>
 </div>
 
 <!-- 裁剪/放大模態框（共用） -->
 <div class="crop-modal" id="cropModal">
-    <div class="crop-container">
-        <img id="cropImage" class="crop-image" src="">
-        <!-- 導航箭頭（放大模式時顯示） -->
-        <div class="zoom-nav left" id="zoomPrev" style="display: none;">&lt;</div>
-        <div class="zoom-nav right" id="zoomNext" style="display: none;">&gt;</div>
-    </div>
-    <!-- 下方資訊（放大模式時顯示） -->
-    <div id="zoomInfo" class="zoom-info" style="display: none;"></div>
-    <!-- 關閉按鈕移至最下方 -->
-    <div class="crop-actions">
-        <button class="crop-btn cancel-btn" onclick="closeCropModal()">關閉</button>
-    </div>
+  <div class="crop-container">
+    <img id="cropImage" class="crop-image" src="">
+    <!-- 導航箭頭（放大模式時顯示） -->
+    <div class="zoom-nav left" id="zoomPrev" style="display: none;">‹</div>
+    <div class="zoom-nav right" id="zoomNext" style="display: none;">›</div>
+  </div>
+  <!-- 下方資訊（放大模式時顯示） -->
+  <div id="zoomInfo" class="zoom-info" style="display: none;"></div>
+  <!-- 確認按鈕（裁剪模式） -->
+  <div class="crop-actions">
+    <button class="crop-btn" id="cropConfirmBtn" style="display: none;">確認裁剪</button>
+    <button class="crop-btn cancel-btn" onclick="closeCropModal()">關閉</button>
+  </div>
 </div>
 
 <!-- 標籤長按選單 -->
 <div class="tag-context-menu" id="tagContextMenu">
-    <div onclick="editTagFromMenu()">編輯標籤</div>
-    <div onclick="deleteTagFromMenu()">刪除標籤</div>
+  <div onclick="editTagFromMenu()">編輯標籤</div>
+  <div onclick="deleteTagFromMenu()">刪除標籤</div>
 </div>
 
 <div id="cover-page">
-    <div class="cover-upload-btn" onclick="document.getElementById('coverInput').click()">
-        <svg viewBox="0 0 24 24" width="20" height="20" fill="var(--m-deep-green)"><path d="M4 4h3l2-2h6l2 2h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zm8 3a5 5 0 1 0 0 10 5 5 0 0 0 0-10zm0 2a3 3 0 1 1 0 6 3 3 0 0 1 0-6z"/></svg>
-    </div>
-    <input type="file" id="coverInput" style="display:none;" accept="image/*" onchange="updateCover(this)">
-    <div class="cover-menu">
-        <h4 style="text-align:center; font-weight:400; letter-spacing:6px; margin-bottom:25px; color: var(--m-deep-green);">M.ARCHIVE</h4>
-        <div class="menu-btn" onclick="openPage('page-gallery')">進入藏品庫</div>
-        <div class="menu-btn" onclick="triggerQuickUpload()">上載藏品</div>
-    </div>
-    <input type="file" id="quickUploadInput" style="display:none;" accept="image/*" onchange="handleQuickUploadFile(this)">
-    <!-- 版本號 -->
-    <div class="version-tag">v0.86.0</div>
+  <div class="cover-upload-btn" onclick="document.getElementById('coverInput').click()">
+    <svg viewBox="0 0 24 24" width="20" height="20" fill="var(--m-deep-green)">
+      <path d="M4 4h3l2-2h6l2 2h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zm8 3a5 5 0 1 0 0 10 5 5 0 0 0 0-10zm0 2a3 3 0 1 1 0 6 3 3 0 0 1 0-6z"/>
+    </svg>
+  </div>
+  <input type="file" id="coverInput" style="display: none;" accept="image/*" onchange="updateCover(this)">
+
+  <div class="cover-menu">
+    <h4 style="text-align: center; font-weight:400; letter-spacing:6px; margin-bottom:25px; color: var(--m-deep-green);">M.ARCHIVE</h4>
+    <div class="menu-btn" onclick="openPage('page-gallery')">進入藏品庫</div>
+    <div class="menu-btn" onclick="triggerQuickUpload()">上載藏品</div>
+  </div>
+  <!-- 版本號 -->
+  <div class="version-tag">v0.86.3</div>
 </div>
 
+<input type="file" id="quickUploadInput" style="display: none;" accept="image/*" onchange="handleQuickUploadFile(this)">
+
 <div class="main-content" id="main-content">
-    <!-- 館藏頁 -->
-    <div id="page-gallery" class="page">
-        <div class="page-header">
-            <div class="back-btn-header" onclick="handleBack()">←</div>
-            <div class="page-title">館藏</div>
-        </div>
-        <div class="control-panel">
-            <input type="text" class="search-input" id="lib-search" placeholder="搜尋款式或備註..." oninput="renderAll()">
-            <div class="symbol-row">
-                <div class="symbol-group">
-                    <span class="symbol-btn sort-date" onclick="setSort('date')">
-                        <svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>
-                        <span>時間</span>
-                    </span>
-                    <span class="symbol-btn sort-price" onclick="setSort('price')">
-                        <svg viewBox="0 0 24 24"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 2.01-1.79 2.7-1.79 2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>
-                        <span>金額</span>
-                    </span>
-                    <span class="symbol-btn sort-name" onclick="setSort('name')">
-                        <svg viewBox="0 0 24 24"><path d="M12.75 3h-1.5L6.5 14h1.5l1.12-3h5.75l1.12 3h1.5L12.75 3zm-3.13 6.5L12 3.25l2.38 6.25H9.62zM18 17H6v2h12v-2z"/></svg>
-                        <span>名稱</span>
-                    </span>
-                    <span class="symbol-btn sort-qty" onclick="setSort('qty')">
-                        <span>123</span>
-                        <span>數量</span>
-                    </span>
-                    <span class="order-toggle" onclick="toggleOrder()">↓</span>
-                </div>
-                <div class="symbol-group">
-                    <span class="symbol-btn view-grid" onclick="setView('grid')"><svg viewBox="0 0 24 24"><path d="M4 11h5V5H4v6zm0 7h5v-6H4v6zm7 0h5v-6h-5v6zm0-13v6h5V5h-5z"/></svg><span>網格</span></span>
-                    <span class="symbol-btn view-list" onclick="setView('list')"><svg viewBox="0 0 24 24"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zm0-10v2h14V7H7z"/></svg><span>清單</span></span>
-                    <span class="symbol-btn view-image" onclick="setView('image')"><svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg><span>圖片</span></span>
-                </div>
-            </div>
-            <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 10px;">
-                <div id="lib-count" class="count-tag" style="margin:0;"><span>顯示:</span><span class="number">0/0</span></div>
-                <input type="range" class="grid-range-slider" min="50" max="170" value="160" oninput="handleGridSliderInput(this)">
-                <div style="margin-left: auto; display: flex; gap: 10px;">
-                    <button class="filter-btn-bottom" onclick="openFilterModal('現貨')">條件檢索</button>
-                    <span class="edit-toggle-btn" onclick="setBatchMode(true)">管理</span>
-                </div>
-            </div>
-        </div>
-        <div id="readyList" class="list-container grid"></div>
+  <!-- 館藏頁 -->
+  <div id="page-gallery" class="page">
+    <div class="page-header">
+      <div class="back-btn-header" onclick="handleBack()">←</div>
+      <div class="page-title">館藏</div>
     </div>
-
-    <!-- 等候區頁 -->
-    <div id="page-pending" class="page">
-        <div class="page-header">
-            <div class="back-btn-header" onclick="handleBack()">←</div>
-            <div class="page-title">等候區</div>
+    <div class="control-panel">
+      <input type="text" class="search-input" id="lib-search" placeholder="搜尋款式或備註..." oninput="renderAll()">
+      <div class="symbol-row">
+        <div class="symbol-group">
+          <span class="symbol-btn sort-date" onclick="setSort('date')">
+            <svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>
+            <span>時間</span>
+          </span>
+          <span class="symbol-btn sort-price" onclick="setSort('price')">
+            <svg viewBox="0 0 24 24"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 2.01-1.79 2.7-1.79 2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>
+            <span>金額</span>
+          </span>
+          <span class="symbol-btn sort-name" onclick="setSort('name')">
+            <svg viewBox="0 0 24 24"><path d="M12.75 3h-1.5L6.5 14h1.5l1.12-3h5.75l1.12 3h1.5L12.75 3zm-3.13 6.5L12 3.25l2.38 6.25H9.62zM18 17H6v2h12v-2z"/></svg>
+            <span>名稱</span>
+          </span>
+          <span class="symbol-btn sort-qty" onclick="setSort('qty')">
+            <span>123</span>
+            <span>數量</span>
+          </span>
+          <span class="order-toggle" onclick="toggleOrder()">↓</span>
         </div>
-        <div class="control-panel">
-            <input type="text" class="search-input" id="wait-search" placeholder="搜尋款式或備註..." oninput="renderAll()">
-            <div class="symbol-row">
-                <div class="symbol-group">
-                    <span class="symbol-btn sort-date" onclick="setSort('date')">
-                        <svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>
-                        <span>時間</span>
-                    </span>
-                    <span class="symbol-btn sort-price" onclick="setSort('price')">
-                        <svg viewBox="0 0 24 24"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 2.01-1.79 2.7-1.79 2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>
-                        <span>金額</span>
-                    </span>
-                    <span class="symbol-btn sort-name" onclick="setSort('name')">
-                        <svg viewBox="0 0 24 24"><path d="M12.75 3h-1.5L6.5 14h1.5l1.12-3h5.75l1.12 3h1.5L12.75 3zm-3.13 6.5L12 3.25l2.38 6.25H9.62zM18 17H6v2h12v-2z"/></svg>
-                        <span>名稱</span>
-                    </span>
-                    <span class="symbol-btn sort-qty" onclick="setSort('qty')">
-                        <span>123</span>
-                        <span>數量</span>
-                    </span>
-                    <span class="order-toggle" onclick="toggleOrder()">↓</span>
-                </div>
-                <div class="symbol-group">
-                    <span class="symbol-btn view-grid" onclick="setView('grid')"><svg viewBox="0 0 24 24"><path d="M4 11h5V5H4v6zm0 7h5v-6H4v6zm7 0h5v-6h-5v6zm0-13v6h5V5h-5z"/></svg><span>網格</span></span>
-                    <span class="symbol-btn view-list" onclick="setView('list')"><svg viewBox="0 0 24 24"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zm0-10v2h14V7H7z"/></svg><span>清單</span></span>
-                    <span class="symbol-btn view-image" onclick="setView('image')"><svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg><span>圖片</span></span>
-                </div>
-            </div>
-            <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 10px;">
-                <div id="wait-count" class="count-tag" style="margin:0;"><span>顯示:</span><span class="number">0/0</span></div>
-                <input type="range" class="grid-range-slider" min="50" max="170" value="160" oninput="handleGridSliderInput(this)">
-                <div style="margin-left: auto; display: flex; gap: 10px;">
-                    <button class="filter-btn-bottom" onclick="openFilterModal('非現貨')">條件檢索</button>
-                    <span class="edit-toggle-btn" onclick="setBatchMode(true)">管理</span>
-                </div>
-            </div>
+        <div class="symbol-group">
+          <span class="symbol-btn view-grid" onclick="setView('grid')">
+            <svg viewBox="0 0 24 24"><path d="M4 11h5V5H4v6zm0 7h5v-6H4v6zm7 0h5v-6h-5v6zm0-13v6h5V5h-5z"/></svg>
+          </span>
+          <span class="symbol-btn view-list" onclick="setView('list')">
+            <svg viewBox="0 0 24 24"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zm0-10v2h14V7H7z"/></svg>
+          </span>
+          <span class="symbol-btn view-image" onclick="setView('image')">
+            <svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
+          </span>
         </div>
-        <div id="waitList" class="list-container grid"></div>
+      </div>
+      <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 10px;">
+        <div id="lib-count" class="count-tag" style="margin:0;">顯示：<span class="number">0/0</span></div>
+        <input type="range" class="grid-range-slider" min="50" max="170" value="160" oninput="handleGridSliderInput(this)">
+        <div style="margin-left: auto; display: flex; gap: 10px;">
+          <button class="filter-btn-bottom" onclick="openFilterModal('現貨')">條件檢索</button>
+          <span class="edit-toggle-btn" onclick="setBatchMode(true)">管理</span>
+        </div>
+      </div>
     </div>
+    <div id="readyList" class="list-container grid"></div>
+  </div>
 
-    <!-- 願望清單頁 -->
-    <div id="page-wish" class="page">
-        <div class="page-header">
-            <div class="back-btn-header" onclick="handleBack()">←</div>
-            <div class="page-title">願望清單</div>
-        </div>
-        <div class="control-panel">
-            <input type="text" class="search-input" id="wish-search" placeholder="搜尋款式或備註..." oninput="renderAll()">
-            <div class="symbol-row">
-                <div class="symbol-group">
-                    <span class="symbol-btn sort-date" onclick="setSort('date')">
-                        <svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>
-                        <span>時間</span>
-                    </span>
-                    <span class="symbol-btn sort-price" onclick="setSort('price')">
-                        <svg viewBox="0 0 24 24"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 2.01-1.79 2.7-1.79 2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>
-                        <span>金額</span>
-                    </span>
-                    <span class="symbol-btn sort-name" onclick="setSort('name')">
-                        <svg viewBox="0 0 24 24"><path d="M12.75 3h-1.5L6.5 14h1.5l1.12-3h5.75l1.12 3h1.5L12.75 3zm-3.13 6.5L12 3.25l2.38 6.25H9.62zM18 17H6v2h12v-2z"/></svg>
-                        <span>名稱</span>
-                    </span>
-                    <span class="symbol-btn sort-qty" onclick="setSort('qty')">
-                        <span>123</span>
-                        <span>數量</span>
-                    </span>
-                    <span class="order-toggle" onclick="toggleOrder()">↓</span>
-                </div>
-                <div class="symbol-group">
-                    <span class="symbol-btn view-grid" onclick="setView('grid')"><svg viewBox="0 0 24 24"><path d="M4 11h5V5H4v6zm0 7h5v-6H4v6zm7 0h5v-6h-5v6zm0-13v6h5V5h-5z"/></svg><span>網格</span></span>
-                    <span class="symbol-btn view-list" onclick="setView('list')"><svg viewBox="0 0 24 24"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zm0-10v2h14V7H7z"/></svg><span>清單</span></span>
-                    <span class="symbol-btn view-image" onclick="setView('image')"><svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg><span>圖片</span></span>
-                </div>
-            </div>
-            <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 10px;">
-                <div id="wish-count" class="count-tag" style="margin:0;"><span>顯示:</span><span class="number">0/0</span></div>
-                <input type="range" class="grid-range-slider" min="50" max="170" value="160" oninput="handleGridSliderInput(this)">
-                <div style="margin-left: auto; display: flex; gap: 10px;">
-                    <button class="filter-btn-bottom" onclick="openFilterModal('願望')">條件檢索</button>
-                    <span class="edit-toggle-btn" onclick="setBatchMode(true)">管理</span>
-                </div>
-            </div>
-        </div>
-        <div id="wishList" class="list-container grid"></div>
+  <!-- 等候區頁 -->
+  <div id="page-pending" class="page">
+    <div class="page-header">
+      <div class="back-btn-header" onclick="handleBack()">←</div>
+      <div class="page-title">等候區</div>
     </div>
-
-    <!-- 新增/編輯頁 -->
-    <div id="page-recent" class="page">
-        <div class="page-header">
-            <div class="back-btn-header" onclick="handleBack()">←</div>
-            <div class="page-title" id="recent-page-title">新增藏品</div>
+    <div class="control-panel">
+      <input type="text" class="search-input" id="wait-search" placeholder="搜尋款式或備註..." oninput="renderAll()">
+      <div class="symbol-row">
+        <div class="symbol-group">
+          <span class="symbol-btn sort-date" onclick="setSort('date')">
+            <svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>
+            <span>時間</span>
+          </span>
+          <span class="symbol-btn sort-price" onclick="setSort('price')">
+            <svg viewBox="0 0 24 24"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 2.01-1.79 2.7-1.79 2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>
+            <span>金額</span>
+          </span>
+          <span class="symbol-btn sort-name" onclick="setSort('name')">
+            <svg viewBox="0 0 24 24"><path d="M12.75 3h-1.5L6.5 14h1.5l1.12-3h5.75l1.12 3h1.5L12.75 3zm-3.13 6.5L12 3.25l2.38 6.25H9.62zM18 17H6v2h12v-2z"/></svg>
+            <span>名稱</span>
+          </span>
+          <span class="symbol-btn sort-qty" onclick="setSort('qty')">
+            <span>123</span>
+            <span>數量</span>
+          </span>
+          <span class="order-toggle" onclick="toggleOrder()">↓</span>
         </div>
-        <div style="background:#fff; padding:15px; border-radius: var(--radius); border:1px solid var(--m-clay);">
-            <form id="merchForm">
-                <input type="hidden" id="editIndex" value="-1">
-                <div class="input-group"><label class="input-label">作品名稱</label><select id="workSelect" onchange="toggleInput('workSelect', 'workInput')"></select><input type="text" id="workInput" style="display:none;" placeholder="輸入新作品名稱"></div>
-                
-                <!-- 角色名稱與周邊類別並排 -->
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 5px;">
-                    <div class="input-group" style="margin-bottom: 0;">
-                        <label class="input-label">角色名稱</label>
-                        <select id="roleSelect" onchange="toggleInput('roleSelect', 'roleInput')"></select>
-                        <input type="text" id="roleInput" style="display:none;" placeholder="輸入新角色名稱">
-                    </div>
-                    <div class="input-group" style="margin-bottom: 0;">
-                        <label class="input-label">周邊類別</label>
-                        <select id="typeSelect" onchange="toggleInput('typeSelect', 'typeInput')"></select>
-                        <input type="text" id="typeInput" style="display:none;" placeholder="徽章/立牌/特典">
-                    </div>
-                </div>
-
-                <div class="input-group"><label class="input-label">款式名稱</label><input type="text" id="pattern" required> </div>
-                <div class="input-group"><label class="input-label">備註</label><textarea id="note"></textarea></div>
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; margin-bottom: 15px;">
-                    <div><label class="input-label">狀態</label><select id="status" onchange="updateDateLabel()"><option value="現貨">現貨</option><option value="非現貨">非現貨</option><option value="願望">願望</option></select></div>
-                    <div><label class="input-label">數量</label><input type="number" id="qty" value="1" min="1"></div>
-                </div>
-                <div class="input-group"><label class="input-label" id="dateLabel">購買日期(選填)</label><input type="date" id="buyDate"></div>
-                <div style="display:grid; grid-template-columns: 1fr 2fr; gap:15px; margin-bottom: 8px;">
-                    <div><label class="input-label">幣種</label><select id="currency" onchange="liveExchange()"><option value="HKD">HKD</option><option value="RMB">RMB</option><option value="JPY">JPY</option></select></div>
-                    <div><label class="input-label">單價</label><input type="number" id="inputPrice" step="0.01" value="0" oninput="liveExchange()"></div>
-                </div>
-                <div id="exchangePreview" style="margin-bottom: 8px; font-size:12px; color:var(--m-deep-green); font-weight:bold;">總額: HKD 0.00</div>
-                <div class="input-group">
-                    <label class="input-label">藏品照片</label>
-                    <input type="file" id="imgFile" accept="image/*" onchange="handleImageFileSelect(this)">
-                    <div id="pendingImageNote" class="image-pending-note" style="display: none;">📷 已準備裁剪圖片，可繼續選擇其他檔案覆蓋</div>
-                </div>
-                <button type="submit" class="btn-main" id="submitBtn">儲存至資料庫</button>
-                <button type="button" id="delBtn" class="btn-main" style="background:#cc9999; display:none;" onclick="deleteCurrentItem()">刪除單項藏品</button>
-            </form>
+        <div class="symbol-group">
+          <span class="symbol-btn view-grid" onclick="setView('grid')">
+            <svg viewBox="0 0 24 24"><path d="M4 11h5V5H4v6zm0 7h5v-6H4v6zm7 0h5v-6h-5v6zm0-13v6h5V5h-5z"/></svg>
+          </span>
+          <span class="symbol-btn view-list" onclick="setView('list')">
+            <svg viewBox="0 0 24 24"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zm0-10v2h14V7H7z"/></svg>
+          </span>
+          <span class="symbol-btn view-image" onclick="setView('image')">
+            <svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
+          </span>
         </div>
+      </div>
+      <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 10px;">
+        <div id="wait-count" class="count-tag" style="margin:0;">顯示：<span class="number">0/0</span></div>
+        <input type="range" class="grid-range-slider" min="50" max="170" value="160" oninput="handleGridSliderInput(this)">
+        <div style="margin-left: auto; display: flex; gap: 10px;">
+          <button class="filter-btn-bottom" onclick="openFilterModal('非現貨')">條件檢索</button>
+          <span class="edit-toggle-btn" onclick="setBatchMode(true)">管理</span>
+        </div>
+      </div>
     </div>
+    <div id="waitList" class="list-container grid"></div>
+  </div>
 
-    <!-- 數據統計頁 -->
-    <div id="page-stats" class="page">
-        <div class="page-header">
-            <div class="back-btn-header" onclick="handleBack()">←</div>
-            <div class="page-title">數據統計</div>
-        </div>
-        <!-- 總覽卡片 -->
-        <div class="stat-card">
-            <div class="stat-title">總覽</div>
-            <div style="display: flex; gap: 20px;">
-                <div><strong style="color: var(--m-brown);">總藏品數</strong> <span style="color: var(--m-deep-green); font-weight: bold;" id="totalCountSpan">0</span></div>
-                <div><strong style="color: var(--m-brown);">總支出</strong> <span style="color: var(--m-deep-green); font-weight: bold;" id="totalExpenseSpan">HKD 0</span></div>
-            </div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-title">每月支出走勢(HKD)</div>
-            <div id="totalExpense" class="total-expense" style="display: none;"></div>
-            <canvas id="monthlyChart"></canvas>
-        </div>
-        <div class="stat-card">
-            <div class="stat-title">角色支出排行(HKD)</div>
-            <canvas id="roleChart"></canvas>
-        </div>
-        <!-- 角色排名表格 -->
-        <div class="stat-card">
-            <div class="stat-title">角色排名 (前三)</div>
-            <table class="rank-table" id="roleRankTable">
-                <thead>
-                    <tr><th>角色</th><th>數量</th><th>總額</th></tr>
-                </thead>
-                <tbody id="roleRankBody">
-                    <tr><td colspan="3">載入中...</td></tr>
-                </tbody>
-            </table>
-        </div>
-        <div class="stat-card">
-            <div class="stat-title">角色數量統計</div>
-            <canvas id="roleCountChart"></canvas>
-        </div>
-        <div class="stat-card">
-            <div class="stat-title">類別數量分佈</div>
-            <canvas id="typeCountChart"></canvas>
-        </div>
+  <!-- 願望清單頁 -->
+  <div id="page-wish" class="page">
+    <div class="page-header">
+      <div class="back-btn-header" onclick="handleBack()">←</div>
+      <div class="page-title">願望清單</div>
     </div>
+    <div class="control-panel">
+      <input type="text" class="search-input" id="wish-search" placeholder="搜尋款式或備註..." oninput="renderAll()">
+      <div class="symbol-row">
+        <div class="symbol-group">
+          <span class="symbol-btn sort-date" onclick="setSort('date')">
+            <svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>
+            <span>時間</span>
+          </span>
+          <span class="symbol-btn sort-price" onclick="setSort('price')">
+            <svg viewBox="0 0 24 24"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 2.01-1.79 2.7-1.79 2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>
+            <span>金額</span>
+          </span>
+          <span class="symbol-btn sort-name" onclick="setSort('name')">
+            <svg viewBox="0 0 24 24"><path d="M12.75 3h-1.5L6.5 14h1.5l1.12-3h5.75l1.12 3h1.5L12.75 3zm-3.13 6.5L12 3.25l2.38 6.25H9.62zM18 17H6v2h12v-2z"/></svg>
+            <span>名稱</span>
+          </span>
+          <span class="symbol-btn sort-qty" onclick="setSort('qty')">
+            <span>123</span>
+            <span>數量</span>
+          </span>
+          <span class="order-toggle" onclick="toggleOrder()">↓</span>
+        </div>
+        <div class="symbol-group">
+          <span class="symbol-btn view-grid" onclick="setView('grid')">
+            <svg viewBox="0 0 24 24"><path d="M4 11h5V5H4v6zm0 7h5v-6H4v6zm7 0h5v-6h-5v6zm0-13v6h5V5h-5z"/></svg>
+          </span>
+          <span class="symbol-btn view-list" onclick="setView('list')">
+            <svg viewBox="0 0 24 24"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zm0-10v2h14V7H7z"/></svg>
+          </span>
+          <span class="symbol-btn view-image" onclick="setView('image')">
+            <svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
+          </span>
+        </div>
+      </div>
+      <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 10px;">
+        <div id="wish-count" class="count-tag" style="margin:0;">顯示：<span class="number">0/0</span></div>
+        <input type="range" class="grid-range-slider" min="50" max="170" value="160" oninput="handleGridSliderInput(this)">
+        <div style="margin-left: auto; display: flex; gap: 10px;">
+          <button class="filter-btn-bottom" onclick="openFilterModal('願望')">條件檢索</button>
+          <span class="edit-toggle-btn" onclick="setBatchMode(true)">管理</span>
+        </div>
+      </div>
+    </div>
+    <div id="wishList" class="list-container grid"></div>
+  </div>
 
-    <!-- 系統設定頁 (移除網格大小，加入主題顏色) -->
-    <div id="page-settings" class="page">
-        <div class="page-header">
-            <div class="back-btn-header" onclick="handleBack()">←</div>
-            <div class="page-title">系統設定</div>
-        </div>
-        <div class="stat-card">
-            <label class="input-label">主題顏色</label>
-            <div style="display: flex; gap: 10px; flex-wrap: wrap; margin: 15px 0;">
-                <div onclick="setTheme(1)" style="width: 40px; height: 40px; border-radius: 50%; background: #6b7a63; cursor: pointer; border: 2px solid transparent; box-shadow: 0 2px 5px rgba(0,0,0,0.1);"></div>
-                <div onclick="setTheme(2)" style="width: 40px; height: 40px; border-radius: 50%; background: #8b6e4b; cursor: pointer; border: 2px solid transparent; box-shadow: 0 2px 5px rgba(0,0,0,0.1);"></div>
-                <div onclick="setTheme(3)" style="width: 40px; height: 40px; border-radius: 50%; background: #5f7b8c; cursor: pointer; border: 2px solid transparent; box-shadow: 0 2px 5px rgba(0,0,0,0.1);"></div>
-                <div onclick="setTheme(4)" style="width: 40px; height: 40px; border-radius: 50%; background: #b28b84; cursor: pointer; border: 2px solid transparent; box-shadow: 0 2px 5px rgba(0,0,0,0.1);"></div>
-                <div onclick="setTheme(5)" style="width: 40px; height: 40px; border-radius: 50%; background: #3d6b4a; cursor: pointer; border: 2px solid transparent; box-shadow: 0 2px 5px rgba(0,0,0,0.1);"></div>
-            </div>
-            <hr style="border: 0.5px solid #f0f0f0; margin: 25px 0;">
-            <button onclick="exportData()" class="btn-main" style="background:var(--m-brown);">匯出資料備份(.json)</button>
-            <input type="file" id="importFile" style="display:none" accept=".json" onchange="importData(this)">
-            <button onclick="document.getElementById('importFile').click()" class="btn-main" style="background:var(--m-sage); margin-top: 10px;">匯入資料備份</button>
-        </div>
+  <!-- 新增/編輯頁 -->
+  <div id="page-recent" class="page">
+    <div class="page-header">
+      <div class="back-btn-header" onclick="handleBack()">←</div>
+      <div class="page-title" id="recent-page-title">新增藏品</div>
     </div>
+    <div style="background:#fff; padding:15px; border-radius: var(--radius); border:1px solid var(--m-clay);">
+      <form id="merchForm">
+        <input type="hidden" id="editIndex" value="-1">
+        <div class="input-group">
+          <label class="input-label">作品名稱</label>
+          <select id="workSelect" onchange="toggleInput('workSelect', 'workInput')"></select>
+          <input type="text" id="workInput" style="display:none;" placeholder="輸入新作品名稱">
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 5px;">
+          <div class="input-group" style="margin-bottom: 0;">
+            <label class="input-label">角色名稱</label>
+            <select id="roleSelect" onchange="toggleInput('roleSelect', 'roleInput')"></select>
+            <input type="text" id="roleInput" style="display:none;" placeholder="輸入新角色名稱">
+          </div>
+          <div class="input-group" style="margin-bottom: 0;">
+            <label class="input-label">周邊類別</label>
+            <select id="typeSelect" onchange="toggleInput('typeSelect', 'typeInput')"></select>
+            <input type="text" id="typeInput" style="display:none;" placeholder="徽章/立牌/特典">
+          </div>
+        </div>
+        <div class="input-group">
+          <label class="input-label">款式名稱</label>
+          <input type="text" id="pattern" required>
+        </div>
+        <div class="input-group">
+          <label class="input-label">備註</label>
+          <textarea id="note"></textarea>
+        </div>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; margin-bottom: 15px;">
+          <div>
+            <label class="input-label">狀態</label>
+            <select id="status" onchange="updateDateLabel()">
+              <option value="現貨">現貨</option>
+              <option value="非現貨">非現貨</option>
+              <option value="願望">願望</option>
+            </select>
+          </div>
+          <div>
+            <label class="input-label">數量</label>
+            <input type="number" id="qty" value="1" min="1">
+          </div>
+        </div>
+        <div class="input-group">
+          <label class="input-label" id="dateLabel">購買日期(選填)</label>
+          <input type="date" id="buyDate">
+        </div>
+        <div style="display:grid; grid-template-columns: 1fr 2fr; gap:15px; margin-bottom: 8px;">
+          <div>
+            <label class="input-label">幣種</label>
+            <select id="currency" onchange="liveExchange()">
+              <option value="HKD">HKD</option>
+              <option value="RMB">RMB</option>
+              <option value="JPY">JPY</option>
+            </select>
+          </div>
+          <div>
+            <label class="input-label">單價</label>
+            <input type="number" id="inputPrice" step="0.01" value="0" oninput="liveExchange()">
+          </div>
+        </div>
+        <div id="exchangePreview" style="margin-bottom: 8px; font-size:12px; color:var(--m-deep-green); font-weight:bold;">總額: HKD 0.00</div>
+        <div class="input-group">
+          <label class="input-label">藏品照片</label>
+          <input type="file" id="imgFile" accept="image/*" onchange="handleImageFileSelect(this)">
+          <div id="pendingImageNote" class="image-pending-note" style="display: none;">📷 已準備裁剪圖片，可繼續選擇其他檔案覆蓋</div>
+        </div>
+        <button type="submit" class="btn-main" id="submitBtn">儲存至資料庫</button>
+        <button type="button" id="delBtn" class="btn-main" style="background:#cc9999; display:none;" onclick="deleteCurrentItem()">刪除單項藏品</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- 數據統計頁 -->
+  <div id="page-stats" class="page">
+    <div class="page-header">
+      <div class="back-btn-header" onclick="handleBack()">←</div>
+      <div class="page-title">數據統計</div>
+    </div>
+    <!-- 總覽卡片 -->
+    <div class="stat-card">
+      <div class="stat-title">總覽</div>
+      <div>總藏品數：<span id="totalCountSpan">0</span></div>
+      <div>總花費：<span id="totalExpenseSpan">HKD 0.00</span></div>
+    </div>
+    <!-- 每月花費圖表 -->
+    <div class="stat-card">
+      <div class="stat-title">每月花費</div>
+      <canvas id="monthlyChart"></canvas>
+    </div>
+    <!-- 角色花費排名 -->
+    <div class="stat-card">
+      <div class="stat-title">角色花費排名</div>
+      <canvas id="roleChart"></canvas>
+    </div>
+    <!-- 角色數量排名 -->
+    <div class="stat-card">
+      <div class="stat-title">角色擁有數量排名</div>
+      <canvas id="roleCountChart"></canvas>
+    </div>
+    <!-- 類別分佈 -->
+    <div class="stat-card">
+      <div class="stat-title">類別分佈</div>
+      <canvas id="typeCountChart"></canvas>
+    </div>
+    <!-- 角色排名表格（前三） -->
+    <div class="stat-card">
+      <div class="stat-title">角色花費 Top 3</div>
+      <table class="rank-table">
+        <thead><tr><th>角色</th><th>數量</th><th>總花費</th></tr></thead>
+        <tbody id="roleRankBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 設定頁 -->
+  <div id="page-settings" class="page">
+    <div class="page-header">
+      <div class="back-btn-header" onclick="handleBack()">←</div>
+      <div class="page-title">設定</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-title">主題配色</div>
+      <div style="display: flex; gap: 15px; justify-content: center; margin: 20px 0;">
+        <div onclick="setTheme(1)" style="width: 40px; height: 40px; border-radius: 50%; background: #6b7a63; cursor: pointer; border: 2px solid transparent; box-shadow: 0 2px 5px rgba(0,0,0,0.1);"></div>
+        <div onclick="setTheme(2)" style="width: 40px; height: 40px; border-radius: 50%; background: #8b6e4b; cursor: pointer; border: 2px solid transparent; box-shadow: 0 2px 5px rgba(0,0,0,0.1);"></div>
+        <div onclick="setTheme(3)" style="width: 40px; height: 40px; border-radius: 50%; background: #5f7b8c; cursor: pointer; border: 2px solid transparent; box-shadow: 0 2px 5px rgba(0,0,0,0.1);"></div>
+        <div onclick="setTheme(4)" style="width: 40px; height: 40px; border-radius: 50%; background: #b28b84; cursor: pointer; border: 2px solid transparent; box-shadow: 0 2px 5px rgba(0,0,0,0.1);"></div>
+        <div onclick="setTheme(5)" style="width: 40px; height: 40px; border-radius: 50%; background: #3d6b4a; cursor: pointer; border: 2px solid transparent; box-shadow: 0 2px 5px rgba(0,0,0,0.1);"></div>
+      </div>
+      <hr style="border: 0.5px solid #f0f0f0; margin: 25px 0;">
+      <button onclick="exportData()" class="btn-main" style="background:var(--m-brown);">匯出資料備份(.json)</button>
+      <input type="file" id="importFile" style="display:none" accept=".json" onchange="importData(this)">
+      <button onclick="document.getElementById('importFile').click()" class="btn-main" style="background:var(--m-sage); margin-top: 10px;">匯入資料備份</button>
+    </div>
+  </div>
 </div>
 
 <nav class="nav-bar" id="bottom-nav" style="display:none;">
-    <button class="nav-item active" onclick="switchTab('page-gallery', this)">館藏</button>
-    <button class="nav-item" onclick="switchTab('page-pending', this)">等候</button>
-    <button class="nav-item" onclick="switchTab('page-wish', this)">願望</button>
-    <button class="nav-item" onclick="resetFormForNew(); switchTab('page-recent', this)">新增</button>
-    <button class="nav-item" onclick="switchTab('page-stats', this)">數據</button>
-    <button class="nav-item" onclick="switchTab('page-settings', this)">設定</button>
+  <button class="nav-item active" onclick="switchTab('page-gallery', this)">館藏</button>
+  <button class="nav-item" onclick="switchTab('page-pending', this)">等候</button>
+  <button class="nav-item" onclick="switchTab('page-wish', this)">願望</button>
+  <button class="nav-item" onclick="resetFormForNew(); switchTab('page-recent', this)">新增</button>
+  <button class="nav-item" onclick="switchTab('page-stats', this)">數據</button>
+  <button class="nav-item" onclick="switchTab('page-settings', this)">設定</button>
 </nav>
 
 <script>
-const STORAGE_KEY = 'archive_master'; 
-const DICT_KEY = 'archive_dict_master';
-const COVER_KEY = 'archive_cover_bg';
-const LAST_INPUT_KEY = 'archive_last_input';
-const DEFAULT_WORKS = ['作品1', '作品2'];
-const DEFAULT_TYPES = ['襟','色紙','掛件','立牌', '拍立得'];
+  const STORAGE_KEY = 'archive_master';
+  const DICT_KEY = 'archive_dict_master';
+  const COVER_KEY = 'archive_cover_bg';
+  const LAST_INPUT_KEY = 'archive_last_input';
+  const DEFAULT_WORKS = ['作品1', '作品2'];
+  const DEFAULT_TYPES = ['襟', '色紙', '掛件', '立牌', '拍立得'];
 
-const GRID_SIZES = [50, 72, 103, 109, 170];
-const rates = { HKD: 1, RMB: 1.1, JPY: 0.053 };
+  const GRID_SIZES = [50, 72, 103, 109, 170];
+  const rates = { HKD: 1, RMB: 1.1, JPY: 0.053 };
 
-let merchList = [], dict = { works: [], roles: [], types: [] };
-let filters = { work: [], role: [], type: [] };
-let sortMode = 'date', sortDesc = true, viewMode = 'grid', charts = {};
-let isBatchMode = false, selectedIndices = [];
-let currentFilterModalStatus = null;
+  let merchList = [], dict = { works: [], roles: [], types: [] };
+  let filters = { work: [], role: [], type: [] };
+  let sortMode = 'date', sortDesc = true, viewMode = 'grid', charts = {};
+  let isBatchMode = false, selectedIndices = [];
+  let currentFilterModalStatus = null;
 
-let cropper = null;
-let pendingCropImage = null;
-let cropCallback = null;
-let isZoomMode = false;
-let currentZoomIndex = -1;
+  let cropper = null;
+  let pendingCropImage = null;
+  let cropCallback = null;
+  let isZoomMode = false;
+  let currentZoomIndex = -1;
+  let longPressedTag = { key: null, value: null };
+  let isUpdatingGrid = false;
 
-let longPressedTag = { key: null, value: null };
-let isUpdatingGrid = false;
+  Chart.register(ChartDataLabels);
 
-Chart.register(ChartDataLabels);
-
-document.getElementById('overlay').addEventListener('click', function() {
+  document.getElementById('overlay').addEventListener('click', function() {
     if (document.getElementById('success-modal').style.display === 'block') {
-        closeModal();
+      closeModal();
     }
-});
+    if (document.getElementById('filterModal').style.display === 'block') {
+      closeFilterModal();
+    }
+    if (document.getElementById('cropModal').style.display === 'flex') {
+      closeCropModal();
+    }
+  });
 
-// 主題切換函數
-function setTheme(themeNum) {
-    document.body.className = ''; // 移除所有主題 class
-    document.body.classList.add(`theme-${themeNum}`);
-    localStorage.setItem('selected_theme', `theme-${themeNum}`);
-}
+  // 主題切換函數
+  function setTheme(themeNum) {
+    document.body.className = ''; // 移除所有主題class
+    document.body.classList.add('theme-' + themeNum);
+    localStorage.setItem('selected_theme', 'theme-' + themeNum);
+  }
 
-// 壓縮圖片，可指定品質
-function compressImage(base64, maxWidth = 800, quality = 0.8) {
+  // 壓縮圖片，可指定品質
+  function compressImage(base64, maxWidth = 800, quality = 0.8) {
     return new Promise((resolve) => {
-        const img = new Image();
-        img.src = base64;
-        img.onload = () => {
-            const canvas = document.createElement('canvas');
-            let width = img.width;
-            let height = img.height;
-            if (width > maxWidth) {
-                height *= maxWidth / width;
-                width = maxWidth;
-            }
-            canvas.width = width;
-            canvas.height = height;
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(img, 0, 0, width, height);
-            const compressed = canvas.toDataURL('image/jpeg', quality);
-            resolve(compressed);
-        };
-        img.onerror = () => resolve(base64);
+      const img = new Image();
+      img.src = base64;
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+        if (width > maxWidth) {
+          height *= maxWidth / width;
+          width = maxWidth;
+        }
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        const compressed = canvas.toDataURL('image/jpeg', quality);
+        resolve(compressed);
+      };
+      img.onerror = () => resolve(base64);
     });
-}
+  }
 
-function init() {
+  function init() {
     merchList = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
     const savedDict = JSON.parse(localStorage.getItem(DICT_KEY));
     if (savedDict) {
-        dict = { works: savedDict.works || [], roles: savedDict.roles || [], types: savedDict.types || [] };
+      dict = { works: savedDict.works || [], roles: savedDict.roles || [], types: savedDict.types || [] };
     } else {
-        dict = { works: [...DEFAULT_WORKS], roles: [], types: [...DEFAULT_TYPES] };
+      dict = { works: [...DEFAULT_WORKS], roles: [], types: [...DEFAULT_TYPES] };
     }
     const savedCover = localStorage.getItem(COVER_KEY);
     if (savedCover) document.getElementById('cover-page').style.backgroundImage = `url(${savedCover})`;
-    
+
     // 讀取儲存的主題
     const savedTheme = localStorage.getItem('selected_theme');
     if (savedTheme) {
-        document.body.className = savedTheme;
+      document.body.className = savedTheme;
     }
 
     const savedGridSize = localStorage.getItem('archive_grid_size') || '160';
     const nearest = findNearestGridSize(parseInt(savedGridSize));
     updateGridSize(nearest);
-    renderSelects(); 
-    renderAll(); 
+    renderSelects();
+    renderAll();
     updateToolUI();
     document.addEventListener('click', function(e) {
-        const menu = document.getElementById('tagContextMenu');
-        if (menu.style.display === 'block' && !menu.contains(e.target)) menu.style.display = 'none';
+      const menu = document.getElementById('tagContextMenu');
+      if (menu.style.display === 'block' && !menu.contains(e.target)) menu.style.display = 'none';
     });
-}
+  }
 
-function findNearestGridSize(val) {
+  function findNearestGridSize(val) {
     return GRID_SIZES.reduce((prev, curr) => Math.abs(curr - val) < Math.abs(prev - val) ? curr : prev);
-}
+  }
 
-function handleGridSliderInput(slider) {
+  function handleGridSliderInput(slider) {
     if (isUpdatingGrid) return;
     const val = parseInt(slider.value);
     const nearest = findNearestGridSize(val);
     if (nearest !== val) {
-        isUpdatingGrid = true;
-        slider.value = nearest;
-        isUpdatingGrid = false;
+      isUpdatingGrid = true;
+      slider.value = nearest;
+      isUpdatingGrid = false;
     }
     updateGridSize(nearest);
-}
+  }
 
-function save() {
+  function save() {
     try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(merchList));
-        localStorage.setItem(DICT_KEY, JSON.stringify(dict));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(merchList));
+      localStorage.setItem(DICT_KEY, JSON.stringify(dict));
     } catch (e) {
-        showModal("❌", "儲存失敗，可能圖片過大或空間不足");
-        throw e;
+      showModal("❌", "儲存失敗，可能圖片過大或空間不足");
+      throw e;
     }
-}
+  }
 
-function showModal(icon, text) {
+  function showModal(icon, text) {
     document.getElementById('modal-icon').innerText = icon;
     document.getElementById('modal-text').innerText = text;
     document.getElementById('overlay').style.display = 'block';
     document.getElementById('success-modal').style.display = 'block';
-}
+  }
 
-function closeModal() {
+  function closeModal() {
     document.getElementById('overlay').style.display = 'none';
     document.getElementById('success-modal').style.display = 'none';
-}
+  }
 
-function updateDateLabel() {
+  function updateDateLabel() {
     const status = document.getElementById('status').value;
     const label = document.getElementById('dateLabel');
     if (status === '非現貨') label.innerText = '預計發售日期(選填)';
     else if (status === '願望') label.innerText = '發現日期(選填)';
     else label.innerText = '購買日期(選填)';
-}
+  }
 
-function setBatchMode(on) {
+  function setBatchMode(on) {
     isBatchMode = on; selectedIndices = [];
     document.getElementById('batch-panel').style.display = isBatchMode ? 'flex' : 'none';
     document.getElementById('bottom-nav').style.bottom = isBatchMode ? '-100px' : '25px';
     document.getElementById('main-content').style.marginTop = isBatchMode ? '50px' : '0px';
     renderAll();
-}
+  }
 
-function toggleSelectItem(idx) {
+  function toggleSelectItem(idx) {
     const sIdx = selectedIndices.indexOf(idx);
     if (sIdx > -1) selectedIndices.splice(sIdx, 1); else selectedIndices.push(idx);
     document.getElementById('batch-count').innerText = `已選擇${selectedIndices.length}項`;
     renderAll();
-}
+  }
 
-function confirmBatchDelete() {
+  function confirmBatchDelete() {
     if (selectedIndices.length === 0) return;
-    if (!confirm(`確定刪除選中的${selectedIndices.length}個藏品嗎?`)) return;
+    if (!confirm(`確定刪除選中的${selectedIndices.length}個藏品嗎？`)) return;
     const indicesToDelete = [...selectedIndices].sort((a, b) => b - a);
     let newList = [...merchList];
     indicesToDelete.forEach(idx => newList.splice(idx, 1));
     try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(newList));
-        localStorage.setItem(DICT_KEY, JSON.stringify(dict));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(newList));
+      localStorage.setItem(DICT_KEY, JSON.stringify(dict));
     } catch (e) {
-        showModal("❌", "儲存失敗，無法刪除");
-        return;
+      showModal("❌", "儲存失敗，無法刪除");
+      return;
     }
     merchList = newList;
     renderSelects();
     renderAll();
     setBatchMode(false);
-}
+  }
 
-function renderAll() {
+  function renderAll() {
     const conf = { '現貨': 'readyList', '非現貨': 'waitList', '願望': 'wishList' };
     const srch = { '現貨': 'lib-search', '非現貨': 'wait-search', '願望': 'wish-search' };
     Object.keys(conf).forEach(status => {
-        const container = document.getElementById(conf[status]); if (!container) return;
-        const sVal = document.getElementById(srch[status]) ? document.getElementById(srch[status]).value.toLowerCase() : "";
-        let filtered = merchList.map((item, index) => ({ ...item, originalIndex: index }))
-            .filter(i => i.status === status)
-            .filter(i => filters.work.length === 0 || filters.work.includes(i.work))
-            .filter(i => filters.role.length === 0 || filters.role.includes(i.role))
-            .filter(i => filters.type.length === 0 || filters.type.includes(i.type))
-            .filter(i => (i.pattern + (i.note || "") + (i.role || "")).toLowerCase().includes(sVal));
+      const container = document.getElementById(conf[status]);
+      if (!container) return;
+      const sVal = document.getElementById(srch[status]) ? document.getElementById(srch[status]).value.toLowerCase() : '';
+      let filtered = merchList.map((item, index) => ({ ...item, originalIndex: index }))
+        .filter(i => i.status === status)
+        .filter(i => filters.work.length === 0 || filters.work.includes(i.work))
+        .filter(i => filters.role.length === 0 || filters.role.includes(i.role))
+        .filter(i => filters.type.length === 0 || filters.type.includes(i.type))
+        .filter(i => (i.pattern + (i.note || '') + (i.role || '')).toLowerCase().includes(sVal));
 
-        const multi = sortDesc ? 1 : -1;
-        filtered.sort((a, b) => {
-            if (sortMode === 'date') return (b.timestamp - a.timestamp) * multi;
-            if (sortMode === 'price') return (parseFloat(b.totalHkd) - parseFloat(a.totalHkd)) * multi;
-            if (sortMode === 'name') return (a.pattern.localeCompare(b.pattern, 'zh-TW')) * multi;
-            if (sortMode === 'qty') return (b.qty - a.qty) * multi;
-            return 0;
-        });
+      const multi = sortDesc ? 1 : -1;
+      filtered.sort((a, b) => {
+        if (sortMode === 'date') return (b.timestamp - a.timestamp) * multi;
+        if (sortMode === 'price') return (parseFloat(b.totalHkd) - parseFloat(a.totalHkd)) * multi;
+        if (sortMode === 'name') return (a.pattern.localeCompare(b.pattern, 'zh-TW')) * multi;
+        if (sortMode === 'qty') return (b.qty - a.qty) * multi;
+        return 0;
+      });
 
-        container.innerHTML = ""; container.className = `list-container ${viewMode}`;
-        filtered.forEach(i => {
-            const card = document.createElement('div');
-            card.className = `item-card ${isBatchMode && selectedIndices.includes(i.originalIndex) ? 'selected' : ""}`;
-            const noteHtml = i.note ? `<div class="note" style="font-size:calc(9px * var(--info-scale,1)); margin-top:calc(4px * var(--info-scale,1));">📝 ${i.note}</div>` : '';
-            const imgHtml = `<div class="img-box"><img src="${i.img || ""}"></div>`;
+      container.innerHTML = '';
+      container.className = `list-container ${viewMode}`;
 
-            const totalInt = parseInt(parseFloat(i.totalHkd));
-            let unitPriceHKD = (parseFloat(i.price) * rates[i.currency]);
-            let unitPriceStr = (unitPriceHKD % 1 === 0) ? unitPriceHKD.toString() : unitPriceHKD.toFixed(2);
+      filtered.forEach(i => {
+        const card = document.createElement('div');
+        card.className = `item-card ${isBatchMode && selectedIndices.includes(i.originalIndex) ? 'selected' : ''}`;
 
-            let infoHtml;
-            if (viewMode === 'grid') {
-                infoHtml = `
-                    <div class="info">
-                        <div style="font-size:calc(9px * var(--info-scale,1)); color:var(--m-brown);">${i.role || ""} ${i.type ? '| ' + i.type : ""}</div>
-                        <div style="font-weight:bold; font-size:calc(12px * var(--info-scale,1)); margin:calc(4px * var(--info-scale,1)) 0;">${i.pattern || '無名'}</div>
-                        <div style="color:#999; font-size: calc(9px * var(--info-scale,1));">單價 $ ${unitPriceStr}</div>
-                        <div style="color:var(--m-deep-green); font-size: calc(13px * var(--info-scale,1)); font-weight:bold; margin-top: auto;">$ ${totalInt}</div>
-                        ${noteHtml}
-                    </div>
-                    <div class="card-qty">x${i.qty}</div>
-                `;
-            } else if (viewMode === 'list') {
-                infoHtml = `
-                    <div class="info">
-                        <div style="font-size:calc(9px * var(--info-scale,1)); color:var(--m-brown);">${i.role || ""} ${i.type ? '| ' + i.type : ""}</div>
-                        <div style="font-weight:bold; font-size:calc(12px * var(--info-scale,1)); margin:calc(4px * var(--info-scale,1)) 0;">${i.pattern || '無名'}</div>
-                        <div style="color:#999; font-size: calc(9px * var(--info-scale,1)); margin-bottom: 2px;">單價 $ ${unitPriceStr}</div>
-                        <div style="color:var(--m-deep-green); font-size: calc(13px * var(--info-scale,1)); font-weight:bold;">$ ${totalInt} <span style="color:#aaa;font-weight:normal;font-size:calc(9px * var(--info-scale,1));">x${i.qty}</span></div>
-                        ${noteHtml}
-                    </div>
-                `;
-            } else {
-                infoHtml = '';
-            }
+        const noteHtml = i.note ? `<div class="note" style="font-size:calc(9px * var(--info-scale,1)); margin-top:calc(4px * var(--info-scale,1));">${i.note}</div>` : '';
+        const imgHtml = `<div class="img-box"><img src="${i.img || ''}"></div>`;
+        const totalInt = parseInt(parseFloat(i.totalHkd));
+        let unitPriceHKD = (parseFloat(i.price) * rates[i.currency]);
+        let unitPriceStr = (unitPriceHKD % 1 === 0) ? unitPriceHKD.toString() : unitPriceHKD.toFixed(2);
 
-            card.innerHTML = imgHtml + infoHtml;
-            card.onclick = () => isBatchMode ? toggleSelectItem(i.originalIndex) : editItem(i.originalIndex);
-            handleLongPress(card, () => {
-                if (!isBatchMode && i.img) zoomImage(i, i.originalIndex);
-            });
-            container.appendChild(card);
-        });
-        const cld = status === '現貨' ? 'lib-count' : (status === '非現貨' ? 'wait-count' : 'wish-count');
-        const countLabel = document.getElementById(cld);
-        if (countLabel) {
-            const total = merchList.filter(x => x.status === status).length;
-            countLabel.innerHTML = `<span>顯示:</span><span class="number">${filtered.length}/${total}</span>`;
+        let infoHtml;
+        if (viewMode === 'grid') {
+          infoHtml = `<div class="info">
+            <div style="font-size:calc(9px * var(--info-scale,1)); color:var(--m-brown);">${i.role || ''}${i.type ? '|' + i.type : ''}</div>
+            <div style="font-weight:bold; font-size:calc(12px * var(--info-scale,1)); margin:calc(4px * var(--info-scale,1)) 0;">${i.pattern || '無名'}</div>
+            <div style="color:#999; font-size:calc(9px * var(--info-scale,1));">單價 $${unitPriceStr}</div>
+            <div style="color:var(--m-deep-green); font-size:calc(13px * var(--info-scale,1)); font-weight:bold; margin-top:auto;">$${totalInt}</div>
+            ${noteHtml}
+          </div>
+          <div class="card-qty">x${i.qty}</div>`;
+        } else if (viewMode === 'list') {
+          infoHtml = `<div class="info">
+            <div style="font-size:calc(9px * var(--info-scale,1)); color:var(--m-brown);">${i.role || ''}${i.type ? '|' + i.type : ''}</div>
+            <div style="font-weight:bold; font-size:calc(12px * var(--info-scale,1)); margin:calc(4px * var(--info-scale,1)) 0;">${i.pattern || '無名'}</div>
+            <div style="color:#999; font-size:calc(9px * var(--info-scale,1)); margin-bottom:2px;">單價 $${unitPriceStr}</div>
+            <div style="color:var(--m-deep-green); font-size:calc(13px * var(--info-scale,1)); font-weight:bold;">$${totalInt} <span style="color:#aaa;font-weight:normal;font-size:calc(9px * var(--info-scale,1));">x${i.qty}</span></div>
+            ${noteHtml}
+          </div>`;
+        } else {
+          infoHtml = '';
         }
+
+        card.innerHTML = imgHtml + infoHtml;
+        card.onclick = () => isBatchMode ? toggleSelectItem(i.originalIndex) : handleLongPress(card, () => {
+          if (!isBatchMode && i.img) zoomImage(i, i.originalIndex);
+        });
+        container.appendChild(card);
+      });
+
+      const cId = status === '現貨' ? 'lib-count' : (status === '非現貨' ? 'wait-count' : 'wish-count');
+      const countLabel = document.getElementById(cId);
+      if (countLabel) {
+        const total = merchList.filter(x => x.status === status).length;
+        countLabel.innerHTML = `<span>顯示:</span><span class="number">${filtered.length}/${total}</span>`;
+      }
     });
     if (currentFilterModalStatus) renderFiltersInModal(currentFilterModalStatus);
-}
+  }
 
-function setSort(mode) { sortMode = mode; updateToolUI(); renderAll(); }
-function toggleOrder() { sortDesc = !sortDesc; updateToolUI(); renderAll(); }
-function setView(v) { viewMode = v; updateToolUI(); renderAll(); }
+  function setSort(mode) { sortMode = mode; updateToolUI(); renderAll(); }
+  function toggleOrder() { sortDesc = !sortDesc; updateToolUI(); renderAll(); }
+  function setView(v) { viewMode = v; updateToolUI(); renderAll(); }
 
-function updateToolUI() {
+  function updateToolUI() {
     document.querySelectorAll('.symbol-btn').forEach(b => b.classList.remove('active'));
     document.querySelectorAll('.sort-' + sortMode).forEach(b => b.classList.add('active'));
     document.querySelectorAll('.view-' + viewMode).forEach(b => b.classList.add('active'));
     document.querySelectorAll('.order-toggle').forEach(b => b.innerText = sortDesc ? "↓" : "↑");
-}
+  }
 
-function renderFiltersInModal(status) {
+  function renderFiltersInModal(status) {
     const container = document.getElementById('filterModalContent');
     if (!container) return;
     container.innerHTML = '';
 
     const buildSection = (title, list, key) => {
-        const section = document.createElement('div'); section.className = 'filter-section';
-        const titleEl = document.createElement('div'); titleEl.className = 'filter-section-title'; 
-        titleEl.innerHTML = `${title} <span class="tip">長按編輯或刪除標籤</span>`;
-        section.appendChild(titleEl);
-        const row = document.createElement('div'); row.className = 'filter-row';
+      const section = document.createElement('div'); section.className = 'filter-section';
+      const titleEl = document.createElement('div'); titleEl.className = 'filter-section-title';
+      titleEl.innerHTML = `${title} <span class="tip">長按編輯或刪除標籤</span>`;
+      section.appendChild(titleEl);
+      const row = document.createElement('div'); row.className = 'filter-row';
 
-        const allChip = document.createElement('div');
-        allChip.className = `filter-chip ${filters[key].length === 0 ? 'active' : ''}`;
-        const totalCount = status ? merchList.filter(i => i.status === status).length : 0;
-        allChip.innerText = `全部 (${totalCount})`;
-        allChip.onclick = () => { filters[key] = []; renderAll(); renderFiltersInModal(status); };
-        row.appendChild(allChip);
+      const allChip = document.createElement('div');
+      allChip.className = `filter-chip ${filters[key].length === 0 ? 'active' : ''}`;
+      const totalCount = status ? merchList.filter(i => i.status === status).length : 0;
+      allChip.innerText = `全部 (${totalCount})`;
+      allChip.onclick = () => { filters[key] = []; renderAll(); renderFiltersInModal(status); };
+      row.appendChild(allChip);
 
-        list.forEach(item => {
-            const count = status ? merchList.filter(i => i.status === status && i[key] === item).length : 0;
-            const chip = document.createElement('div');
-            chip.className = `filter-chip ${filters[key].includes(item) ? 'active' : ''}`;
-            chip.innerText = `${item} (${count})`;
-            chip.onclick = () => {
-                if (filters[key].includes(item)) filters[key] = filters[key].filter(v => v !== item);
-                else filters[key] = [...filters[key], item];
-                renderAll(); renderFiltersInModal(status);
-            };
-            handleLongPress(chip, () => {
-                longPressedTag = { key, value: item };
-                const rect = chip.getBoundingClientRect();
-                const menu = document.getElementById('tagContextMenu');
-                menu.style.left = rect.left + 'px';
-                menu.style.top = rect.bottom + 'px';
-                menu.style.display = 'block';
-            });
-            row.appendChild(chip);
+      list.forEach(item => {
+        const count = status ? merchList.filter(i => i.status === status && i[key] === item).length : 0;
+        const chip = document.createElement('div');
+        chip.className = `filter-chip ${filters[key].includes(item) ? 'active' : ''}`;
+        chip.innerText = `${item} (${count})`;
+        chip.onclick = () => {
+          if (filters[key].includes(item)) filters[key] = filters[key].filter(v => v !== item);
+          else filters[key] = [...filters[key], item];
+          renderAll();
+          renderFiltersInModal(status);
+        };
+        handleLongPress(chip, () => {
+          longPressedTag = { key, value: item };
+          const rect = chip.getBoundingClientRect();
+          const menu = document.getElementById('tagContextMenu');
+          menu.style.left = rect.left + 'px';
+          menu.style.top = rect.bottom + 'px';
+          menu.style.display = 'block';
         });
-        section.appendChild(row);
-        return section;
+        row.appendChild(chip);
+      });
+      section.appendChild(row);
+      return section;
     };
 
     container.appendChild(buildSection('作品', dict.works, 'work'));
     container.appendChild(buildSection('角色', dict.roles, 'role'));
     container.appendChild(buildSection('類別', dict.types, 'type'));
-}
+  }
 
-function editTagFromMenu() {
+  function editTagFromMenu() {
     const { key, value } = longPressedTag;
     if (!key || !value) return;
     const dictKey = key + 's';
-    const newValue = prompt(`編輯 ${key} 標籤「${value}」為：`, value);
-    if (!newValue || newValue === value) { document.getElementById('tagContextMenu').style.display = 'none'; return; }
-    if (dict[dictKey].includes(newValue)) { alert('該標籤名稱已存在，請使用其他名稱'); return; }
+    const newValue = prompt(`編輯${key}標籤「${value}」為：`, value);
+    if (!newValue || newValue === value) {
+      document.getElementById('tagContextMenu').style.display = 'none';
+      return;
+    }
+    if (dict[dictKey].includes(newValue)) {
+      alert('該標籤名已存在，請使用其他名稱');
+      return;
+    }
     const index = dict[dictKey].indexOf(value);
-    if (index !== -1) { dict[dictKey][index] = newValue; dict[dictKey].sort(); }
-    merchList = merchList.map(item => { if (item[key] === value) item[key] = newValue; return item; });
+    if (index !== -1) {
+      dict[dictKey][index] = newValue;
+      dict[dictKey].sort();
+    }
+    merchList = merchList.map(item => {
+      if (item[key] === value) item[key] = newValue;
+      return item;
+    });
     if (filters[key].includes(value)) filters[key] = filters[key].map(v => v === value ? newValue : v);
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(merchList)); localStorage.setItem(DICT_KEY, JSON.stringify(dict)); } catch (e) { showModal("❌", "儲存失敗"); }
-    renderSelects(); renderAll();
-    document.getElementById('tagContextMenu').style.display = 'none'; longPressedTag = { key: null, value: null };
-}
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(merchList));
+      localStorage.setItem(DICT_KEY, JSON.stringify(dict));
+    } catch (e) {
+      showModal("×", "儲存失敗");
+    }
+    renderSelects();
+    renderAll();
+    document.getElementById('tagContextMenu').style.display = 'none';
+    longPressedTag = { key: null, value: null };
+  }
 
-function deleteTagFromMenu() {
+  function deleteTagFromMenu() {
     const { key, value } = longPressedTag;
     if (!key || !value) return;
     const dictKey = key + 's';
-    if (!confirm(`確定刪除標籤「${value}」嗎？此操作不會影響現有藏品。`)) return;
+    if (!confirm(`確定刪除標籤「${value}」？此操作不會影響現有藏品。`)) return;
     dict[dictKey] = dict[dictKey].filter(v => v !== value);
     if (filters[key].includes(value)) filters[key] = filters[key].filter(v => v !== value);
-    try { localStorage.setItem(DICT_KEY, JSON.stringify(dict)); } catch (e) { showModal("⚠️", "儲存失敗"); }
-    renderSelects(); renderAll();
-    document.getElementById('tagContextMenu').style.display = 'none'; longPressedTag = { key: null, value: null };
-}
+    try {
+      localStorage.setItem(DICT_KEY, JSON.stringify(dict));
+    } catch (e) {
+      showModal("▲", "儲存失敗");
+    }
+    renderSelects();
+    renderAll();
+    document.getElementById('tagContextMenu').style.display = 'none';
+    longPressedTag = { key: null, value: null };
+  }
 
-function openFilterModal(status) {
+  function openFilterModal(status) {
     currentFilterModalStatus = status;
     renderFiltersInModal(status);
     document.getElementById('filterModal').style.display = 'block';
     document.getElementById('overlay').style.display = 'block';
-}
+  }
 
-function closeFilterModal() {
+  function closeFilterModal() {
     document.getElementById('filterModal').style.display = 'none';
     document.getElementById('overlay').style.display = 'none';
     currentFilterModalStatus = null;
-}
+  }
 
-function triggerQuickUpload() { document.getElementById('quickUploadInput').click(); }
+  function triggerQuickUpload() {
+    document.getElementById('quickUploadInput').click();
+  }
 
-function handleQuickUploadFile(input) {
+  function handleQuickUploadFile(input) {
     const file = input.files[0];
     if (!file) return;
     const reader = new FileReader();
     reader.onload = (e) => {
-        openCropModal(e.target.result, async (croppedBase64) => {
-            pendingCropImage = await compressImage(croppedBase64, 800, 0.8);
-            document.getElementById('pendingImageNote').style.display = 'block';
-            resetFormForNew();
-            openPage('page-recent');
-        }, false);
+      openCropModal(e.target.result, async (croppedBase64) => {
+        pendingCropImage = await compressImage(croppedBase64, 800, 0.8);
+        document.getElementById('pendingImageNote').style.display = 'block';
+        resetFormForNew();
+        openPage('page-recent');
+      }, false);
     };
     reader.readAsDataURL(file);
     input.value = '';
-}
+  }
 
-function handleImageFileSelect(input) {
+  function handleImageFileSelect(input) {
     const file = input.files[0];
     if (!file) return;
     const reader = new FileReader();
     reader.onload = (e) => {
-        openCropModal(e.target.result, async (croppedBase64) => {
-            pendingCropImage = await compressImage(croppedBase64, 800, 0.8);
-            document.getElementById('pendingImageNote').style.display = 'block';
-            input.value = '';
-        }, false);
+      openCropModal(e.target.result, async (croppedBase64) => {
+        pendingCropImage = await compressImage(croppedBase64, 800, 0.8);
+        document.getElementById('pendingImageNote').style.display = 'block';
+        input.value = '';
+      }, false);
     };
     reader.readAsDataURL(file);
-}
+  }
 
-function zoomImage(item, index) {
+  function zoomImage(item, index) {
     currentZoomIndex = index;
     openCropModal(item.img, null, true, item);
-}
+  }
 
-function updateZoomDisplay(index) {
+  function updateZoomDisplay(index) {
     const item = merchList[index];
-    if (!item || !item.img) return;
+    if (!item || !item.img) {
+      // 如果商品不存在或無圖片，隱藏資訊區
+      document.getElementById('zoomInfo').style.display = 'none';
+      return;
+    }
+    document.getElementById('zoomInfo').style.display = 'block';
     const img = document.getElementById('cropImage');
     if (cropper) {
-        cropper.replace(item.img);
+      cropper.replace(item.img);
     } else {
-        img.src = item.img;
+      img.src = item.img;
     }
     const infoDiv = document.getElementById('zoomInfo');
     const totalInt = parseInt(parseFloat(item.totalHkd));
     let unitPriceHKD = (parseFloat(item.price) * rates[item.currency]);
     let unitPriceStr = (unitPriceHKD % 1 === 0) ? unitPriceHKD.toString() : unitPriceHKD.toFixed(2);
     infoDiv.innerHTML = `
-        <div class="zoom-info-item"><strong>作品</strong><span>${item.work || '無'}</span></div>
-        <div class="zoom-info-item"><strong>角色</strong><span>${item.role || '無'}</span></div>
-        <div class="zoom-info-item"><strong>類別</strong><span>${item.type || '無'}</span></div>
-        <div class="zoom-info-item"><strong>總價</strong><span>$ ${totalInt}</span></div>
-        <div class="zoom-info-row">
-            <div class="zoom-info-item"><strong>數量</strong><span>${item.qty}</span></div>
-            <div class="zoom-info-item"><strong>單價</strong><span>$ ${unitPriceStr}</span></div>
-        </div>
+      <div class="zoom-info-item"><strong>作品</strong><span>${item.work || '無'}</span></div>
+      <div class="zoom-info-item"><strong>角色</strong><span>${item.role || '無'}</span></div>
+      <div class="zoom-info-item"><strong>類別</strong><span>${item.type || '無'}</span></div>
+      <div class="zoom-info-item"><strong>總價</strong><span>$${totalInt}</span></div>
+      <div class="zoom-info-row">
+        <div class="zoom-info-item"><strong>數量</strong><span>${item.qty}</span></div>
+        <div class="zoom-info-item"><strong>單價</strong><span>$${unitPriceStr}</span></div>
+      </div>
     `;
     document.getElementById('zoomPrev').style.display = (index > 0 && merchList[index-1] && merchList[index-1].img) ? 'flex' : 'none';
-    document.getElementById('zoomNext').styleList[index-1] && merchList[index-1].img) ? 'flex' : 'none';
-    document.getElementById('zoomNext').style.display = (index < merchList.length-1 && merchList[index.display = (index < merchList.length-1 && merchList[index+1] && merchList[index+1].img) ? 'flex'+1] && merchList[index+1].img) ? 'flex' : 'none';
-}
+    document.getElementById('zoomNext').style.display = (index < merchList.length-1 && merchList[index+1] && merchList[index+1].img) ? 'flex' : 'none';
+  }
 
-function openCropModal(imageSrc, callback, isZoom = false, item = null) {
-    const img = document.getElementById(' : 'none';
-}
-
-function openCropModal(imageSrc, callback, isZoom = false, item = null) {
+  function openCropModal(imageSrc, callback, isZoom = false, item = null) {
     const img = document.getElementById('cropImage');
     img.src = imageSrc;
     cropCallback = callback;
-   cropImage');
-    img.src = imageSrc;
-    cropCallback = callback;
-    isZoom isZoomMode = isZoom;
-
-    document.getElementById('cropConfirmBtn').style.display = isZoom ? 'none' : 'block';
-   Mode = isZoom;
-
+    isZoomMode = isZoom;
     document.getElementById('cropConfirmBtn').style.display = isZoom ? 'none' : 'block';
     document.getElementById('zoomPrev').style.display = 'none';
     document.getElementById('zoomNext').style.display = 'none';
-    document.getElementById('zoomInfo'). document.getElementById('zoomPrev').style.display = 'none';
-    document.getElementById('zoomNext').style.display = 'none';
     document.getElementById('zoomInfo').style.display = isZoom ? 'block' : 'none';
-
-   style.display = isZoom ? 'block' : 'none';
-
     document.getElementById('cropModal').style.display = 'flex';
-    document.getElementById('overlay').style.display document.getElementById('cropModal').style.display = 'flex';
     document.getElementById('overlay').style.display = 'block';
 
     if (cropper) cropper.destroy();
 
     if (isZoom) {
- = 'block';
-
-    if (cropper) cropper.destroy();
-
-    if (isZoom) {
-        cropper = new Cropper(img, { 
-            viewMode: 1, 
-            dragMode        cropper = new Cropper(img, { 
-            viewMode: 1, 
-            dragMode: 'move', 
-            autoCrop: false, 
-            cropBoxMovable: false, 
-            cropBoxResizable: false, 
-           : 'move', 
-            autoCrop: false, 
-            cropBoxMovable: false, 
-            cropBoxResizable: false, 
-            toggleDragModeOnDblclick: false, toggleDragModeOnDblclick: false, 
-            background: false, 
-            zoomable: true 
-            background: false, 
-            zoomable, 
-            zoomOnWheel: true 
-        });
-        if (item) {
-            const index = currentZoomIndex;
-            const infoDiv = document.getElementById('zoomInfo');
-            const totalInt = parseInt(parseFloat: true, 
-            zoomOnWheel: true 
-        });
-        if (item) {
-            const index = currentZoomIndex;
-            const infoDiv = document.getElementById('zoomInfo');
-            const totalInt = parseInt(parseFloat(item.totalHkd));
-            let unitPriceHKD = (parseFloat(item(item.totalHkd));
-            let unitPriceHKD = (parseFloat(item.price) * rates[item.currency]);
-            let unitPriceStr.price) * rates[item.currency]);
-            let unitPriceStr = (unitPriceHKD % 1 === 0) ? unitPriceHKD.toString() = (unitPriceHKD % 1 === 0) ? unitPriceHKD.toString() : unitPriceHKD.toFixed(2);
-            infoDiv.innerHTML = `
-                <div class : unitPriceHKD.toFixed(2);
-            infoDiv.innerHTML = `
-                <div class="zoom-info-item"><strong>作品</strong><span>${item.work ||="zoom-info-item"><strong>作品</strong><span>${item.work || '無'}</span></div>
-                <div class="zoom-info-item"><strong '無'}</span></div>
-                <div class="zoom-info-item"><strong>角色</strong><span>${item.role || '無'}</span></div>
-                <div class>角色</strong><span>${item.role || '無'}</span></div>
-                <div class="zoom-info-item"><strong>類別</strong><span>${item.type || '無'}</span></div>
-                <div class="zoom-info-item"><strong>總="zoom-info-item"><strong>類別</strong><span>${item.type || '無'}</span></div>
-                <div class="zoom-info-item"><strong價</strong><span>$ ${totalInt}</span></div>
-                <div class="zoom-info-row">
-                    <div class=">總價</strong><span>$ ${totalInt}</span></div>
-                <div class="zoom-info-row">
-                    <div class="zoom-info-item"><strong>數量</strong><span>${item.qty}</span></div>
-                    <div class="zoom-info-itemzoom-info-item"><strong>數量</strong><span>${item.qty}</span></div>
-                    <div class="zoom-info-item"><strong>單價</strong><span>$ ${unitPriceStr}</span></div>
-"><strong>單價</strong><span>$ ${unitPriceStr}</span></div>
-                </div>
-            `;
-            document.getElementById('zoomPrev').style.display = (index > 0 && merchList[index-1] && merchList[index-1].                </div>
-            `;
-            document.getElementById('zoomPrev').style.display = (index > 0 && merchList[index-1] && merchList[index-1].img) ? 'flex' : 'none';
-            document.getElementById('img) ? 'flex' : 'none';
-            document.getElementById('zoomNext').style.display = (index < merchList.length-1 && merchList[index+1zoomNext').style.display = (index < merchList.length-1 && merchList[index+1] && merchList[index+] && merchList[index+1].img) ? 'flex' : 'none';
-        }
+      cropper = new Cropper(img, {
+        viewMode: 1,
+        dragMode: 'move',
+        autoCrop: false,
+        cropBoxMovable: false,
+        cropBoxResizable: false,
+        toggleDragModeOnDblclick: false,
+        background: false,
+        zoomable: true,
+        zoomOnWheel: true
+      });
+      if (item) {
+        // 如果傳入了item，直接更新顯示
+        updateZoomDisplay(currentZoomIndex);
+      }
     } else {
-        cropper = new Cropper(img, { 
-            aspectRatio: 1, 
-            viewMode1].img) ? 'flex' : 'none';
-        }
-    } else {
-        cropper = new Cropper(img, { 
-            aspectRatio: 1, 
-            viewMode: 1, 
-            autoCropArea: 0.8, 
-            responsive: true, 
-            zoomable: 1, 
-            autoCropArea: 0.8, 
-            responsive: true, 
-            zoomable: true, 
-            zoomOnWheel: true, 
-            movable: true, 
-            cropBoxMovable: true, 
-            cropBoxResizable:: true, 
-            zoomOnWheel: true, 
-            movable: true, 
-            cropBoxMovable: true, 
-            cropBoxResizable: true, true, 
-            toggleDragModeOnDblclick: false 
-        });
+      cropper = new Cropper(img, {
+        aspectRatio: 1,
+        viewMode: 1,
+        autoCropArea: 0.8,
+        responsive: true,
+        zoomable: true,
+        zoomOnWheel: true,
+        movable: true,
+        cropBoxMovable: true,
+        cropBoxResizable: true,
+        toggleDragModeOnDblclick: false
+      });
     }
 
     document.getElementById('cropConfirmBtn').onclick = function () {
-        if (! 
-            toggleDragModeOnDblclick: false 
-        });
-    }
-
-    document.getElementById('cropConfirmBtn').onclick = function () {
-        if (!cropper || isZoomMode) return;
-        const canvas = cropper.getCroppedCanvas({ width: 800, height: cropper || isZoomMode) return;
-        const canvas = cropper.getCroppedCanvas({ width: 800, height: 800 });
-800 });
-        const croppedBase64 = canvas.toDataURL('image/jpeg', 0.9);
-        if (cropCallback) cropCallback(croppedBase        const croppedBase64 = canvas.toDataURL('image/jpeg', 0.9);
-        if (cropCallback) cropCallback(croppedBase64);
-        closeCropModal();
+      if (!cropper || isZoomMode) return;
+      const canvas = cropper.getCroppedCanvas({ width: 800, height: 800 });
+      const croppedBase64 = canvas.toDataURL('image/jpeg', 0.9);
+      if (cropCallback) cropCallback(croppedBase64);
+      closeCropModal();
     };
-}
+  }
 
-function zoomPrev() {
-    if (currentZoomIndex > 0 && merchList64);
-        closeCropModal();
-    };
-}
-
-function zoomPrev() {
+  function zoomPrev() {
     if (currentZoomIndex > 0 && merchList[currentZoomIndex-1] && merchList[currentZoomIndex-1].img) {
-[currentZoomIndex-1] && merchList[currentZoomIndex-1].img) {
-        currentZoomIndex--;
-        updateZoomDisplay(currentZoomIndex);
+      currentZoomIndex--;
+      updateZoomDisplay(currentZoomIndex);
     }
-}
+  }
 
-function zoomNext()        currentZoomIndex--;
-        updateZoomDisplay(currentZoomIndex);
-    }
-}
-
-function zoomNext() {
-    if (currentZoomIndex < merchList.length-1 && merchList[currentZoom {
+  function zoomNext() {
     if (currentZoomIndex < merchList.length-1 && merchList[currentZoomIndex+1] && merchList[currentZoomIndex+1].img) {
-        currentZoomIndex++;
-        updateZoomDisplay(currentZoomIndex);
+      currentZoomIndex++;
+      updateZoomDisplay(currentZoomIndex);
     }
-}
+  }
 
-document.getElementById('zoomPrev').addEventListener('click', zoomIndex+1] && merchList[currentZoomIndex+1].img) {
-        currentZoomIndex++;
-        updateZoomDisplay(currentZoomIndex);
-    }
-}
+  document.getElementById('zoomPrev').addEventListener('click', zoomPrev);
+  document.getElementById('zoomNext').addEventListener('click', zoomNext);
 
-document.getElementById('zoomPrev').addEventListener('click', zoomPrev);
-document.getElementById('zoomNext').addEventListener('click', zoomPrev);
-document.getElementById('zoomNext').addEventListener('click', zoomNext);
-
-function closeCropModal() {
+  function closeCropModal() {
     document.getElementById('cropModal').style.display = 'none';
     document.getElementById('overlay').style.display = 'none';
     if (cropper) { cropper.destroy(); cropper = null; }
     cropCallback = null;
     isZoomMode = false;
     currentZoomIndex = -1;
-}
+  }
 
-function editItem(idx) {
-    pendingNext);
-
-function closeCropModal() {
-    document.getElementById('cropModal').style.display = 'none';
-    document.getElementById('overlay').style.display = 'none';
-    if (cropper) { cropper.destroy(); cropper = null; }
-    cropCallback = null;
-    isZoomMode = false;
-    currentZoomIndex = -1;
-}
-
-function editItem(idx) {
+  function editItem(idx) {
     pendingCropImage = null;
     document.getElementById('pendingImageNote').style.display = 'none';
     const i = merchList[idx];
     document.getElementById('editIndex').value = idx;
-    document.getElementById('workSelect').value =CropImage = null;
-    document.getElementById('pendingImageNote').style.display = 'none';
-    const i = merchList[idx];
-    document.getElementById('editIndex').value = idx;
-    document.getElementById('workSelect'). i.work;
+    document.getElementById('workSelect').value = i.work;
     document.getElementById('roleSelect').value = i.role;
     document.getElementById('typeSelect').value = i.type;
     document.getElementById('pattern').value = i.pattern;
-    document.getElementById('note').value = i.note || "";
-    document.getElementById('status').value = i.status;
-   value = i.work;
-    document.getElementById('roleSelect').value = i.role;
-    document.getElementById('typeSelect').value = i.type;
-    document.getElementById('pattern').value = i.pattern;
-    document.getElementById('note').value = i.note || "";
+    document.getElementById('note').value = i.note || '';
     document.getElementById('status').value = i.status;
     document.getElementById('qty').value = i.qty;
-    document.getElementById('buyDate').value = i.buy document.getElementById('qty').value = i.qty;
-    document.getElementById('buyDate').value = i.buyDate || "";
-    document.getElementById('currency').value = i.currencyDate || "";
-    document.getElementById('currency').value = i.currency || "HKD";
+    document.getElementById('buyDate').value = i.buyDate || '';
+    document.getElementById('currency').value = i.currency || 'HKD';
     document.getElementById('inputPrice').value = i.price || 0;
-    document.getElementById('submitBtn').innerText = "更新藏品資料";
+    document.getElementById('submitBtn').innerText = '更新藏品資料';
     document.getElementById('delBtn').style.display = 'block';
     liveExchange();
     updateDateLabel();
     document.getElementById('recent-page-title').innerText = '編輯藏品';
     switchTab('page-recent');
-}
+  }
 
-function resetFormForNew() {
+  function resetFormForNew() {
     document.getElementById('merchForm').reset();
-    document.getElementById('editIndex').value = "-1";
-    document.getElementById('submitBtn').innerText || "HKD";
-    document.getElementById('inputPrice').value = i.price || 0;
-    document.getElementById('submitBtn').innerText = "更新藏品資料";
-    document.getElementById('delBtn').style.display = 'block';
-    liveExchange();
-    updateDateLabel();
-    document.getElementById('recent-page-title').innerText = '編輯藏品';
-    switchTab('page-recent');
-}
-
-function resetFormForNew() {
-    document.getElementById('merchForm').reset();
-    document.getElementById('editIndex').value = "-1";
-    document.getElementById('submitBtn').innerText = "儲存至資料庫";
+    document.getElementById('editIndex').value = '-1';
+    document.getElementById('submitBtn').innerText = '儲存至資料庫';
     document.getElementById('delBtn').style.display = 'none';
-    document.getElementById('exchangePreview').innerText = "總額: HKD 0.00";
-    const lastInput = JSON.parse(localStorage.getItem( = "儲存至資料庫";
-    document.getElementById('delBtn').style.display = 'none';
-    document.getElementById('exchangePreview').innerText = "總額: HKD 0.00";
+    document.getElementById('exchangePreview').innerText = '總額: HKD 0.00';
     const lastInput = JSON.parse(localStorage.getItem(LAST_INPUT_KEY) || '{}');
-    if (lastInput.work) document.getElementById('workSelect').value = lastInput.work;
-    if (lastInput.role) document.getElementById('roleSelect').value = lastInput.role;
-    if (lastInputLAST_INPUT_KEY) || '{}');
     if (lastInput.work) document.getElementById('workSelect').value = lastInput.work;
     if (lastInput.role) document.getElementById('roleSelect').value = lastInput.role;
     if (lastInput.type) document.getElementById('typeSelect').value = lastInput.type;
     if (lastInput.status) document.getElementById('status').value = lastInput.status;
-    if (lastInput.currency) document.getElementById('currency').value.type) document.getElementById('typeSelect').value = lastInput.type;
-    if (lastInput.status) document.getElementById('status').value = lastInput.status;
-    if (lastInput.currency) = lastInput.currency;
-    liveExchange();
-    updateDateLabel();
-    document.getElementById('recent-page-title').innerText = '新增藏品';
-    if (pendingCropImage) document.getElementById(' document.getElementById('currency').value = lastInput.currency;
+    if (lastInput.currency) document.getElementById('currency').value = lastInput.currency;
     liveExchange();
     updateDateLabel();
     document.getElementById('recent-page-title').innerText = '新增藏品';
     if (pendingCropImage) document.getElementById('pendingImageNote').style.display = 'block';
-    else document.getElementById('pendingImageNote').style.display =pendingImageNote').style.display = 'block';
     else document.getElementById('pendingImageNote').style.display = 'none';
-}
+  }
 
-function handleLongPress(element, callback) {
+  function handleLongPress(element, callback) {
     let timer;
-    const start = () => { timer = setTimeout(() => { if (window.navigator.vibrate) window.navigator.vibrate(60); callback(); 'none';
-}
-
-function handleLongPress(element, callback) {
-    let timer;
-    const start = () => { timer = setTimeout(() => { if (window.navigator.vibrate) window.navigator.vibrate(60); callback(); }, 700); };
+    const start = () => { timer = setTimeout(() => { if (window.navigator.vibrate) window.navigator.vibrate(60); callback(); }, 400); }; // 縮短為400ms
     const cancel = () => clearTimeout(timer);
     element.addEventListener('touchstart', start, { passive: true });
     element.addEventListener('touchend', cancel);
     element.addEventListener('mousedown', start);
     element.addEventListener('mouseup', cancel);
-}
+  }
 
- }, 700); };
-    const cancel = () => clearTimeout(timer);
-    element.addEventListener('touchstart', start, { passive: true });
-    element.addEventListener('touchend', cancel);
-    element.addEventListener('mousedown', start);
-    element.addEventListener('mouseup', cancel);
-}
-
-function switchTab(id, btn) {
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    document.getElementById(id).classList.addfunction switchTab(id, btn) {
+  function switchTab(id, btn) {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     document.getElementById(id).classList.add('active');
-    if (btn) { document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); btn.classList.add('('active');
-    if (btn) { document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); btn.classList.add('active'); }
+    if (btn) {
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+      btn.classList.add('active');
+    }
     if (id === 'page-stats') renderStats();
     closeFilterModal();
     if (isBatchMode) setBatchMode(false);
-}
+  }
 
-function openactive'); }
-    if (id === 'page-stats') renderStats();
-    closeFilterModal();
-    if (isBatchMode) setBatchMode(false);
-}
-
-function openPage(id) {
+  function openPage(id) {
     document.getElementById('cover-page').classList.add('open');
     document.getElementById('bottom-nav').style.display = 'flex';
-Page(id) {
-    document.getElementById('cover-page').classList.add('open');
-       switchTab(id, document.querySelectorAll('.nav-item')[['page-gallery', 'page-pending', 'page-wish', 'page-stats', 'page-recent', 'page-settings'].indexOf(id)]);
-}
+    const index = ['page-gallery', 'page-pending', 'page-wish', 'page-stats', 'page-recent', 'page-settings'].indexOf(id);
+    switchTab(id, document.querySelectorAll('.nav-item')[index]);
+  }
 
-function handleBack() {
+  function handleBack() {
     const activePage = document.querySelector('.page.active')?.id;
     if (activePage === 'page-recent') switchTab('page-gallery', document.querySelector('.nav-item'));
-    else { document.getElementById('cover-page').classList document.getElementById('bottom-nav').style.display = 'flex';
-    switchTab(id, document.querySelectorAll('.nav-item')[['page-gallery', 'page-pending', 'page-wish', 'page-stats', 'page-recent', 'page-settings'].indexOf(id)]);
-}
+    else {
+      document.getElementById('cover-page').classList.remove('open');
+      document.getElementById('bottom-nav').style.display = 'none';
+    }
+  }
 
-function handleBack() {
-    const activePage = document.querySelector('.page.active')?.id;
-    if (activePage === 'page-recent') switchTab('page-gallery', document.querySelector('.nav-item'));
-    else { document.getElementById('cover-page').classList.remove('open'); document.getElementById('bottom-nav').style.display = 'none'; }
-}
-
-function toggleInput(sid, iid.remove('open'); document.getElementById('bottom-nav').style.display = 'none'; }
-}
-
-function toggleInput(sid, iid) {
-) {
+  function toggleInput(sid, iid) {
     const s = document.getElementById(sid);
     const i = document.getElementById(iid);
     i.style.display = (s.value === 'NEW') ? 'block' : 'none';
-}
+  }
 
-function liveExchange() {
-    const s = document.getElementById(sid);
-    const i = document.getElementById(iid);
-    i.style.display = (s.value === 'NEW') ? 'block' : 'none';
-}
-
-function liveExchange() {
+  function liveExchange() {
     const c = document.getElementById('currency').value;
-    const p = parseFloat(document    const c = document.getElementById('currency').value;
     const p = parseFloat(document.getElementById('inputPrice').value) || 0;
-    const q = parseInt(document.getElementById('qty').value) || .getElementById('inputPrice').value) || 0;
     const q = parseInt(document.getElementById('qty').value) || 1;
-    const total = (p * rates[c] * q).toFixed(1;
     const total = (p * rates[c] * q).toFixed(2);
-    document.getElementById('exchangePreview2);
     document.getElementById('exchangePreview').innerText = `總額: HKD ${total}`;
-}
+  }
 
-document.getElementById('merchForm').onsub').innerText = `總額: HKD ${total}`;
-}
-
-document.getElementById('merchForm').onsubmit = async function (e) {
-    e.preventDefault();
-    const editIdxmit = async function (e) {
+  document.getElementById('merchForm').onsubmit = async function (e) {
     e.preventDefault();
     const editIdx = parseInt(document.getElementById('editIndex').value);
-    if = parseInt(document.getElementById('editIndex').value);
     if (document.activeElement) document.activeElement.blur();
 
-    const getV = (document.activeElement) document.activeElement.blur();
-
     const getV = (sid, iid, dk) => {
-        let sVal = document.getElementById(sid).value;
-        if ( (sid, iid, dk) => {
-        let sVal = document.getElementById(sid).value;
-        if (sVal === 'NEW') {
-            let v = document.getElementById(iid).value.trim();
-            if (v && !dictsVal === 'NEW') {
-            let v = document.getElementById(iid).value.trim();
-            if (v && !dict[dk].includes(v)) { dict[dk].push(v); dict[dk].sort(); }
-            return v;
-        }
-        return sVal;
+      let sVal = document.getElementById(sid).value;
+      if (sVal === 'NEW') {
+        let v = document.getElementById(iid).value.trim();
+        if (v && !dict[dk].includes(v)) { dict[dk].push(v); dict[dk].sort(); }
+        return v;
+      }
+      return sVal;
     };
 
     const work = getV('workSelect', 'workInput', 'works');
-    const role[dk].includes(v)) { dict[dk].push(v); dict[dk].sort(); }
-            return v;
-        }
-        return sVal;
-    };
-
-    const work = getV('workSelect', 'workInput', 'works');
-    const role = get = getV('roleSelect', 'roleInput', 'roles');
-    const type = getV('typeSelect', 'typeInput', 'types');
-    const status = document.getElementById('status').V('roleSelect', 'roleInput', 'roles');
+    const role = getV('roleSelect', 'roleInput', 'roles');
     const type = getV('typeSelect', 'typeInput', 'types');
     const status = document.getElementById('status').value;
 
-    const done = async (imgBasevalue;
-
     const done = async (imgBase64) => {
-        const finalImg = imgBase64 || pending64) => {
-        const finalImg = imgBase64CropImage || (editIdx > -1 ? merchList[editIdx].img : null);
-        const || pendingCropImage || (editIdx > -1 ? merchList[editIdx].img : null);
-        const data = {
-            work, role, type, status,
-            pattern: document.getElementById('pattern').value,
- data = {
-            work, role, type, status,
-            pattern: document.getElementById('pattern').value,
-            note: document.getElementById('note').value,
-            qty: parseInt(document            note: document.getElementById('note').value,
-            qty: parseInt(document.getElementById('qty').value),
-            buyDate: document.getElementById('.getElementById('qty').value),
-            buyDate: document.getElementById('buyDate').value,
-            currency: document.getElementById('currency').value,
-            price: parseFloat(document.getElementById('inputPrice').value),
-            totalHkd: document.getElementById('exchangePreview').innerText.replace('總額: HKD ', ''),
-            img: finalImg,
-            timestamp: (editIdx > -1) ? merchList[editIdx].timestamp : Date.now()
-        };
+      const finalImg = imgBase64 || pendingCropImage || (editIdx > -1 ? merchList[editIdx].img : null);
+      const data = {
+        work, role, type, status,
+        pattern: document.getElementById('pattern').value,
+        note: document.getElementById('note').value,
+        qty: parseInt(document.getElementById('qty').value),
+        buyDate: document.getElementById('buyDate').value,
+        currency: document.getElementById('currency').value,
+        price: parseFloat(document.getElementById('inputPrice').value),
+        totalHkd: document.getElementById('exchangePreview').innerText.replace('總額: HKD ', ''),
+        img: finalImg,
+        timestamp: (editIdx > -1) ? merchList[editIdx].timestamp : Date.now()
+      };
 
-        let newList;
-        if (editIdx > -1) { newList =buyDate').value,
-            currency: document.getElementById('currency').value,
-            price: parseFloat(document.getElementById('inputPrice').value),
-            totalHkd: document.getElementById('exchangePreview').innerText.replace('總額: HKD ', ''),
-            img: finalImg,
-            timestamp: (editIdx > -1) ? merchList[editIdx].timestamp : Date.now()
-        };
+      let newList;
+      if (editIdx > -1) { newList = [...merchList]; newList[editIdx] = data; }
+      else newList = [...merchList, data];
 
-        let newList;
-        if (editIdx > -1) { newList = [...merchList]; newList[editIdx] = data; }
-        else newList = [...merchList, data];
-
-        try {
-            let quality = 0.8;
-            for (let attempt = 0; attempt < 5; attempt++) {
-                [...merchList]; newList[editIdx] = data; }
-        else newList = [...merchList, data];
-
-        try {
-            let quality = 0.8;
-            for (let attempt = 0; attempt < 5; attempt++) {
-                try {
- try {
-                    localStorage.setItem(STORAGE_KEY, JSON.stringify(newList));
-                    localStorage.setItem(DICT_KEY, JSON.stringify(dict));
-                    break;
-                } catch (e) {
-                    if (attempt === 4) throw e;
-                    quality -=                     localStorage.setItem(STORAGE_KEY, JSON.stringify(newList));
-                    localStorage.setItem(DICT_KEY, JSON.stringify(dict));
-                    break;
-                } catch (e) {
-                    if (attempt === 4) throw e;
-                    quality -= 0.1;
-                    if (data.img) {
-                        const compressed = await compressImage(data.img, 800, quality);
-                        data.img = compressed;
-                        newList[editIdx >0.1;
-                    if (data.img) {
-                        const compressed = await compressImage(data.img, 800, quality);
-                        data.img = compressed;
-                        newList[editIdx > -1 -1 ? editIdx : newList.length-1] = data;
-                    }
-                }
+      try {
+        let quality = 0.8;
+        for (let attempt = 0; attempt < 5; attempt++) {
+          try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(newList));
+            localStorage.setItem(DICT_KEY, JSON.stringify(dict));
+            break;
+          } catch (e) {
+            if (attempt === 4) throw e;
+            quality = 0.1;
+            if (data.img) {
+              const compressed = await compressImage(data.img, 800, quality);
+              data.img = compressed;
+              newList[editIdx > -1 ? editIdx : newList.length - 1] = data;
             }
-        } catch (e) {
-            showModal("❌", "儲存失敗，圖片過大");
-            return;
+          }
         }
+      } catch (e) {
+        showModal("❌", "儲存失敗，圖片過大");
+        return;
+      }
 
-        ? editIdx : newList.length-1] = data;
-                    }
-                }
-            }
-        } catch (e) {
-            showModal("❌", "儲存失敗，圖片過大");
-            return;
-        }
+      merchList = newList;
+      const lastInput = { work: data.work, role: data.role, type: data.type, status: data.status, currency: data.currency };
+      localStorage.setItem(LAST_INPUT_KEY, JSON.stringify(lastInput));
 
-        merchList = newList;
+      pendingCropImage = null;
+      document.getElementById('pendingImageNote').style.display = 'none';
 
-        const lastInput = { work: data.work, role: data.role, type: merchList = newList;
+      renderSelects();
+      renderAll();
+      resetFormForNew();
 
-        const lastInput = { work: data.work, role: data.role, type data.type, status: data.status, currency: data.currency };
-        localStorage.setItem(LAST_INPUT_KEY, JSON.stringify(lastInput));
-
-        pendingCropImage = null;
-        document.getElementById('pendingImageNote').style.display =: data.type, status: data.status, currency: data.currency };
-        localStorage.setItem(LAST_INPUT_KEY, JSON.stringify(lastInput));
-
-        pendingCropImage = null;
-        document.getElementById('pendingImageNote').style.display = 'none';
-
-        renderSelects();
-        renderAll();
-        resetFormForNew();
-
- 'none';
-
-        renderSelects();
-        renderAll();
-        resetFormForNew();
-
-        if (editIdx > -1) {
-            switchTab('page-gallery', document.querySelectorAll('.nav-item')[0]);
-        } else {
-            setTimeout(()        if (editIdx > -1) {
-            switchTab('page-gallery', document.querySelectorAll('.nav-item')[0]);
-        } else {
-            setTimeout(() => { showModal("✨", "已存入庫"); }, 400);
-        }
+      if (editIdx > -1) {
+        switchTab('page-gallery', document.querySelectorAll('.nav-item')[0]);
+      } else {
+        setTimeout(() => { showModal("✓", "已存入庫"); }, 400);
+      }
     };
 
     const f = document.getElementById('imgFile').files[0];
     if (f) {
-        const fr = new FileReader();
-        fr.onload = async => { showModal("✨", "已存入庫"); }, 400);
-        }
-    };
-
-    const f = document.getElementById('imgFile').files[0];
-    if (f) {
-        const fr = new FileReader();
-        fr.onload () => {
-            const compressed = await compressImage(fr.result, 800, 0.8);
-            done(compressed);
-        };
-        fr.readAsDataURL(f);
+      const fr = new FileReader();
+      fr.onload = async () => {
+        const compressed = await compressImage(fr.result, 800, 0.8);
+        done(compressed);
+      };
+      fr.readAsDataURL(f);
     } else {
-        done(null);
+      done(null);
     }
-};
+  };
 
-function deleteCurrentItem() {
-    const idx = parseInt(document.getElementById('editIndex').value);
-    if = async () => {
-            const compressed = await compressImage(fr.result, 800, 0.8);
-            done(compressed);
-        };
-        fr.readAsDataURL(f);
-    } else {
-        done(null);
-    }
-};
-
-function deleteCurrentItem() {
+  function deleteCurrentItem() {
     const idx = parseInt(document.getElementById('editIndex').value);
     if (idx > -1 && confirm("確定刪除此藏品？")) {
-        let newList = [...merchList]; newList.splice(idx, 1);
-        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(newList)); localStorage.setItem(D (idx > -1 && confirm("確定刪除此藏品？")) {
-        let newList = [...merchList]; newList.splice(idx, 1);
-        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(newList)); localStorage.setItem(DICT_KEY, JSON.stringify(dict)); } 
-        catch (e) { showModal("❌", "刪除失敗，無法儲存"); return; }
-        merchList = newList;
-        renderSelects(); renderAll(); resetFormForNew();
-ICT_KEY, JSON.stringify(dict)); } 
-        catch (e) { showModal("❌", "刪除失敗，無法儲存"); return; }
-        merchList = newList;
-        renderSelects(); renderAll(); resetFormForNew();
-        switch        switchTab('page-gallery', document.querySelectorAll('.nav-item')[0]);
+      let newList = [...merchList]; newList.splice(idx, 1);
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(newList));
+        localStorage.setItem(DICT_KEY, JSON.stringify(dict));
+      } catch (e) {
+        showModal("×", "刪除失敗，無法儲存");
+        return;
+      }
+      merchList = newList;
+      renderSelects();
+      renderAll();
+      resetFormForNew();
+      switchTab('page-gallery', document.querySelectorAll('.nav-item')[0]);
     }
-}
+  }
 
-function renderSelects() {
+  function renderSelects() {
     const fill = (id, list) => {
-        const s = document.getElementById(id);
-        const combined = [...list].sort();
-Tab('page-gallery', document.querySelectorAll('.nav-item')[0]);
-    }
-}
-
-function renderSelects() {
-    const fill = (id, list) => {
-        const s = document.getElementById(id);
-        const combined = [...list].sort();
-        s.innerHTML = '<option value="">請選擇...</option>' + combined.map(x => `<option value="${x}">${x}</option>`).join('')        s.innerHTML = '<option value="">請選擇...</option>' + combined.map(x => `<option value="${x}">${x}</option>`).join('') + '<option value="NEW">+ 新增標籤</option>';
-    };
-    fill('workSelect', dict.works);
-    fill('role + '<option value="NEW">+ 新增標籤</option>';
+      const s = document.getElementById(id);
+      const combined = [...list].sort();
+      s.innerHTML = '<option value="">請選擇...</option>' +
+        combined.map(x => `<option value="${x}">${x}</option>`).join('') +
+        '<option value="NEW">+ 新增標籤</option>';
     };
     fill('workSelect', dict.works);
     fill('roleSelect', dict.roles);
     fill('typeSelect', dict.types);
-}
+  }
 
-function updateGridSize(v) {
+  function updateGridSize(v) {
     document.documentElement.style.setProperty('--dynamic-grid', v + 'px');
     localStorage.setItem('archive_grid_size', v);
     isUpdatingGrid = true;
-    document.querySelectorAll('.grid-range-slider').forEach(slider =>Select', dict.roles);
-    fill('typeSelect', dict.types);
-}
-
-function updateGridSize(v) {
-    document.documentElement.style.setProperty('--dynamic-grid', v + 'px');
-    localStorage.setItem('archive_grid_size', v);
-    isUpdatingGrid = true;
-    document.querySelectorAll('.grid-range-slider').forEach(sl slider.value = v);
+    document.querySelectorAll('.grid-range-slider').forEach(slider => slider.value = v);
     isUpdatingGrid = false;
     let scale = 1;
     if (v <= 106) scale = Math.max(0.7, v / 106);
     document.documentElement.style.setProperty('--info-scale', scale);
-}
+  }
 
-function updateCover(input) {
+  function updateCover(input) {
     if (input.files && input.files[0]) {
-        const fr = new FileReader();
-ider => slider.value = v);
-    isUpdatingGrid = false;
-    let scale = 1;
-    if (v <= 106) scale = Math.max(0.7, v / 106);
-    document.documentElement.style.setProperty('--info-scale', scale);
-}
-
-function updateCover(input) {
-    if (input.files && input.files[0]) {
-        const fr = new FileReader();
-        fr.onload = (e) => {
-            document.getElementById('cover-page').style.backgroundImage = `url(${e.target.result})        fr.onload = (e) => {
-            document.getElementById('cover-page').style.backgroundImage = `url(${e.target.result})`;
-            localStorage.setItem(COVER_KEY, e.target.result);
-        };
-        fr.readAsDataURL(input.files[0]);
+      const fr = new FileReader();
+      fr.onload = (e) => {
+        document.getElementById('cover-page').style.backgroundImage = `url(${e.target.result})`;
+        localStorage.setItem(COVER_KEY, e.target.result);
+      };
+      fr.readAsDataURL(input.files[0]);
     }
-}
+  }
 
-function exportData() {
-    const data = JSON.stringify({`;
-            localStorage.setItem(COVER_KEY, e.target.result);
-        };
-        fr.readAsDataURL(input.files[0]);
-    }
-}
-
-function exportData() {
-    const data = JSON.stringify({ merchList, dict, cover: localStorage.getItem(CO merchList, dict, cover: localStorage.getItem(COVER_KEY) });
+  function exportData() {
+    const data = JSON.stringify({ merchList, dict, cover: localStorage.getItem(COVER_KEY) });
     const blob = new Blob([data], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = url; a.download = `archive_backup_${new Date().toISOString().slice(0, 10)}.json`;
+    a.href = url;
+    a.download = `archive_backup_${new Date().toISOString().slice(0, 10)}.json`;
     a.click();
-}
+  }
 
-function importData(input) {
-    const reader = newVER_KEY) });
-    const blob = new Blob([data], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = `archive_backup_${new Date().toISOString().slice(0, 10)}.json`;
-    a.click();
-}
-
-function importData(input) {
+  function importData(input) {
     const reader = new FileReader();
     reader.onload = (e) => {
-        try {
-            const data = JSON.parse(e.target.result);
-            merchList = data.merchList || [];
-            dict = data FileReader();
-    reader.onload = (e) => {
-        try {
-            const data = JSON.parse(e.target.result);
-            merchList = data.merchList || [];
-            dict = data.dict || { works: [], roles: [], types: [] };
-            if (!dict.works) dict.works = [];
-            if (!dict.roles) dict.roles = [];
-            if (!dict.types) dict.types.dict || { works: [], roles: [], types: [] };
-            if (!dict.works) dict.works = [];
-            if (!dict.roles) dict.roles = [];
-            if (!dict.types) dict.types = [];
-            if (data.cover) localStorage.setItem(COVER_KEY, data.cover);
-            save();
-            location.reload();
-        } catch (ex) { showModal("❌", "匯 = [];
-            if (data.cover) localStorage.setItem(COVER_KEY, data.cover入檔案格式錯誤"); }
+      try {
+        const data = JSON.parse(e.target.result);
+        merchList = data.merchList || [];
+        dict = data.dict || { works: [], roles: [], types: [] };
+        if (!dict.works) dict.works = [];
+        if (!dict.roles) dict.roles = [];
+        if (!dict.types) dict.types = [];
+        if (data.cover) localStorage.setItem(COVER_KEY, data.cover);
+        save();
+        location.reload();
+      } catch (ex) {
+        showModal("❌", "匯入檔案格式錯誤");
+      }
     };
     reader.readAsText(input.files[0]);
-}
+  }
 
-function renderStats() {
-    if (charts.monthly) charts.monthly.destroy();
-    if (charts.role) charts);
-            save();
-            location.reload();
-        } catch (ex) { showModal("❌", "匯入檔案格式錯誤"); }
-    };
-    reader.readAsText(input.files[0]);
-}
-
-function renderStats() {
+  function renderStats() {
     if (charts.monthly) charts.monthly.destroy();
     if (charts.role) charts.role.destroy();
-    if (charts.type.role.destroy();
+    if (charts.roleCount) charts.roleCount.destroy();
     if (charts.typeCount) charts.typeCount.destroy();
-    if (charts.roleCount) charts.roleCount.destroy();
 
     const statsList = merchList.filter(i => i.status !== '願望');
     const totalExpense = statsList.reduce((sum, i) => sum + parseFloat(i.totalHkd || 0), 0).toFixed(2);
-
     document.getElementById('totalCountSpan').innerText = merchList.length;
-    document.getElementById('Count) charts.typeCount.destroy();
-    if (charts.roleCount) charts.roleCount.destroy();
-
-    const statsList = merchList.filter(i => i.status !== '願望');
-    const totalExpense = statsList.reduce((sum, i) => sum + parseFloat(i.totalHkd || 0), 0).toFixed(2);
-
-    document.getElementById('totalCountSpan').innerText = merchList.length;
-    documenttotalExpenseSpan').innerText = `HKD ${totalExpense}`.getElementById('totalExpenseSpan').innerText = `HKD ${totalExpense}`;
-
-    const colors = ['#6b7a63', '#acc1ad', '#a68b7c', '#d5cabd', '#e5;
+    document.getElementById('totalExpenseSpan').innerText = `HKD ${totalExpense}`;
 
     const colors = ['#6b7a63', '#acc1ad', '#a68b7c', '#d5cabd', '#e5ddd5', '#c2b2a3'];
 
+    // 每月花費
     const mData = {};
-    statsList.forEach(i => { const d = new Date(i.timestampddd5', '#c2b2a3'];
-
-    const mData = {};
-    statsList.forEach(i => { const d = new Date(i.timestamp); const k = `${d.getFullYear()}/${d.getMonth() + 1}`; mData[k]); const k = `${d.getFullYear()}/${d.getMonth() + 1}`; mData[k] = (mData[k] || 0) + parseFloat(i.totalHkd); });
-    charts.month = (mData[k] || 0) + parseFloat(i.totalHkd);ly = new Chart(document.getElementById('monthlyChart'), {
-        type: 'line',
-        data: { labels: Object.keys(mData), datasets: [{ label: 'HKD', data: Object.values(mData), borderColor: '#6b7a63', tension: 0.3 }] },
-        options: { 
-            plugins: { 
-                datalabels: {
-                    display: true,
-                    align: 'bottom',
-                    offset: 10,
-                    formatter: (value) => '$' + parseInt(value),
-                    font });
+    statsList.forEach(i => {
+      const d = new Date(i.timestamp);
+      const k = `${d.getFullYear()}/${d.getMonth() + 1}`;
+      mData[k] = (mData[k] || 0) + parseFloat(i.totalHkd);
+    });
     charts.monthly = new Chart(document.getElementById('monthlyChart'), {
-        type: 'line',
-        data: { labels: Object.keys(mData), datasets: [{ label: 'HKD', data: Object.values(mData), borderColor: '#6b7a63', tension: 0.3 }] },
-        options: { 
-            plugins: { 
-                datalabels: {
-                    display: true,
-                    align: 'bottom',
-                    offset: 10,
-                    formatter: (value) => '$' + parseInt(value),
-                    font: { size: 9, weight: 'bold' },
-                    color: '#6b7a63'
-               : { size: 9, weight: 'bold' },
-                    color: '#6b7a63'
-                } 
-            }, 
-            maintainAspectRatio: false, 
-            responsive: true 
+      type: 'line',
+      data: {
+        labels: Object.keys(mData),
+        datasets: [{ label: 'HKD', data: Object.values(mData), borderColor: '#6b7a63', tension: 0.3 }]
+      },
+      options: {
+        maintainAspectRatio: false,
+        responsive: true,
+        plugins: {
+          datalabels: {
+            display: true,
+            align: 'bottom',
+            offset: 10,
+            formatter: (value) => '$' + parseInt(value),
+            font: { size: 9, weight: 'bold' },
+            color: '#6b7a63'
+          }
         }
+      }
     });
 
-    const rData = {};
-    statsList.forEach(i => { rData[i.role] = (rData[i. } 
-            }, 
-            maintainAspectRatio: false, 
-            responsive: true 
-        }
-    });
-
+    // 角色花費排名
     const rData = {};
     statsList.forEach(i => { rData[i.role] = (rData[i.role] || 0) + parseFloat(i.totalHkd); });
-    const rSorted = Object.entries(rData).sort((a, b) => b[1] - a[1]).role] || 0) + parseFloat(i.totalHkd); });
     const rSorted = Object.entries(rData).sort((a, b) => b[1] - a[1]).slice(0, 3);
     const rColors = ['#6b7a63', '#acc1ad', '#a68b7c'];
-slice(0, 3);
-    const rColors = ['#6b7a63', '#acc1ad', '#a68b7c'];
     charts.role = new Chart(document.getElementById('roleChart'), {
-        type    charts.role = new Chart(document.getElementById('roleChart'), {
-        type: 'bar',
-        data: { 
-            labels: rSorted.map(x => x: 'bar',
-        data: { 
-            labels: rSorted.map(x => x[0]), 
-            datasets: [{ 
-                label: 'HKD', 
-                data: rSorted.map(x => x[1]), 
-                backgroundColor: rColors 
-            }] 
-        },
-        options: { 
-            indexAxis: 'y', 
-            maintainAspectRatio: false,
-            responsive: true,
-            plugins: {
-                datalabels: {
-                    anchor: 'end',
-                    align[0]), 
-            datasets: [{ 
-                label: 'HKD', 
-                data: rSorted.map(x => x[1]), 
-                backgroundColor: rColors 
-            }] 
-        },
-        options: { 
-            indexAxis: 'y', 
-            maintainAspectRatio: false,
-            responsive: true,
-            plugins: {
-                datalabels: {
-                    anchor: 'end',
-                    align: 'right',
-                    offset: 4,
-                    color: '#333',
-                    font: { weight: 'bold', size: 11 },
-: 'right',
-                    offset: 4,
-                    color: '#333',
-                    font: { weight: 'bold', size: 11 },
-                    formatter: (value) => '$ ' + parseInt(value)
-                }
-            }
+      type: 'bar',
+      data: {
+        labels: rSorted.map(x => x[0]),
+        datasets: [{ label: 'HKD', data: rSorted.map(x => x[1]), backgroundColor: rColors }]
+      },
+      options: {
+        indexAxis: 'y',
+        maintainAspectRatio: false,
+        responsive: true,
+        plugins: {
+          datalabels: {
+            anchor: 'end',
+            align: 'right',
+            offset: 4,
+            color: '#333',
+            font: { weight: 'bold', size: 11 },
+            formatter: (value) => '$ ' + parseInt(value)
+          }
         }
+      }
     });
 
-    const rcData = {};
-    statsList.forEach(i => { rcData[i.role] =                    formatter: (value) => '$ ' + parseInt(value)
-                }
-            }
-        }
-    });
-
+    // 角色數量排名
     const rcData = {};
     statsList.forEach(i => { rcData[i.role] = (rcData[i.role] || 0) + 1; });
-    const rcSorted = Object.entries(rcData).sort((a, b) => b (rcData[i.role] || 0) + 1; });
     const rcSorted = Object.entries(rcData).sort((a, b) => b[1] - a[1]).slice(0, 3);
     const rcColors = ['#6b7a63', '#acc1ad', '#a68b7c'];
     charts.roleCount = new Chart(document.getElementById('roleCountChart'), {
-        type: 'bar',
-[1] - a[1]).slice(0, 3);
-    const rcColors = ['#6b7a63', '#acc1ad', '#a68b7        data: { 
-            labels: rcSorted.map(x => x[0]), 
-            datasets: [{ 
-               c'];
-    charts.roleCount = new Chart(document.getElementById('roleCountChart'), {
-        type: 'bar',
-        data: { 
-            labels: rcSorted.map(x => x[0]), 
-            datasets: [{ 
-                label: '數量', 
-                data: rcSorted.map(x => x[1]), 
-                backgroundColor: rcColors 
-            }] 
-        },
-        options: { 
-            indexAxis: 'y', 
-            maintainAspectRatio: false,
-            responsive: true,
-            plugins: {
-                datalabels: {
-                    anchor: 'end',
-                    align: 'right',
-                    offset: 4,
-                    color: '#333',
-                    label: '數量', 
-                data: rcSorted.map(x => x[1]), 
-                backgroundColor: rcColors 
-            }] 
-        },
-        options: { 
-            indexAxis: 'y', 
-            maintainAspectRatio: false,
-            responsive: true,
-            plugins: {
-                datalabels: {
-                    anchor: 'end',
-                    align: 'right',
-                    offset: 4,
-                    color: '#333',
-                    font: { weight: 'bold', size: 11 },
-                    formatter: (value) => value
-                }
-            }
+      type: 'bar',
+      data: {
+        labels: rcSorted.map(x => x[0]),
+        datasets: [{ label: '數量', data: rcSorted.map(x => x[1]), backgroundColor: rcColors }]
+      },
+      options: {
+        indexAxis: 'y',
+        maintainAspectRatio: false,
+        responsive: true,
+        plugins: {
+          datalabels: {
+            anchor: 'end',
+            align: 'right',
+            offset: 4,
+            color: '#333',
+            font: { weight: 'bold', size: 11 },
+            formatter: (value) => value
+          }
         }
+      }
     });
 
+    // 類別分佈
     const tData = {};
-    statsList.forEach(i => { tData[i.type] = (tData[i.type] || 0) font: { weight: 'bold', size: 11 },
-                    formatter: (value) => value
-                }
-            }
-        }
-    });
-
-    const tData = {};
-    statsList.forEach(i => { tData[i.type] = (tData[i.type] ||  + 1; });
+    statsList.forEach(i => { tData[i.type] = (tData[i.type] || 0) + 1; });
     charts.typeCount = new Chart(document.getElementById('typeCountChart'), {
-        type: 'doughnut',
-        data: {0) + 1; });
-    charts.typeCount = new Chart(document.getElementById('typeCountChart'), {
-        type: 'doughnut',
-        data: { labels: Object.keys(tData), datasets labels: Object.keys(tData), datasets: [{ data: Object.values(tData), backgroundColor: colors }] },
-        options: { 
-            maintainAspect: [{ data: Object.values(tData), backgroundColor: colors }] },
-        options: { 
-            maintainAspectRatio: false,
-            responsive: true,
-            plugins: {
-                datalabels: {
-                    color: '#fff',
-                    font: { weight: 'bold', size: 11 },
-                    formatter: (value,Ratio: false,
-            responsive: true,
-            plugins: {
-                datalabels: {
-                    color: '#fff',
-                    font: { weight: 'bold', size: 11 },
-                    formatter: ( context) => {
-                        const total = context.dataset.data.reduce((a,b)=>avalue, context) => {
-                        const total = context.dataset.data.reduce((a,b)=>a+b,0);
-                        const percentage = (value / total * 100).toFixed(1) + '%';
-                        return percentage;
-                    }
-                }
-+b,0);
-                        const percentage = (value / total * 100).toFixed(1) + '%';
-                        return percentage;
-                    }
-                }
+      type: 'doughnut',
+      data: { labels: Object.keys(tData), datasets: [{ data: Object.values(tData), backgroundColor: colors }] },
+      options: {
+        maintainAspectRatio: false,
+        responsive: true,
+        plugins: {
+          datalabels: {
+            color: '#fff',
+            font: { weight: 'bold', size: 11 },
+            formatter: (value, context) => {
+              const total = context.dataset.data.reduce((a, b) => a + b, 0);
+              const percentage = (value / total * 100).toFixed(1) + '%';
+              return percentage;
             }
+          }
         }
+      }
     });
 
     const rankBody = document.getElementById('roleRankBody');
     if (rankBody) {
-        const topRoles = Object.entries(rData).sort((a,b)=>b[1]-a[1]).slice(0,3);
-        let html = '';
-        topRoles.forEach(([role, total], index) => {
-            const count = statsList.filter(i => i.role            }
-        }
-    });
-
-    const rankBody = document.getElementById('roleRankBody');
-    if (rankBody) {
-        const topRoles = Object.entries(rData).sort((a,b)=>b[1]-a[1]).slice(0,3);
-        let html = '';
-        topRoles.forEach(([role, total], index) => {
-            const count = statsList.filter(i => i.role === role).length;
-            const className = index === 0 ? 'rank-1' : === role).length;
-            const className = index === 0 ? 'rank-1' : (index (index === 1 ? 'rank-2' : 'rank-3');
-            html += `<tr><td class="${className}">${role}</td><td>${count}</td><td>$ ${parseInt(total)}</td></tr>`;
-        });
-        rank === 1 ? 'rank-2' : 'rank-3');
-            html += `<tr><td class="${className}">${role}</td><td>${count}</td><td>$ ${parseInt(total)}</td></tr>`;
-        });
-        rankBody.innerHTML = html;
+      const topRoles = Object.entries(rData).sort((a, b) => b[1] - a[1]).slice(0, 3);
+      let html = '';
+      topRoles.forEach(([role, total], index) => {
+        const count = statsList.filter(i => i.role === role).length;
+        const className = index === 0 ? 'rank-1' : (index === 1 ? 'rank-2' : 'rank-3');
+        html += `<tr><td class="${className}">${role}</td><td>${count}</td><td>$${parseInt(total)}</td></tr>`;
+      });
+      rankBody.innerHTML = html;
     }
-}
+  }
 
-window.onload = init;
-</script>
-</body>
-</html>
-```Body.innerHTML = html;
-    }
-}
-
-window.onload = init;
+  window.onload = init;
 </script>
 </body>
 </html>
