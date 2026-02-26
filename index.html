@@ -43,7 +43,9 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: 'PingFang HK', 'M
 .symbol-btn svg { width: 18px; height: 18px; fill: currentColor; }
 .symbol-btn span { font-size: 8px; font-weight: bold; display: block; }
 .symbol-btn.active { color: var(--m-deep-green); }
-.sort-qty span { font-size: 8px; font-weight: bold; }
+/* 數量按鈕：保留 123 圖示，下方加文字 */
+.sort-qty span:first-child { font-size: 14px; font-weight: bold; } /* 123 */
+.sort-qty span:last-child { font-size: 8px; font-weight: bold; } /* 數量 */
 .sort-qty svg { display: none; }
 .order-toggle { font-size: 11px; font-weight: bold; padding: 4px 10px; border: 1px solid #eee; border-radius: 6px; cursor: pointer; color: var(--m-brown); background: #fafafa; }
 .search-input { margin-bottom: 12px; padding: 10px 12px; font-size: 12px; border: 1px solid #eee; background: #fafafa; border-radius: 6px; width: 100%; box-sizing: border-box; outline: none; }
@@ -60,7 +62,7 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: 'PingFang HK', 'M
 .list-container.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(var(--dynamic-grid), 1fr)); gap: 4px; }
 .list-container.list { display: flex; flex-direction: column; gap: 4px; }
 .list-container.list .item-card { min-height: 95px; height: auto; flex-direction: row; }
-.list-container.list .img-box { width: calc(var(--dynamic-grid) * 0.6); height: auto; aspect-ratio: 1; flex-shrink: 0; } /* 正方形 */
+.list-container.list .img-box { width: calc(var(--dynamic-grid) * 0.6); height: auto; aspect-ratio: 1; flex-shrink: 0; }
 .list-container.list .info { padding: 10px; overflow: hidden; }
 .list-container.list .note { display: block; font-size: calc(9px * var(--info-scale)); color: #999; margin-top: calc(4px * var(--info-scale)); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .list-container.image {
@@ -109,28 +111,26 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
 /* 過濾模態框 */
 .filter-modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 25px; border-radius: var(--radius); z-index: 10000; width: 90%; max-width: 600px; max-height: 80vh; overflow-y: auto; box-shadow: 0 10px 40px rgba(0,0,0,0.2); display: none; }
 .filter-modal .filter-section { margin-bottom: 20px; }
-.filter-modal .filter-section-title { font-size: 13px; font-weight: bold; color: var(--m-brown); margin-bottom: 10px; border-left: 4px solid var(--m-sage); padding-left: 8px; }
-.filter-modal .filter-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 5px; }
-.filter-modal .filter-chip { margin: 2px; }
-.filter-modal .close-btn { background: var(--m-clay); border: none; padding: 10px; width: 100%; border-radius: var(--radius); font-size: 13px; cursor: pointer; margin-top: 10px; }
-.filter-modal .tip {
-    position: absolute;
-    top: 10px;
-    right: 15px;
-    font-size: 10px;
+.filter-modal .filter-section-title { font-size: 13px; font-weight: bold; color: var(--m-brown); margin-bottom: 10px; border-left: 4px solid var(--m-sage); padding-left: 8px; display: flex; align-items: center; justify-content: space-between; }
+.filter-modal .filter-section-title .tip {
+    font-size: 11px;
+    font-weight: normal;
     color: #aaa;
     background: #f5f5f5;
     padding: 4px 8px;
     border-radius: 12px;
-    pointer-events: none;
+    margin-left: 10px;
 }
+.filter-modal .filter-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 5px; }
+.filter-modal .filter-chip { margin: 2px; }
+.filter-modal .close-btn { background: var(--m-clay); border: none; padding: 10px; width: 100%; border-radius: var(--radius); font-size: 13px; cursor: pointer; margin-top: 10px; }
 
 /* 裁剪/放大模態框 */
 .crop-modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 25px; border-radius: var(--radius); z-index: 10000; width: 90%; max-width: 600px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); display: none; flex-direction: column; }
 .crop-modal .crop-container { max-height: 60vh; overflow: hidden; margin-bottom: 15px; position: relative; }
 .crop-modal .crop-image { max-width: 100%; display: block; }
-.crop-modal .crop-actions { display: flex; gap: 10px; margin-top: 15px; }
-.crop-modal .crop-btn { flex: 1; background: var(--m-deep-green); color: white; border: none; padding: 12px; border-radius: var(--radius); font-size: 13px; cursor: pointer; }
+.crop-modal .crop-actions { display: flex; gap: 10px; margin-top: 15px; justify-content: center; } /* 按鈕置中 */
+.crop-modal .crop-btn { flex: 0 1 auto; background: var(--m-deep-green); color: white; border: none; padding: 10px 20px; border-radius: var(--radius); font-size: 13px; cursor: pointer; }
 .crop-modal .cancel-btn { background: var(--m-clay); color: var(--text); }
 /* 放大模式下的導航按鈕 */
 .zoom-nav {
@@ -164,11 +164,15 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
     color: var(--text);
     display: flex;
     flex-wrap: wrap;
-    gap: 15px;
+    gap: 10px;
     margin-top: 10px;
 }
 .zoom-info-item {
+    background: var(--m-clay);
+    border-radius: 6px;
+    padding: 6px 10px;
     flex: 1 1 auto;
+    min-width: 100px;
 }
 .zoom-info-item strong {
     color: var(--m-brown);
@@ -179,6 +183,14 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
 .zoom-info-item span {
     font-weight: bold;
     color: var(--m-deep-green);
+}
+.zoom-info-row {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+}
+.zoom-info-row .zoom-info-item {
+    flex: 1;
 }
 
 .tag-context-menu {
@@ -314,7 +326,6 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
 
 <!-- 過濾條件模態框 -->
 <div class="filter-modal" id="filterModal">
-    <div class="tip">長按編輯或刪除標籤</div>
     <div id="filterModalContent"></div>
     <button class="close-btn" onclick="closeFilterModal()">關閉</button>
 </div>
@@ -327,12 +338,12 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
         <div class="zoom-nav left" id="zoomPrev" style="display: none;">&lt;</div>
         <div class="zoom-nav right" id="zoomNext" style="display: none;">&gt;</div>
     </div>
-    <div class="crop-actions">
-        <button class="crop-btn" id="cropConfirmBtn" style="display: none;">確認裁剪</button>
-        <button class="crop-btn cancel-btn" onclick="closeCropModal()">關閉</button>
-    </div>
     <!-- 下方資訊（放大模式時顯示） -->
     <div id="zoomInfo" class="zoom-info" style="display: none;"></div>
+    <!-- 關閉按鈕移至最下方 -->
+    <div class="crop-actions">
+        <button class="crop-btn cancel-btn" onclick="closeCropModal()">關閉</button>
+    </div>
 </div>
 
 <!-- 標籤長按選單 -->
@@ -379,6 +390,7 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
                     </span>
                     <span class="symbol-btn sort-qty" onclick="setSort('qty')">
                         <span>123</span>
+                        <span>數量</span>
                     </span>
                     <span class="order-toggle" onclick="toggleOrder()">↓</span>
                 </div>
@@ -424,6 +436,7 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
                     </span>
                     <span class="symbol-btn sort-qty" onclick="setSort('qty')">
                         <span>123</span>
+                        <span>數量</span>
                     </span>
                     <span class="order-toggle" onclick="toggleOrder()">↓</span>
                 </div>
@@ -469,6 +482,7 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
                     </span>
                     <span class="symbol-btn sort-qty" onclick="setSort('qty')">
                         <span>123</span>
+                        <span>數量</span>
                     </span>
                     <span class="order-toggle" onclick="toggleOrder()">↓</span>
                 </div>
@@ -544,7 +558,7 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
             <div class="back-btn-header" onclick="handleBack()">←</div>
             <div class="page-title">數據統計</div>
         </div>
-        <!-- 新增：總支出與總數量卡片 -->
+        <!-- 總覽卡片 -->
         <div class="stat-card">
             <div class="stat-title">總覽</div>
             <div style="display: flex; gap: 20px; font-size: 14px;">
@@ -862,7 +876,8 @@ function renderFiltersInModal(status) {
 
     const buildSection = (title, list, key) => {
         const section = document.createElement('div'); section.className = 'filter-section';
-        const titleEl = document.createElement('div'); titleEl.className = 'filter-section-title'; titleEl.innerText = title;
+        const titleEl = document.createElement('div'); titleEl.className = 'filter-section-title'; 
+        titleEl.innerHTML = `${title} <span class="tip">長按編輯或刪除標籤</span>`;
         section.appendChild(titleEl);
         const row = document.createElement('div'); row.className = 'filter-row';
 
@@ -998,8 +1013,10 @@ function updateZoomDisplay(index) {
         <div class="zoom-info-item"><strong>角色</strong><span>${item.role || '無'}</span></div>
         <div class="zoom-info-item"><strong>類別</strong><span>${item.type || '無'}</span></div>
         <div class="zoom-info-item"><strong>總價</strong><span>$ ${totalInt}</span></div>
-        <div class="zoom-info-item"><strong>數量</strong><span>${item.qty}</span></div>
-        <div class="zoom-info-item"><strong>單價</strong><span>$ ${unitPriceStr}</span></div>
+        <div class="zoom-info-row">
+            <div class="zoom-info-item"><strong>數量</strong><span>${item.qty}</span></div>
+            <div class="zoom-info-item"><strong>單價</strong><span>$ ${unitPriceStr}</span></div>
+        </div>
     `;
     document.getElementById('zoomPrev').style.display = (index > 0 && merchList[index-1] && merchList[index-1].img) ? 'flex' : 'none';
     document.getElementById('zoomNext').style.display = (index < merchList.length-1 && merchList[index+1] && merchList[index+1].img) ? 'flex' : 'none';
@@ -1044,8 +1061,10 @@ function openCropModal(imageSrc, callback, isZoom = false, item = null) {
                 <div class="zoom-info-item"><strong>角色</strong><span>${item.role || '無'}</span></div>
                 <div class="zoom-info-item"><strong>類別</strong><span>${item.type || '無'}</span></div>
                 <div class="zoom-info-item"><strong>總價</strong><span>$ ${totalInt}</span></div>
-                <div class="zoom-info-item"><strong>數量</strong><span>${item.qty}</span></div>
-                <div class="zoom-info-item"><strong>單價</strong><span>$ ${unitPriceStr}</span></div>
+                <div class="zoom-info-row">
+                    <div class="zoom-info-item"><strong>數量</strong><span>${item.qty}</span></div>
+                    <div class="zoom-info-item"><strong>單價</strong><span>$ ${unitPriceStr}</span></div>
+                </div>
             `;
             document.getElementById('zoomPrev').style.display = (index > 0 && merchList[index-1] && merchList[index-1].img) ? 'flex' : 'none';
             document.getElementById('zoomNext').style.display = (index < merchList.length-1 && merchList[index+1] && merchList[index+1].img) ? 'flex' : 'none';
@@ -1331,7 +1350,6 @@ function renderStats() {
     const totalExpense = statsList.reduce((sum, i) => sum + parseFloat(i.totalHkd || 0), 0).toFixed(2);
     document.getElementById('totalExpense').innerText = `總計: HKD ${totalExpense}`;
 
-    // 更新總覽卡片
     document.getElementById('totalCountSpan').innerText = merchList.length;
     document.getElementById('totalExpenseSpan').innerText = `HKD ${totalExpense}`;
 
