@@ -101,6 +101,17 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
 .filter-modal .filter-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 5px; }
 .filter-modal .filter-chip { margin: 2px; }
 .filter-modal .close-btn { background: var(--m-clay); border: none; padding: 10px; width: 100%; border-radius: var(--radius); font-size: 13px; cursor: pointer; margin-top: 10px; }
+.filter-modal .tip {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    font-size: 10px;
+    color: #aaa;
+    background: #f5f5f5;
+    padding: 4px 8px;
+    border-radius: 12px;
+    pointer-events: none;
+}
 
 /* 裁剪/放大模態框 */
 .crop-modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 25px; border-radius: var(--radius); z-index: 10000; width: 90%; max-width: 600px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); display: none; flex-direction: column; }
@@ -198,6 +209,7 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
 
 <!-- 過濾條件模態框 -->
 <div class="filter-modal" id="filterModal">
+    <div class="tip">長按編輯或刪除標籤</div>
     <div id="filterModalContent"></div>
     <button class="close-btn" onclick="closeFilterModal()">關閉</button>
 </div>
@@ -927,7 +939,9 @@ function openCropModal(imageSrc, callback, isZoom = false) {
     document.getElementById('overlay').onclick = closeCropModal;
 
     if (cropper) cropper.destroy();
+
     if (isZoom) {
+        // 放大模式：只允許移動和縮放，沒有裁剪框
         cropper = new Cropper(img, {
             viewMode: 1,
             dragMode: 'move',
@@ -936,13 +950,22 @@ function openCropModal(imageSrc, callback, isZoom = false) {
             cropBoxResizable: false,
             toggleDragModeOnDblclick: false,
             background: false,
+            zoomable: true,
+            zoomOnWheel: true,
         });
     } else {
+        // 裁剪模式：允許縮放和移動，裁剪框跟隨
         cropper = new Cropper(img, {
             aspectRatio: 1,
-            viewMode: 1,
+            viewMode: 1,          // 限制圖片不能超出畫布
             autoCropArea: 0.8,
             responsive: true,
+            zoomable: true,       // 允許滾輪縮放
+            zoomOnWheel: true,
+            movable: true,
+            cropBoxMovable: true,
+            cropBoxResizable: true,
+            toggleDragModeOnDblclick: false,
         });
     }
 
@@ -1145,8 +1168,10 @@ document.getElementById('merchForm').onsubmit = function(e) {
         resetFormForNew();
 
         if (editIdx > -1) {
-            // 更新成功：不彈窗
+            // 更新成功：不彈窗，直接切換到藏品頁
+            switchTab('page-gallery', document.querySelectorAll('.nav-item')[0]);
         } else {
+            // 新增成功：彈窗，停留在新增頁
             setTimeout(() => { showModal("✨", "已存入庫"); }, 400);
         }
     };
