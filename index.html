@@ -27,7 +27,7 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: 'PingFang HK', 'M
 .nav-bar { position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%); width: 92%; max-width: 500px; background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); display: flex; justify-content: space-around; padding: 12px 5px; border-radius: 15px; box-shadow: 0 8px 30px rgba(0,0,0,0.08); z-index: 1000; transition: bottom 0.3s; }
 .nav-item { border: none; background: none; color: #b5b5b5; font-size: 10px; font-weight: 600; cursor: pointer; padding: 10px; flex-grow: 1; text-align: center; }
 .nav-item.active { color: var(--m-deep-green); }
-.main-content { padding: 25px; padding-bottom: 120px; max-width: 800px; margin: 0 auto; transition: margin-top 0.3s; }
+.main-content { padding: 12px 12px 120px 12px; max-width: 800px; margin: 0 auto; transition: margin-top 0.3s; } /* 左右邊距減半 */
 .page { display: none; }
 .page.active { display: block; }
 /* 頁面頂欄 */
@@ -476,7 +476,7 @@ const STORAGE_KEY = 'archive_master';
 const DICT_KEY = 'archive_dict_master';
 const COVER_KEY = 'archive_cover_bg';
 const LAST_INPUT_KEY = 'archive_last_input';
-const DEFAULT_WORKS = ['世界計畫', 'V家', 'Alien Stage'];
+const DEFAULT_WORKS = ['作品1', '作品2'];  // 修改為作品1、作品2
 const DEFAULT_TYPES = ['襟','色紙','掛件','立牌', '拍立得'];
 
 // 固定的網格大小選項
@@ -681,30 +681,32 @@ function renderAll() {
 
             // 計算整數總價（去掉小數）
             const totalInt = parseInt(parseFloat(i.totalHkd));
-            // 計算HKD單價（保留兩位小數）
-            const unitPriceHKD = (parseFloat(i.price) * rates[i.currency]).toFixed(2);
+            
+            // 計算HKD單價，並根據是否為整數決定顯示格式
+            let unitPriceHKD = (parseFloat(i.price) * rates[i.currency]);
+            let unitPriceStr = (unitPriceHKD % 1 === 0) ? unitPriceHKD.toString() : unitPriceHKD.toFixed(2);
 
             let infoHtml;
             if (viewMode === 'grid') {
-                // 網格模式：右下角獨立顯示數量，價格下方顯示單價
+                // 網格模式：右下角獨立顯示數量，價格下方顯示單價，總價字體放大至13px
                 infoHtml = `
                     <div class="info">
                         <div style="font-size:calc(9px * var(--info-scale,1)); color:var(--m-brown);">${i.role || ""} ${i.type? '| '+i.type : ""}</div>
                         <div style="font-weight:bold; font-size:calc(12px * var(--info-scale,1)); margin:calc(4px * var(--info-scale,1)) 0;">${i.pattern || '無名'}</div>
-                        <div style="color:var(--m-deep-green); font-size: calc(11px * var(--info-scale,1)); font-weight:bold;">HK$ ${totalInt}</div>
-                        <div style="color:#999; font-size: calc(9px * var(--info-scale,1)); margin-top: 2px;">單價 HK$ ${unitPriceHKD}</div>
+                        <div style="color:var(--m-deep-green); font-size: calc(13px * var(--info-scale,1)); font-weight:bold;">$ ${totalInt}</div>
+                        <div style="color:#999; font-size: calc(9px * var(--info-scale,1)); margin-top: 2px;">單價 $ ${unitPriceStr}</div>
                         ${noteHtml}
                     </div>
                     <div class="card-qty">x${i.qty}</div>
                 `;
             } else if (viewMode === 'list') {
-                // 列表模式：價格下方顯示單價，數量跟在價格後方
+                // 列表模式：價格下方顯示單價，數量跟在價格後方，總價字體放大至13px
                 infoHtml = `
                     <div class="info">
                         <div style="font-size:calc(9px * var(--info-scale,1)); color:var(--m-brown);">${i.role || ""} ${i.type? '| '+i.type : ""}</div>
                         <div style="font-weight:bold; font-size:calc(12px * var(--info-scale,1)); margin:calc(4px * var(--info-scale,1)) 0;">${i.pattern || '無名'}</div>
-                        <div style="color:var(--m-deep-green); font-size: calc(11px * var(--info-scale,1)); font-weight:bold;">HK$ ${totalInt} <span style="color:#aaa;font-weight:normal;font-size:calc(9px * var(--info-scale,1));">x${i.qty}</span></div>
-                        <div style="color:#999; font-size: calc(9px * var(--info-scale,1)); margin-top: 2px;">單價 HK$ ${unitPriceHKD}</div>
+                        <div style="color:var(--m-deep-green); font-size: calc(13px * var(--info-scale,1)); font-weight:bold;">$ ${totalInt} <span style="color:#aaa;font-weight:normal;font-size:calc(9px * var(--info-scale,1));">x${i.qty}</span></div>
+                        <div style="color:#999; font-size: calc(9px * var(--info-scale,1)); margin-top: 2px;">單價 $ ${unitPriceStr}</div>
                         ${noteHtml}
                     </div>
                 `;
@@ -957,10 +959,10 @@ function openCropModal(imageSrc, callback, isZoom = false) {
         // 裁剪模式：允許縮放和移動，裁剪框跟隨
         cropper = new Cropper(img, {
             aspectRatio: 1,
-            viewMode: 1,          // 限制圖片不能超出畫布
+            viewMode: 1,
             autoCropArea: 0.8,
             responsive: true,
-            zoomable: true,       // 允許滾輪縮放
+            zoomable: true,
             zoomOnWheel: true,
             movable: true,
             cropBoxMovable: true,
