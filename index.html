@@ -60,7 +60,7 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: 'PingFang HK', 'M
 .list-container.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(var(--dynamic-grid), 1fr)); gap: 4px; }
 .list-container.list { display: flex; flex-direction: column; gap: 4px; }
 .list-container.list .item-card { min-height: 95px; height: auto; flex-direction: row; }
-.list-container.list .img-box { width: calc(var(--dynamic-grid) * 0.6); height: auto; aspect-ratio: 1; flex-shrink: 0; }
+.list-container.list .img-box { width: calc(var(--dynamic-grid) * 0.6); height: auto; aspect-ratio: 1; flex-shrink: 0; } /* 正方形 */
 .list-container.list .info { padding: 10px; overflow: hidden; }
 .list-container.list .note { display: block; font-size: calc(9px * var(--info-scale)); color: #999; margin-top: calc(4px * var(--info-scale)); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .list-container.image {
@@ -205,13 +205,17 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
 .stat-title { font-size: 13px; font-weight: bold; color: var(--m-brown); margin-bottom: 15px; border-left: 4px solid var(--m-sage); padding-left: 10px; }
 .total-expense { position: absolute; top: 20px; right: 20px; background: var(--m-sage); color: white; padding: 5px 12px; border-radius: 20px; font-size: 13px; font-weight: bold; }
 /* 統計圖表固定高度 */
-#roleChart, #roleCountChart, #monthlyChart, #typeCountChart {
+#monthlyChart {
+    height: 250px !important;
+    width: 100%;
+}
+#roleChart, #roleCountChart {
     height: 200px !important;
     width: 100%;
 }
-/* 圓餅圖特別調整 */
 #typeCountChart {
-    height: 250px !important;
+    height: 280px !important;
+    width: 100%;
 }
 /* 角色排名表格 */
 .rank-table {
@@ -540,6 +544,14 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
             <div class="back-btn-header" onclick="handleBack()">←</div>
             <div class="page-title">數據統計</div>
         </div>
+        <!-- 新增：總支出與總數量卡片 -->
+        <div class="stat-card">
+            <div class="stat-title">總覽</div>
+            <div style="display: flex; gap: 20px; font-size: 14px;">
+                <div><strong style="color: var(--m-brown);">總藏品數</strong> <span style="color: var(--m-deep-green); font-weight: bold;" id="totalCountSpan">0</span></div>
+                <div><strong style="color: var(--m-brown);">總支出</strong> <span style="color: var(--m-deep-green); font-weight: bold;" id="totalExpenseSpan">HKD 0</span></div>
+            </div>
+        </div>
         <div class="stat-card">
             <div class="stat-title">每月支出走勢(HKD)</div>
             <div id="totalExpense" class="total-expense">總計: HKD 0</div>
@@ -618,7 +630,7 @@ let cropper = null;
 let pendingCropImage = null;
 let cropCallback = null;
 let isZoomMode = false;
-let currentZoomIndex = -1; // 當前放大顯示的藏品索引
+let currentZoomIndex = -1;
 
 let longPressedTag = { key: null, value: null };
 let isUpdatingGrid = false;
@@ -817,7 +829,6 @@ function renderAll() {
 
             card.innerHTML = imgHtml + infoHtml;
             card.onclick = () => isBatchMode ? toggleSelectItem(i.originalIndex) : editItem(i.originalIndex);
-            // 長按放大圖片，傳遞整個物件和索引
             handleLongPress(card, () => {
                 if (!isBatchMode && i.img) zoomImage(i, i.originalIndex);
             });
@@ -964,24 +975,20 @@ function handleImageFileSelect(input) {
     reader.readAsDataURL(file);
 }
 
-// 放大圖片（新版本，接收藏品和索引）
 function zoomImage(item, index) {
     currentZoomIndex = index;
     openCropModal(item.img, null, true, item);
 }
 
-// 更新放大模式下的顯示
 function updateZoomDisplay(index) {
     const item = merchList[index];
     if (!item || !item.img) return;
     const img = document.getElementById('cropImage');
-    // 更新圖片 src，cropper 會自動處理
     if (cropper) {
         cropper.replace(item.img);
     } else {
         img.src = item.img;
     }
-    // 更新底部資訊
     const infoDiv = document.getElementById('zoomInfo');
     const totalInt = parseInt(parseFloat(item.totalHkd));
     let unitPriceHKD = (parseFloat(item.price) * rates[item.currency]);
@@ -994,7 +1001,6 @@ function updateZoomDisplay(index) {
         <div class="zoom-info-item"><strong>數量</strong><span>${item.qty}</span></div>
         <div class="zoom-info-item"><strong>單價</strong><span>$ ${unitPriceStr}</span></div>
     `;
-    // 更新箭頭顯示（根據是否有前後）
     document.getElementById('zoomPrev').style.display = (index > 0 && merchList[index-1] && merchList[index-1].img) ? 'flex' : 'none';
     document.getElementById('zoomNext').style.display = (index < merchList.length-1 && merchList[index+1] && merchList[index+1].img) ? 'flex' : 'none';
 }
@@ -1028,7 +1034,6 @@ function openCropModal(imageSrc, callback, isZoom = false, item = null) {
             zoomOnWheel: true 
         });
         if (item) {
-            // 顯示當前藏品資訊
             const index = currentZoomIndex;
             const infoDiv = document.getElementById('zoomInfo');
             const totalInt = parseInt(parseFloat(item.totalHkd));
@@ -1042,7 +1047,6 @@ function openCropModal(imageSrc, callback, isZoom = false, item = null) {
                 <div class="zoom-info-item"><strong>數量</strong><span>${item.qty}</span></div>
                 <div class="zoom-info-item"><strong>單價</strong><span>$ ${unitPriceStr}</span></div>
             `;
-            // 更新箭頭
             document.getElementById('zoomPrev').style.display = (index > 0 && merchList[index-1] && merchList[index-1].img) ? 'flex' : 'none';
             document.getElementById('zoomNext').style.display = (index < merchList.length-1 && merchList[index+1] && merchList[index+1].img) ? 'flex' : 'none';
         }
@@ -1070,7 +1074,6 @@ function openCropModal(imageSrc, callback, isZoom = false, item = null) {
     };
 }
 
-// 切換到上一張
 function zoomPrev() {
     if (currentZoomIndex > 0 && merchList[currentZoomIndex-1] && merchList[currentZoomIndex-1].img) {
         currentZoomIndex--;
@@ -1078,7 +1081,6 @@ function zoomPrev() {
     }
 }
 
-// 切換到下一張
 function zoomNext() {
     if (currentZoomIndex < merchList.length-1 && merchList[currentZoomIndex+1] && merchList[currentZoomIndex+1].img) {
         currentZoomIndex++;
@@ -1086,7 +1088,6 @@ function zoomNext() {
     }
 }
 
-// 綁定箭頭事件
 document.getElementById('zoomPrev').addEventListener('click', zoomPrev);
 document.getElementById('zoomNext').addEventListener('click', zoomNext);
 
@@ -1143,7 +1144,7 @@ function resetFormForNew() {
 
 function handleLongPress(element, callback) {
     let timer;
-    const start = () => { timer = setTimeout(() => { if (window.navigator.vibrate) window.navigator.vibrate(60); callback(); }, 700); }; // 700ms
+    const start = () => { timer = setTimeout(() => { if (window.navigator.vibrate) window.navigator.vibrate(60); callback(); }, 700); };
     const cancel = () => clearTimeout(timer);
     element.addEventListener('touchstart', start, { passive: true });
     element.addEventListener('touchend', cancel);
@@ -1327,8 +1328,12 @@ function renderStats() {
     if (charts.roleCount) charts.roleCount.destroy();
 
     const statsList = merchList.filter(i => i.status !== '願望');
-    const total = statsList.reduce((sum, i) => sum + parseFloat(i.totalHkd || 0), 0).toFixed(2);
-    document.getElementById('totalExpense').innerText = `總計: HKD ${total}`;
+    const totalExpense = statsList.reduce((sum, i) => sum + parseFloat(i.totalHkd || 0), 0).toFixed(2);
+    document.getElementById('totalExpense').innerText = `總計: HKD ${totalExpense}`;
+
+    // 更新總覽卡片
+    document.getElementById('totalCountSpan').innerText = merchList.length;
+    document.getElementById('totalExpenseSpan').innerText = `HKD ${totalExpense}`;
 
     const colors = ['#6b7a63', '#acc1ad', '#a68b7c', '#d5cabd', '#e5ddd5', '#c2b2a3'];
 
