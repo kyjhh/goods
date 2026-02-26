@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Morandi Archive - 彈窗篩選版</title>
+<title>Morandi Archive - 穩定版</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
 :root {
@@ -31,7 +31,7 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: 'PingFang HK', 'M
 .page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; }
 .back-btn-header { font-size: 20px; cursor: pointer; color: var(--m-brown); width: 40px; text-align: left; }
 .page-title { font-size: 18px; font-weight: bold; color: var(--m-deep-green); text-align: center; flex: 1; }
-.filter-btn { background: var(--m-clay); border: none; border-radius: 6px; padding: 6px 12px; font-size: 12px; color: var(--text); cursor: pointer; white-space: nowrap; margin-left: auto; } /* 條件檢索按鈕 */
+.filter-btn { background: var(--m-clay); border: none; border-radius: 6px; padding: 6px 12px; font-size: 12px; color: var(--text); cursor: pointer; white-space: nowrap; margin-left: auto; }
 .control-panel { background: #fff; padding: 15px; border-radius: var(--radius); margin-bottom: 20px; border: 1px solid var(--m-clay); box-shadow: 0 2px 10px rgba(0,0,0,0.02); }
 .symbol-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid #f0f0f0; padding-bottom: 12px; }
 .symbol-group { display: flex; gap: 12px; color: #ccc; align-items: center; }
@@ -41,9 +41,6 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: 'PingFang HK', 'M
 .symbol-btn.active { color: var(--m-deep-green); }
 .order-toggle { font-size: 11px; font-weight: bold; padding: 4px 10px; border: 1px solid #eee; border-radius: 6px; cursor: pointer; color: var(--m-brown); background: #fafafa; }
 .search-input { margin-bottom: 12px; padding: 10px 12px; font-size: 12px; border: 1px solid #eee; background: #fafafa; border-radius: 6px; width: 100%; box-sizing: border-box; outline: none; }
-.filter-row { display: flex; overflow-x: auto; white-space: nowrap; gap: 8px; margin-bottom: 10px; scrollbar-width: none; }
-.filter-chip { background: var(--m-clay); padding: 6px 14px; border-radius: 15px; font-size: 11px; cursor: pointer; color: #8a8a8a; user-select: none; transition: 0.2s; }
-.filter-chip.active { background: var(--m-sage); color: white; }
 .count-tag { font-size: 10px; color: #aaa; text-align: right; margin-bottom: 5px; }
 /* 間距減半 */
 .list-container.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(var(--dynamic-grid), 1fr)); gap: 7px; }
@@ -160,7 +157,6 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
                     <span class="symbol-btn view-image" onclick="setView('image')"><svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg><span>圖片</span></span>
                 </div>
             </div>
-            <!-- 原本的 filter-box 已移除，改為按鈕 -->
             <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
                 <div id="lib-count" class="count-tag" style="margin:0;">顯示:0/0</div>
                 <span class="edit-toggle-btn" onclick="setBatchMode(true)">編輯管理</span>
@@ -348,9 +344,9 @@ let merchList = [], dict = { works: [], roles: [], types: [] };
 let filters = { work: [], role: [], type: [] };
 let sortMode = 'date', sortDesc = true, viewMode = 'grid', charts = {};
 let isBatchMode = false, selectedIndices = [];
-let currentFilterModalStatus = null; // 當前打開的過濾模態框對應的狀態
+let currentFilterModalStatus = null;
 
-// 壓縮圖片函數
+// 壓縮圖片函數 (加入錯誤處理，若圖片載入失敗則返回原圖)
 function compressImage(base64, maxWidth = 800, quality = 0.8) {
     return new Promise((resolve) => {
         const img = new Image();
@@ -369,6 +365,10 @@ function compressImage(base64, maxWidth = 800, quality = 0.8) {
             ctx.drawImage(img, 0, 0, width, height);
             const compressed = canvas.toDataURL('image/jpeg', quality);
             resolve(compressed);
+        };
+        img.onerror = () => {
+            // 若圖片無法載入（例如非圖片檔案），直接返回原 base64，避免卡死
+            resolve(base64);
         };
     });
 }
@@ -508,7 +508,6 @@ function renderAll() {
         const countLabel = document.getElementById(cld);
         if(countLabel) countLabel.innerText = `顯示: ${filtered.length} / ${merchList.filter(x=>x.status===status).length}`;
     });
-    // 如果模態框打開，更新其內容
     if (currentFilterModalStatus) {
         renderFiltersInModal(currentFilterModalStatus);
     }
@@ -542,7 +541,6 @@ function renderFiltersInModal(status) {
         const row = document.createElement('div');
         row.className = 'filter-row';
 
-        // 全部按鈕
         const allChip = document.createElement('div');
         allChip.className = `filter-chip ${filters[key].length === 0 ? 'active' : ''}`;
         const totalCount = status ? merchList.filter(i => i.status === status).length : 0;
@@ -550,7 +548,7 @@ function renderFiltersInModal(status) {
         allChip.onclick = () => {
             filters[key] = [];
             renderAll();
-            renderFiltersInModal(status); // 重新渲染模態框
+            renderFiltersInModal(status);
         };
         row.appendChild(allChip);
 
@@ -597,13 +595,11 @@ function renderFiltersInModal(status) {
     container.appendChild(buildSection('類別', dict.types, 'type'));
 }
 
-// 打開過濾模態框
 function openFilterModal(status) {
     currentFilterModalStatus = status;
     renderFiltersInModal(status);
     document.getElementById('filterModal').style.display = 'block';
     document.getElementById('overlay').style.display = 'block';
-    // 將 overlay 的點擊事件改為關閉模態框
     document.getElementById('overlay').onclick = closeFilterModal;
 }
 
@@ -669,7 +665,6 @@ function switchTab(id, btn) {
     document.getElementById(id).classList.add('active');
     if(btn) { document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); btn.classList.add('active'); }
     if(id === 'page-stats') renderStats();
-    // 關閉可能打開的模態框
     closeFilterModal();
     if(isBatchMode) setBatchMode(false);
 }
