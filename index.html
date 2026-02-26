@@ -3,13 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Morandi Archive - 最終版</title>
+<title>Morandi Archive - 彈窗篩選版</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
 :root {
     --m-deep-green: #6b7a63; --m-sage: #acc1ad; --m-brown: #a68b7c;
     --m-sand: #d5cabd; --m-clay: #e5ddd5; --bg: #f2efeb;
     --text: #4a4a4a; --radius: 8px; --dynamic-grid: 160px;
+    --info-scale: 1;
 }
 body, html { margin: 0; padding: 0; height: 100%; font-family: 'PingFang HK', 'Microsoft JhengHei', sans-serif; background: var(--bg); color: var(--text); overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
 #batch-panel { display: none; background: var(--m-deep-green); color: white; padding: 15px 20px; position: fixed; top: 0; left: 0; width: 100%; box-sizing: border-box; z-index: 2500; justify-content: space-between; align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.15); transition: 0.3s; }
@@ -30,7 +31,7 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: 'PingFang HK', 'M
 .page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; }
 .back-btn-header { font-size: 20px; cursor: pointer; color: var(--m-brown); width: 40px; text-align: left; }
 .page-title { font-size: 18px; font-weight: bold; color: var(--m-deep-green); text-align: center; flex: 1; }
-.header-placeholder { width: 40px; }
+.filter-btn { background: var(--m-clay); border: none; border-radius: 6px; padding: 6px 12px; font-size: 12px; color: var(--text); cursor: pointer; white-space: nowrap; margin-left: auto; } /* 條件檢索按鈕 */
 .control-panel { background: #fff; padding: 15px; border-radius: var(--radius); margin-bottom: 20px; border: 1px solid var(--m-clay); box-shadow: 0 2px 10px rgba(0,0,0,0.02); }
 .symbol-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid #f0f0f0; padding-bottom: 12px; }
 .symbol-group { display: flex; gap: 12px; color: #ccc; align-items: center; }
@@ -50,7 +51,7 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: 'PingFang HK', 'M
 .list-container.list .item-card { min-height: 95px; height: auto; flex-direction: row; }
 .list-container.list .img-box { width: 95px; height: 95px; flex-shrink: 0; }
 .list-container.list .info { padding: 10px; overflow: hidden; }
-.list-container.list .note { display: block; font-size: 9px; color: #999; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.list-container.list .note { display: block; font-size: calc(9px * var(--info-scale)); color: #999; margin-top: calc(4px * var(--info-scale)); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .list-container.image {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(var(--dynamic-grid), 1fr));
@@ -72,11 +73,19 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: 'PingFang HK', 'M
 .input-label { font-size: 11px; color: var(--m-brown); font-weight: bold; margin-bottom: 5px; display: block; }
 #exchangePreview { margin-bottom: 8px; }
 .btn-main { background: var(--m-deep-green); color: white; border: none; padding: 12px; width: 100%; font-size: 13px; cursor: pointer; border-radius: var(--radius); margin-top: 5px; font-weight: bold; }
-/* 通用輸入框，影響表單內所有輸入框（搜尋框已有獨立樣式，不受影響） */
 input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius); border: 1px solid var(--m-clay); background: #fafafa; font-size: 14px; box-sizing: border-box; outline: none; }
 
 #success-modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 35px; border-radius: 15px; text-align: center; z-index: 9999; display: none; width: 240px; box-shadow: 0 10px 50px rgba(0,0,0,0.3); }
 .overlay { position: fixed; top:0; left:0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 9998; display: none; backdrop-filter: blur(3px); }
+
+/* 過濾模態框 */
+.filter-modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 25px; border-radius: var(--radius); z-index: 10000; width: 90%; max-width: 600px; max-height: 80vh; overflow-y: auto; box-shadow: 0 10px 40px rgba(0,0,0,0.2); display: none; }
+.filter-modal .filter-section { margin-bottom: 20px; }
+.filter-modal .filter-section-title { font-size: 13px; font-weight: bold; color: var(--m-brown); margin-bottom: 10px; border-left: 4px solid var(--m-sage); padding-left: 8px; }
+.filter-modal .filter-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 5px; }
+.filter-modal .filter-chip { margin: 2px; }
+.filter-modal .close-btn { background: var(--m-clay); border: none; padding: 10px; width: 100%; border-radius: var(--radius); font-size: 13px; cursor: pointer; margin-top: 10px; }
+
 .stat-card { background:#fff; padding:20px; border-radius:var(--radius); border:1px solid var(--m-clay); margin-bottom: 20px; position: relative; }
 .stat-title { font-size: 13px; font-weight: bold; color: var(--m-brown); margin-bottom: 15px; border-left: 4px solid var(--m-sage); padding-left: 10px; }
 .total-expense { position: absolute; top: 20px; right: 20px; background: var(--m-sage); color: white; padding: 5px 12px; border-radius: 20px; font-size: 13px; font-weight: bold; }
@@ -95,6 +104,12 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
     <div id="modal-icon" style="font-size: 40px; margin-bottom: 15px; color: var(--m-deep-green);"></div>
     <div id="modal-text" style="font-weight: bold; font-size: 16px;">操作成功</div>
     <button class="btn-main" onclick="closeModal()" style="margin-top: 25px;">確定</button>
+</div>
+
+<!-- 過濾條件模態框 -->
+<div class="filter-modal" id="filterModal">
+    <div id="filterModalContent"></div>
+    <button class="close-btn" onclick="closeFilterModal()">關閉</button>
 </div>
 
 <div id="cover-page">
@@ -119,7 +134,7 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
         <div class="page-header">
             <div class="back-btn-header" onclick="handleBack()">←</div>
             <div class="page-title">館藏</div>
-            <div class="header-placeholder"></div>
+            <button class="filter-btn" onclick="openFilterModal('現貨')">條件檢索</button>
         </div>
         <div class="control-panel">
             <input type="text" class="search-input" id="lib-search" placeholder="搜尋款式或備註..." oninput="renderAll()">
@@ -145,7 +160,7 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
                     <span class="symbol-btn view-image" onclick="setView('image')"><svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg><span>圖片</span></span>
                 </div>
             </div>
-            <div id="lib-filter-box"></div>
+            <!-- 原本的 filter-box 已移除，改為按鈕 -->
             <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
                 <div id="lib-count" class="count-tag" style="margin:0;">顯示:0/0</div>
                 <span class="edit-toggle-btn" onclick="setBatchMode(true)">編輯管理</span>
@@ -159,7 +174,7 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
         <div class="page-header">
             <div class="back-btn-header" onclick="handleBack()">←</div>
             <div class="page-title">等候區</div>
-            <div class="header-placeholder"></div>
+            <button class="filter-btn" onclick="openFilterModal('非現貨')">條件檢索</button>
         </div>
         <div class="control-panel">
             <input type="text" class="search-input" id="wait-search" placeholder="搜尋款式或備註..." oninput="renderAll()">
@@ -185,7 +200,6 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
                     <span class="symbol-btn view-image" onclick="setView('image')"><svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg><span>圖片</span></span>
                 </div>
             </div>
-            <div id="wait-filter-box"></div>
             <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
                 <div id="wait-count" class="count-tag" style="margin: 0;">顯示: 0/0</div>
                 <span class="edit-toggle-btn" onclick="setBatchMode(true)">編輯管理</span>
@@ -199,7 +213,7 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
         <div class="page-header">
             <div class="back-btn-header" onclick="handleBack()">←</div>
             <div class="page-title">願望清單</div>
-            <div class="header-placeholder"></div>
+            <button class="filter-btn" onclick="openFilterModal('願望')">條件檢索</button>
         </div>
         <div class="control-panel">
             <input type="text" class="search-input" id="wish-search" placeholder="搜尋款式或備註..." oninput="renderAll()">
@@ -225,7 +239,6 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
                     <span class="symbol-btn view-image" onclick="setView('image')"><svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg><span>圖片</span></span>
                 </div>
             </div>
-            <div id="wish-filter-box"></div>
             <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
                 <div id="wish-count" class="count-tag" style="margin: 0;">顯示:0/0</div>
                 <span class="edit-toggle-btn" onclick="setBatchMode(true)">編輯管理</span>
@@ -239,7 +252,7 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
         <div class="page-header">
             <div class="back-btn-header" onclick="handleBack()">←</div>
             <div class="page-title" id="recent-page-title">新增藏品</div>
-            <div class="header-placeholder"></div>
+            <div style="width:40px;"></div>
         </div>
         <div style="background:#fff; padding:15px; border-radius: var(--radius); border:1px solid var(--m-clay);">
             <form id="merchForm">
@@ -271,7 +284,7 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
         <div class="page-header">
             <div class="back-btn-header" onclick="handleBack()">←</div>
             <div class="page-title">數據統計</div>
-            <div class="header-placeholder"></div>
+            <div style="width:40px;"></div>
         </div>
         <div class="stat-card">
             <div class="stat-title">每月支出走勢(HKD)</div>
@@ -301,7 +314,7 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
         <div class="page-header">
             <div class="back-btn-header" onclick="handleBack()">←</div>
             <div class="page-title">系統設定</div>
-            <div class="header-placeholder"></div>
+            <div style="width:40px;"></div>
         </div>
         <div class="stat-card">
             <label class="input-label">網格大小: <span id="gridVal">160</span>px</label>
@@ -335,6 +348,7 @@ let merchList = [], dict = { works: [], roles: [], types: [] };
 let filters = { work: [], role: [], type: [] };
 let sortMode = 'date', sortDesc = true, viewMode = 'grid', charts = {};
 let isBatchMode = false, selectedIndices = [];
+let currentFilterModalStatus = null; // 當前打開的過濾模態框對應的狀態
 
 // 壓縮圖片函數
 function compressImage(base64, maxWidth = 800, quality = 0.8) {
@@ -381,7 +395,6 @@ function init() {
     if (savedCover) document.getElementById('cover-page').style.backgroundImage = `url(${savedCover})`;
     updateGridSize(localStorage.getItem('archive_grid_size') || '160');
     renderSelects(); 
-    renderFilters(); 
     renderAll(); 
     updateToolUI();
 }
@@ -449,7 +462,6 @@ function confirmBatchDelete() {
 
     merchList = newList;
     renderSelects();
-    renderFilters();
     renderAll();
     setBatchMode(false);
 }
@@ -480,12 +492,12 @@ function renderAll() {
         filtered.forEach(i => {
             const card = document.createElement('div');
             card.className = `item-card ${isBatchMode && selectedIndices.includes(i.originalIndex)? 'selected' : ""}`;
-            const noteHtml = i.note ? `<div class="note">📝 ${i.note}</div>` : '';
+            const noteHtml = i.note ? `<div class="note" style="font-size:calc(9px * var(--info-scale,1)); margin-top:calc(4px * var(--info-scale,1));">📝 ${i.note}</div>` : '';
             card.innerHTML = `<div class="img-box"><img src="${i.img || ""}"></div>
                 <div class="info">
-                    <div style="font-size:9px;color:var(--m-brown);">${i.role || ""} ${i.type? '| '+i.type : ""}</div>
-                    <div style="font-weight:bold; font-size:12px; margin:4px 0;">${i.pattern || '無名'}</div>
-                    <div style="color:var(--m-deep-green); font-size: 11px; font-weight:bold;">HK$ ${i.totalHkd} <span style="color:#aaa;font-weight:normal;font-size:9px;">x${i.qty}</span></div>
+                    <div style="font-size:calc(9px * var(--info-scale,1)); color:var(--m-brown);">${i.role || ""} ${i.type? '| '+i.type : ""}</div>
+                    <div style="font-weight:bold; font-size:calc(12px * var(--info-scale,1)); margin:calc(4px * var(--info-scale,1)) 0;">${i.pattern || '無名'}</div>
+                    <div style="color:var(--m-deep-green); font-size: calc(11px * var(--info-scale,1)); font-weight:bold;">HK$ ${i.totalHkd} <span style="color:#aaa;font-weight:normal;font-size:calc(9px * var(--info-scale,1));">x${i.qty}</span></div>
                     ${noteHtml}
                 </div>`;
             card.onclick = () => isBatchMode? toggleSelectItem(i.originalIndex): editItem(i.originalIndex);
@@ -496,7 +508,10 @@ function renderAll() {
         const countLabel = document.getElementById(cld);
         if(countLabel) countLabel.innerText = `顯示: ${filtered.length} / ${merchList.filter(x=>x.status===status).length}`;
     });
-    renderFilters();
+    // 如果模態框打開，更新其內容
+    if (currentFilterModalStatus) {
+        renderFiltersInModal(currentFilterModalStatus);
+    }
 }
 
 function setSort(mode) { sortMode = mode; updateToolUI(); renderAll(); }
@@ -510,29 +525,38 @@ function updateToolUI() {
     document.querySelectorAll('.order-toggle').forEach(b => b.innerText = sortDesc?"倒序↓":"正序↑");
 }
 
-function getCurrentStatus() {
-    if (document.getElementById('page-gallery').classList.contains('active')) return '現貨';
-    if (document.getElementById('page-pending').classList.contains('active')) return '非現貨';
-    if (document.getElementById('page-wish').classList.contains('active')) return '願望';
-    return null;
-}
+// 在模態框中渲染過濾器
+function renderFiltersInModal(status) {
+    const container = document.getElementById('filterModalContent');
+    if (!container) return;
+    container.innerHTML = '';
 
-function renderFilters() {
-    const build = (list, key) => {
-        const currentStatus = getCurrentStatus();
-        let row = document.createElement('div'); row.className = 'filter-row';
-        const totalCount = currentStatus ? merchList.filter(i => i.status === currentStatus).length : 0;
-        let all = document.createElement('div'); all.className = `filter-chip ${filters[key].length === 0 ? 'active' : ''}`;
-        all.innerText = `全部 (${totalCount})`;
-        all.onclick = () => { 
-            filters[key] = []; 
-            renderFilters(); 
-            renderAll(); 
+    const buildSection = (title, list, key) => {
+        const section = document.createElement('div');
+        section.className = 'filter-section';
+        const titleEl = document.createElement('div');
+        titleEl.className = 'filter-section-title';
+        titleEl.innerText = title;
+        section.appendChild(titleEl);
+
+        const row = document.createElement('div');
+        row.className = 'filter-row';
+
+        // 全部按鈕
+        const allChip = document.createElement('div');
+        allChip.className = `filter-chip ${filters[key].length === 0 ? 'active' : ''}`;
+        const totalCount = status ? merchList.filter(i => i.status === status).length : 0;
+        allChip.innerText = `全部 (${totalCount})`;
+        allChip.onclick = () => {
+            filters[key] = [];
+            renderAll();
+            renderFiltersInModal(status); // 重新渲染模態框
         };
-        row.appendChild(all);
+        row.appendChild(allChip);
+
         list.forEach(item => {
-            const count = currentStatus ? merchList.filter(i => i.status === currentStatus && i[key] === item).length : 0;
-            let chip = document.createElement('div');
+            const count = status ? merchList.filter(i => i.status === status && i[key] === item).length : 0;
+            const chip = document.createElement('div');
             chip.className = `filter-chip ${filters[key].includes(item) ? 'active' : ''}`;
             chip.innerText = `${item} (${count})`;
             chip.onclick = () => {
@@ -541,11 +565,11 @@ function renderFilters() {
                 } else {
                     filters[key] = [...filters[key], item];
                 }
-                renderFilters(); 
-                renderAll(); 
+                renderAll();
+                renderFiltersInModal(status);
             };
             handleLongPress(chip, () => {
-                if(confirm(`確定刪除標籤「${item}」嗎？`)) {
+                if (confirm(`確定刪除標籤「${item}」嗎？`)) {
                     const dk = key;
                     dict[dk] = dict[dk].filter(x => x !== item);
                     try {
@@ -556,25 +580,37 @@ function renderFilters() {
                     if (filters[key].includes(item)) {
                         filters[key] = filters[key].filter(v => v !== item);
                     }
-                    renderFilters(); 
                     renderSelects();
+                    renderAll();
+                    renderFiltersInModal(status);
                 }
             });
             row.appendChild(chip);
         });
-        return row;
+
+        section.appendChild(row);
+        return section;
     };
-    ['lib-filter-box', 'wait-filter-box', 'wish-filter-box'].forEach(id => {
-        const box = document.getElementById(id); if(!box) return; box.innerHTML = '';
-        const currentStatus = getCurrentStatus();
-        if ((id === 'lib-filter-box' && currentStatus === '現貨') ||
-            (id === 'wait-filter-box' && currentStatus === '非現貨') ||
-            (id === 'wish-filter-box' && currentStatus === '願望')) {
-            box.appendChild(build(dict.works, 'work'));
-            box.appendChild(build(dict.roles, 'role'));
-            box.appendChild(build(dict.types, 'type'));
-        }
-    });
+
+    container.appendChild(buildSection('作品', dict.works, 'work'));
+    container.appendChild(buildSection('角色', dict.roles, 'role'));
+    container.appendChild(buildSection('類別', dict.types, 'type'));
+}
+
+// 打開過濾模態框
+function openFilterModal(status) {
+    currentFilterModalStatus = status;
+    renderFiltersInModal(status);
+    document.getElementById('filterModal').style.display = 'block';
+    document.getElementById('overlay').style.display = 'block';
+    // 將 overlay 的點擊事件改為關閉模態框
+    document.getElementById('overlay').onclick = closeFilterModal;
+}
+
+function closeFilterModal() {
+    document.getElementById('filterModal').style.display = 'none';
+    document.getElementById('overlay').style.display = 'none';
+    currentFilterModalStatus = null;
 }
 
 function editItem(idx) {
@@ -633,7 +669,8 @@ function switchTab(id, btn) {
     document.getElementById(id).classList.add('active');
     if(btn) { document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); btn.classList.add('active'); }
     if(id === 'page-stats') renderStats();
-    renderFilters();
+    // 關閉可能打開的模態框
+    closeFilterModal();
     if(isBatchMode) setBatchMode(false);
 }
 
@@ -734,7 +771,6 @@ document.getElementById('merchForm').onsubmit = function(e) {
         localStorage.setItem(LAST_INPUT_KEY, JSON.stringify(lastInput));
 
         renderSelects();
-        renderFilters();
         renderAll();
         resetFormForNew();
         switchTab('page-gallery', document.querySelectorAll('.nav-item')[0]);
@@ -768,7 +804,6 @@ function deleteCurrentItem() {
         }
         merchList = newList;
         renderSelects();
-        renderFilters();
         renderAll();
         resetFormForNew();
         switchTab('page-gallery', document.querySelectorAll('.nav-item')[0]);
@@ -790,6 +825,12 @@ function updateGridSize(v) {
     document.documentElement.style.setProperty('--dynamic-grid', v + 'px');
     document.getElementById('gridVal').innerText = v;
     localStorage.setItem('archive_grid_size', v);
+
+    let scale = 1;
+    if (v <= 106) {
+        scale = Math.max(0.7, v / 106);
+    }
+    document.documentElement.style.setProperty('--info-scale', scale);
 }
 
 function updateCover(input) {
