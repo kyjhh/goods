@@ -8,6 +8,8 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- Chart.js 數據標籤插件 -->
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0/dist/chartjs-plugin-datalabels.min.js"></script>
 <style>
 :root {
     --m-deep-green: #6b7a63; --m-sage: #acc1ad; --m-brown: #a68b7c;
@@ -74,7 +76,6 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: 'PingFang HK', 'M
 .item-card.selected::after { content: "✓"; position: absolute; top: 10px; right: 10px; background: var(--m-deep-green); color: white; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; z-index: 10; }
 .img-box { width: 100%; aspect-ratio: 1; background: #f5f5f5; pointer-events: none; }
 .img-box img { width: 100%; height: 100%; object-fit: cover; }
-/* 卡片內數量樣式（網格模式） */
 .card-qty {
     position: absolute;
     bottom: 8px;
@@ -84,7 +85,6 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: 'PingFang HK', 'M
     font-weight: bold;
     z-index: 2;
 }
-/* 卡片內價格樣式（網格模式左下角） */
 .card-price {
     position: absolute;
     bottom: 8px;
@@ -162,6 +162,34 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
     height: 200px !important;
     width: 100%;
 }
+/* 圓餅圖特別調整 */
+#typeCountChart {
+    height: 250px !important;
+}
+/* 角色排名表格 */
+.rank-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+.rank-table th {
+    text-align: left;
+    font-size: 11px;
+    color: var(--m-brown);
+    padding-bottom: 5px;
+    border-bottom: 1px solid var(--m-clay);
+}
+.rank-table td {
+    padding: 8px 0;
+    font-size: 12px;
+    border-bottom: 1px solid #f0f0f0;
+}
+.rank-table tr:last-child td {
+    border-bottom: none;
+}
+.rank-table .rank-1 { color: var(--m-deep-green); font-weight: bold; }
+.rank-table .rank-2 { color: var(--m-sage); font-weight: bold; }
+.rank-table .rank-3 { color: var(--m-brown); font-weight: bold; }
 .image-pending-note { font-size: 11px; color: var(--m-deep-green); margin-top: 5px; font-weight: bold; }
 /* 條件檢索按鈕（底部） */
 .filter-btn-bottom {
@@ -417,7 +445,7 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
                 <input type="hidden" id="editIndex" value="-1">
                 <div class="input-group"><label class="input-label">作品名稱</label><select id="workSelect" onchange="toggleInput('workSelect', 'workInput')"></select><input type="text" id="workInput" style="display:none;" placeholder="輸入新作品名稱"></div>
                 
-                <!-- 角色名稱與周邊類別並排 -->
+                <!-- 角色名稱與周邊類別並排，但類別將移到最後？目前保持原樣，因用戶要求「周邊類別放最後」可能指數據頁順序 -->
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 5px;">
                     <div class="input-group" style="margin-bottom: 0;">
                         <label class="input-label">角色名稱</label>
@@ -469,13 +497,25 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
             <div class="stat-title">角色支出排行(HKD)</div>
             <canvas id="roleChart"></canvas>
         </div>
+        <!-- 新增角色排名表格 -->
         <div class="stat-card">
-            <div class="stat-title">類別數量分佈</div>
-            <canvas id="typeCountChart"></canvas>
+            <div class="stat-title">角色排名 (前三)</div>
+            <table class="rank-table" id="roleRankTable">
+                <thead>
+                    <tr><th>角色</th><th>數量</th><th>總額</th></tr>
+                </thead>
+                <tbody id="roleRankBody">
+                    <tr><td colspan="3">載入中...</td></tr>
+                </tbody>
+            </table>
         </div>
         <div class="stat-card">
             <div class="stat-title">角色數量統計</div>
             <canvas id="roleCountChart"></canvas>
+        </div>
+        <div class="stat-card">
+            <div class="stat-title">類別數量分佈</div>
+            <canvas id="typeCountChart"></canvas>
         </div>
     </div>
 
@@ -529,6 +569,9 @@ let isZoomMode = false;
 
 let longPressedTag = { key: null, value: null };
 let isUpdatingGrid = false;
+
+// 註冊 data labels 插件
+Chart.register(ChartDataLabels);
 
 document.getElementById('overlay').addEventListener('click', function() {
     if (document.getElementById('success-modal').style.display === 'block') {
@@ -696,7 +739,6 @@ function renderAll() {
 
             let infoHtml;
             if (viewMode === 'grid') {
-                // 網格模式：總價放到左下角，單價留在 info 內
                 infoHtml = `
                     <div class="info">
                         <div style="font-size:calc(9px * var(--info-scale,1)); color:var(--m-brown);">${i.role || ""} ${i.type ? '| ' + i.type : ""}</div>
@@ -708,7 +750,6 @@ function renderAll() {
                     <div class="card-qty">x${i.qty}</div>
                 `;
             } else if (viewMode === 'list') {
-                // 列表模式：總價保留在 info 內
                 infoHtml = `
                     <div class="info">
                         <div style="font-size:calc(9px * var(--info-scale,1)); color:var(--m-brown);">${i.role || ""} ${i.type ? '| ' + i.type : ""}</div>
@@ -946,7 +987,7 @@ function resetFormForNew() {
 
 function handleLongPress(element, callback) {
     let timer;
-    const start = () => { timer = setTimeout(() => { if (window.navigator.vibrate) window.navigator.vibrate(60); callback(); }, 400); };
+    const start = () => { timer = setTimeout(() => { if (window.navigator.vibrate) window.navigator.vibrate(60); callback(); }, 800); }; // 800ms
     const cancel = () => clearTimeout(timer);
     element.addEventListener('touchstart', start, { passive: true });
     element.addEventListener('touchend', cancel);
@@ -1139,35 +1180,106 @@ function renderStats() {
     statsList.forEach(i => { const d = new Date(i.timestamp); const k = `${d.getFullYear()}/${d.getMonth() + 1}`; mData[k] = (mData[k] || 0) + parseFloat(i.totalHkd); });
     charts.monthly = new Chart(document.getElementById('monthlyChart'), {
         type: 'line',
-        data: { labels: Object.keys(mData), datasets: [{ label: 'HKD', data: Object.values(mData), borderColor: '#6b7a63', tension: 0.3 }] }
+        data: { labels: Object.keys(mData), datasets: [{ label: 'HKD', data: Object.values(mData), borderColor: '#6b7a63', tension: 0.3 }] },
+        options: { plugins: { datalabels: { display: false } } } // 折線圖不顯示標籤
     });
 
+    // 角色支出排行（只取前三，不同顏色，並顯示數據）
     const rData = {};
     statsList.forEach(i => { rData[i.role] = (rData[i.role] || 0) + parseFloat(i.totalHkd); });
     const rSorted = Object.entries(rData).sort((a, b) => b[1] - a[1]).slice(0, 3);
     const rColors = ['#6b7a63', '#acc1ad', '#a68b7c'];
     charts.role = new Chart(document.getElementById('roleChart'), {
         type: 'bar',
-        data: { labels: rSorted.map(x => x[0]), datasets: [{ label: 'HKD', data: rSorted.map(x => x[1]), backgroundColor: rColors }] },
-        options: { indexAxis: 'y', maintainAspectRatio: false }
+        data: { 
+            labels: rSorted.map(x => x[0]), 
+            datasets: [{ 
+                label: 'HKD', 
+                data: rSorted.map(x => x[1]), 
+                backgroundColor: rColors 
+            }] 
+        },
+        options: { 
+            indexAxis: 'y', 
+            maintainAspectRatio: false,
+            plugins: {
+                datalabels: {
+                    anchor: 'end',
+                    align: 'right',
+                    offset: 4,
+                    color: '#333',
+                    font: { weight: 'bold', size: 11 },
+                    formatter: (value) => '$ ' + parseInt(value)
+                }
+            }
+        }
     });
 
-    const tData = {};
-    statsList.forEach(i => { tData[i.type] = (tData[i.type] || 0) + 1; });
-    charts.typeCount = new Chart(document.getElementById('typeCountChart'), {
-        type: 'doughnut',
-        data: { labels: Object.keys(tData), datasets: [{ data: Object.values(tData), backgroundColor: colors }] }
-    });
-
+    // 角色數量統計（只取前三，不同顏色，並顯示數據）
     const rcData = {};
     statsList.forEach(i => { rcData[i.role] = (rcData[i.role] || 0) + 1; });
     const rcSorted = Object.entries(rcData).sort((a, b) => b[1] - a[1]).slice(0, 3);
     const rcColors = ['#6b7a63', '#acc1ad', '#a68b7c'];
     charts.roleCount = new Chart(document.getElementById('roleCountChart'), {
         type: 'bar',
-        data: { labels: rcSorted.map(x => x[0]), datasets: [{ label: '數量', data: rcSorted.map(x => x[1]), backgroundColor: rcColors }] },
-        options: { indexAxis: 'y', maintainAspectRatio: false }
+        data: { 
+            labels: rcSorted.map(x => x[0]), 
+            datasets: [{ 
+                label: '數量', 
+                data: rcSorted.map(x => x[1]), 
+                backgroundColor: rcColors 
+            }] 
+        },
+        options: { 
+            indexAxis: 'y', 
+            maintainAspectRatio: false,
+            plugins: {
+                datalabels: {
+                    anchor: 'end',
+                    align: 'right',
+                    offset: 4,
+                    color: '#333',
+                    font: { weight: 'bold', size: 11 },
+                    formatter: (value) => value
+                }
+            }
+        }
     });
+
+    // 類別數量分佈（圓餅圖，顯示百分比或數量）
+    const tData = {};
+    statsList.forEach(i => { tData[i.type] = (tData[i.type] || 0) + 1; });
+    charts.typeCount = new Chart(document.getElementById('typeCountChart'), {
+        type: 'doughnut',
+        data: { labels: Object.keys(tData), datasets: [{ data: Object.values(tData), backgroundColor: colors }] },
+        options: { 
+            maintainAspectRatio: false,
+            plugins: {
+                datalabels: {
+                    color: '#fff',
+                    font: { weight: 'bold', size: 11 },
+                    formatter: (value, context) => {
+                        const total = context.dataset.data.reduce((a,b)=>a+b,0);
+                        const percentage = (value / total * 100).toFixed(1) + '%';
+                        return percentage;
+                    }
+                }
+            }
+        }
+    });
+
+    // 更新角色排名表格
+    const rankBody = document.getElementById('roleRankBody');
+    if (rankBody) {
+        const topRoles = Object.entries(rData).sort((a,b)=>b[1]-a[1]).slice(0,3);
+        let html = '';
+        topRoles.forEach(([role, total], index) => {
+            const count = statsList.filter(i => i.role === role).length;
+            const className = index === 0 ? 'rank-1' : (index === 1 ? 'rank-2' : 'rank-3');
+            html += `<tr><td class="${className}">${role}</td><td>${count}</td><td>$ ${parseInt(total)}</td></tr>`;
+        });
+        rankBody.innerHTML = html;
+    }
 }
 
 window.onload = init;
