@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Morandi Archive - 完整裁剪版</title>
+<title>Morandi Archive - 網格功能移至各頁</title>
 <!-- Cropper.js 樣式與腳本 -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
@@ -178,8 +178,14 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
                     <span class="symbol-btn view-image" onclick="setView('image')"><svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg><span>圖片</span></span>
                 </div>
             </div>
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
+            <!-- 此處原本的 filter-box 已移除，改為按鈕 -->
+            <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 10px;">
                 <div id="lib-count" class="count-tag" style="margin:0;">顯示:0/0</div>
+                <div style="display: flex; align-items: center; gap: 5px; flex: 1 1 auto; min-width: 150px;">
+                    <span style="font-size: 10px;">📏</span>
+                    <input type="range" class="grid-range-slider" min="50" max="180" value="160" oninput="updateGridSize(this.value)" style="width: 100px;">
+                    <span class="grid-val-display" style="font-size: 10px; min-width: 30px;">160</span>
+                </div>
                 <span class="edit-toggle-btn" onclick="setBatchMode(true)">編輯管理</span>
             </div>
         </div>
@@ -217,8 +223,13 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
                     <span class="symbol-btn view-image" onclick="setView('image')"><svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg><span>圖片</span></span>
                 </div>
             </div>
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
-                <div id="wait-count" class="count-tag" style="margin: 0;">顯示: 0/0</div>
+            <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 10px;">
+                <div id="wait-count" class="count-tag" style="margin:0;">顯示:0/0</div>
+                <div style="display: flex; align-items: center; gap: 5px; flex: 1 1 auto; min-width: 150px;">
+                    <span style="font-size: 10px;">📏</span>
+                    <input type="range" class="grid-range-slider" min="50" max="180" value="160" oninput="updateGridSize(this.value)" style="width: 100px;">
+                    <span class="grid-val-display" style="font-size: 10px; min-width: 30px;">160</span>
+                </div>
                 <span class="edit-toggle-btn" onclick="setBatchMode(true)">編輯管理</span>
             </div>
         </div>
@@ -256,8 +267,13 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
                     <span class="symbol-btn view-image" onclick="setView('image')"><svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg><span>圖片</span></span>
                 </div>
             </div>
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
-                <div id="wish-count" class="count-tag" style="margin: 0;">顯示:0/0</div>
+            <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 10px;">
+                <div id="wish-count" class="count-tag" style="margin:0;">顯示:0/0</div>
+                <div style="display: flex; align-items: center; gap: 5px; flex: 1 1 auto; min-width: 150px;">
+                    <span style="font-size: 10px;">📏</span>
+                    <input type="range" class="grid-range-slider" min="50" max="180" value="160" oninput="updateGridSize(this.value)" style="width: 100px;">
+                    <span class="grid-val-display" style="font-size: 10px; min-width: 30px;">160</span>
+                </div>
                 <span class="edit-toggle-btn" onclick="setBatchMode(true)">編輯管理</span>
             </div>
         </div>
@@ -343,7 +359,7 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
         </div>
     </div>
 
-    <!-- 系統設定頁 -->
+    <!-- 系統設定頁（保留原有的網格滑桿，但會與其他頁面同步） -->
     <div id="page-settings" class="page">
         <div class="page-header">
             <div class="back-btn-header" onclick="handleBack()">←</div>
@@ -352,7 +368,7 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
         </div>
         <div class="stat-card">
             <label class="input-label">網格大小: <span id="gridVal">160</span>px</label>
-            <input type="range" id="gridRange" min="50" max="180" value="160" oninput="updateGridSize(this.value)">
+            <input type="range" id="gridRange" min="50" max="180" value="160" oninput="updateGridSize(this.value)" class="grid-range-slider">
             <hr style="border: 0.5px solid #f0f0f0; margin: 25px 0;">
             <button onclick="exportData()" class="btn-main" style="background:var(--m-brown);">匯出資料備份(.json)</button>
             <input type="file" id="importFile" style="display:none" accept=".json" onchange="importData(this)">
@@ -435,7 +451,11 @@ function init() {
 
     const savedCover = localStorage.getItem(COVER_KEY);
     if (savedCover) document.getElementById('cover-page').style.backgroundImage = `url(${savedCover})`;
-    updateGridSize(localStorage.getItem('archive_grid_size') || '160');
+    
+    // 讀取儲存的網格大小，並更新所有滑桿和顯示
+    const savedGridSize = localStorage.getItem('archive_grid_size') || '160';
+    updateGridSize(savedGridSize);
+    
     renderSelects(); 
     renderAll(); 
     updateToolUI();
@@ -948,11 +968,24 @@ function renderSelects() {
     fill('typeSelect', dict.types);
 }
 
+// 更新網格大小及相關顯示
 function updateGridSize(v) {
+    // 設定 CSS 變數
     document.documentElement.style.setProperty('--dynamic-grid', v + 'px');
-    document.getElementById('gridVal').innerText = v;
+    
+    // 儲存到 localStorage
     localStorage.setItem('archive_grid_size', v);
 
+    // 更新所有網格大小數字顯示
+    document.querySelectorAll('.grid-val-display').forEach(el => el.innerText = v);
+    // 更新系統設定頁的單獨顯示（如果存在）
+    const gridVal = document.getElementById('gridVal');
+    if (gridVal) gridVal.innerText = v;
+
+    // 更新所有滑桿的 value（確保同步）
+    document.querySelectorAll('.grid-range-slider').forEach(slider => slider.value = v);
+
+    // 計算文字縮放
     let scale = 1;
     if (v <= 106) {
         scale = Math.max(0.7, v / 106);
