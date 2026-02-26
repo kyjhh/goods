@@ -18,7 +18,7 @@
 body, html { margin: 0; padding: 0; height: 100%; font-family: 'PingFang HK', 'Microsoft JhengHei', sans-serif; background: var(--bg); color: var(--text); overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
 #batch-panel { display: none; background: var(--m-deep-green); color: white; padding: 15px 20px; position: fixed; top: 0; left: 0; width: 100%; box-sizing: border-box; z-index: 2500; justify-content: space-between; align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.15); transition: 0.3s; }
 .batch-btn { background: #cc9999; border: none; color: white; padding: 6px 15px; border-radius: 4px; font-size: 13px; cursor: pointer; font-weight: bold; }
-.edit-toggle-btn { font-size: 11px; color: var(--m-deep-green); border: 1px solid var(--m-deep-green); padding: 3px 10px; border-radius: 6px; cursor: pointer; margin-left: 10px; font-weight: bold; transition: 0.2s; }
+.edit-toggle-btn { font-size: 13px; color: var(--m-deep-green); border: 1px solid var(--m-deep-green); padding: 4px 12px; border-radius: 6px; cursor: pointer; margin-left: 10px; font-weight: bold; transition: 0.2s; } /* 放大並改為「管理」 */
 #cover-page { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #d2cdc1; background-size: cover; background-position: center; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; z-index: 2000; transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
 #cover-page.open { transform: translateY(-100%); }
 .cover-upload-btn { position: absolute; top: 20px; left: 20px; background: rgba(255, 255, 255, 0.4); backdrop-filter: blur(5px); border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 2100; border: 1px solid rgba(255,255,255,0.3); }
@@ -27,7 +27,7 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: 'PingFang HK', 'M
 .nav-bar { position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%); width: 92%; max-width: 500px; background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); display: flex; justify-content: space-around; padding: 12px 5px; border-radius: 15px; box-shadow: 0 8px 30px rgba(0,0,0,0.08); z-index: 1000; transition: bottom 0.3s; }
 .nav-item { border: none; background: none; color: #b5b5b5; font-size: 10px; font-weight: 600; cursor: pointer; padding: 10px; flex-grow: 1; text-align: center; }
 .nav-item.active { color: var(--m-deep-green); }
-.main-content { padding: 12px 12px 120px 12px; max-width: 800px; margin: 0 auto; transition: margin-top 0.3s; } /* 左右邊距減半 */
+.main-content { padding: 12px 12px 120px 12px; max-width: 800px; margin: 0 auto; transition: margin-top 0.3s; }
 .page { display: none; }
 .page.active { display: block; }
 /* 頁面頂欄 */
@@ -51,11 +51,12 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: 'PingFang HK', 'M
     box-shadow: 0 0 0 2px var(--m-deep-green);
 }
 .count-tag { font-size: 10px; color: #aaa; text-align: right; margin-bottom: 5px; }
+.count-tag .number { font-size: 14px; font-weight: bold; color: var(--text); } /* 數字放大 */
 /* 間距減半 */
 .list-container.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(var(--dynamic-grid), 1fr)); gap: 7px; }
 .list-container.list { display: flex; flex-direction: column; gap: 7px; }
 .list-container.list .item-card { min-height: 95px; height: auto; flex-direction: row; }
-.list-container.list .img-box { width: 95px; height: 95px; flex-shrink: 0; }
+.list-container.list .img-box { width: calc(var(--dynamic-grid) * 0.6); height: auto; aspect-ratio: 1; flex-shrink: 0; } /* 圖片隨滑桿縮放 */
 .list-container.list .info { padding: 10px; overflow: hidden; }
 .list-container.list .note { display: block; font-size: calc(9px * var(--info-scale)); color: #999; margin-top: calc(4px * var(--info-scale)); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .list-container.image {
@@ -152,8 +153,8 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
     background: var(--m-clay);
     border: none;
     border-radius: 6px;
-    padding: 4px 10px;
-    font-size: 11px;
+    padding: 5px 12px; /* 稍大 */
+    font-size: 13px;   /* 放大 */
     color: var(--text);
     cursor: pointer;
     white-space: nowrap;
@@ -272,14 +273,14 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
                 <div class="symbol-group">
                     <span class="symbol-btn view-grid" onclick="setView('grid')"><svg viewBox="0 0 24 24"><path d="M4 11h5V5H4v6zm0 7h5v-6H4v6zm7 0h5v-6h-5v6zm0-13v6h5V5h-5z"/></svg></span>
                     <span class="symbol-btn view-list" onclick="setView('list')"><svg viewBox="0 0 24 24"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zm0-10v2h14V7H7z"/></svg></span>
-                    <span class="symbol-btn view-image" onclick="setView('image')"><svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg><span>圖片</span></span>
+                    <span class="symbol-btn view-image" onclick="setView('image')"><svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg></span> <!-- 移除文字 -->
                 </div>
             </div>
             <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 10px;">
-                <div id="lib-count" class="count-tag" style="margin:0;">顯示:0/0</div>
+                <div id="lib-count" class="count-tag" style="margin:0;"><span>顯示:</span><span class="number">0/0</span></div>
                 <input type="range" class="grid-range-slider" min="50" max="170" value="160" oninput="handleGridSliderInput(this)">
                 <button class="filter-btn-bottom" onclick="openFilterModal('現貨')">條件檢索</button>
-                <span class="edit-toggle-btn" onclick="setBatchMode(true)">編輯管理</span>
+                <span class="edit-toggle-btn" onclick="setBatchMode(true)">管理</span> <!-- 改為「管理」 -->
             </div>
         </div>
         <div id="readyList" class="list-container grid"></div>
@@ -312,14 +313,14 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
                 <div class="symbol-group">
                     <span class="symbol-btn view-grid" onclick="setView('grid')"><svg viewBox="0 0 24 24"><path d="M4 11h5V5H4v6zm0 7h5v-6H4v6zm7 0h5v-6h-5v6zm0-13v6h5V5h-5z"/></svg></span>
                     <span class="symbol-btn view-list" onclick="setView('list')"><svg viewBox="0 0 24 24"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zm0-10v2h14V7H7z"/></svg></span>
-                    <span class="symbol-btn view-image" onclick="setView('image')"><svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg><span>圖片</span></span>
+                    <span class="symbol-btn view-image" onclick="setView('image')"><svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg></span>
                 </div>
             </div>
             <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 10px;">
-                <div id="wait-count" class="count-tag" style="margin:0;">顯示:0/0</div>
+                <div id="wait-count" class="count-tag" style="margin:0;"><span>顯示:</span><span class="number">0/0</span></div>
                 <input type="range" class="grid-range-slider" min="50" max="170" value="160" oninput="handleGridSliderInput(this)">
                 <button class="filter-btn-bottom" onclick="openFilterModal('非現貨')">條件檢索</button>
-                <span class="edit-toggle-btn" onclick="setBatchMode(true)">編輯管理</span>
+                <span class="edit-toggle-btn" onclick="setBatchMode(true)">管理</span>
             </div>
         </div>
         <div id="waitList" class="list-container grid"></div>
@@ -352,14 +353,14 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
                 <div class="symbol-group">
                     <span class="symbol-btn view-grid" onclick="setView('grid')"><svg viewBox="0 0 24 24"><path d="M4 11h5V5H4v6zm0 7h5v-6H4v6zm7 0h5v-6h-5v6zm0-13v6h5V5h-5z"/></svg></span>
                     <span class="symbol-btn view-list" onclick="setView('list')"><svg viewBox="0 0 24 24"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zm0-10v2h14V7H7z"/></svg></span>
-                    <span class="symbol-btn view-image" onclick="setView('image')"><svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg><span>圖片</span></span>
+                    <span class="symbol-btn view-image" onclick="setView('image')"><svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg></span>
                 </div>
             </div>
             <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 10px;">
-                <div id="wish-count" class="count-tag" style="margin:0;">顯示:0/0</div>
+                <div id="wish-count" class="count-tag" style="margin:0;"><span>顯示:</span><span class="number">0/0</span></div>
                 <input type="range" class="grid-range-slider" min="50" max="170" value="160" oninput="handleGridSliderInput(this)">
                 <button class="filter-btn-bottom" onclick="openFilterModal('願望')">條件檢索</button>
-                <span class="edit-toggle-btn" onclick="setBatchMode(true)">編輯管理</span>
+                <span class="edit-toggle-btn" onclick="setBatchMode(true)">管理</span>
             </div>
         </div>
         <div id="wishList" class="list-container grid"></div>
@@ -426,10 +427,7 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
             <div id="totalExpense" class="total-expense">總計: HKD 0</div>
             <canvas id="monthlyChart"></canvas>
         </div>
-        <div class="stat-card">
-            <div class="stat-title">作品佔比分析(HKD)</div>
-            <canvas id="workChart"></canvas>
-        </div>
+        <!-- 作品佔比已移除 -->
         <div class="stat-card">
             <div class="stat-title">角色支出排行(HKD)</div>
             <canvas id="roleChart"></canvas>
@@ -476,7 +474,7 @@ const STORAGE_KEY = 'archive_master';
 const DICT_KEY = 'archive_dict_master';
 const COVER_KEY = 'archive_cover_bg';
 const LAST_INPUT_KEY = 'archive_last_input';
-const DEFAULT_WORKS = ['作品1', '作品2'];  // 修改為作品1、作品2
+const DEFAULT_WORKS = ['作品1', '作品2'];
 const DEFAULT_TYPES = ['襟','色紙','掛件','立牌', '拍立得'];
 
 // 固定的網格大小選項
@@ -679,16 +677,12 @@ function renderAll() {
             const noteHtml = i.note ? `<div class="note" style="font-size:calc(9px * var(--info-scale,1)); margin-top:calc(4px * var(--info-scale,1));">📝 ${i.note}</div>` : '';
             const imgHtml = `<div class="img-box"><img src="${i.img || ""}"></div>`;
 
-            // 計算整數總價（去掉小數）
             const totalInt = parseInt(parseFloat(i.totalHkd));
-            
-            // 計算HKD單價，並根據是否為整數決定顯示格式
             let unitPriceHKD = (parseFloat(i.price) * rates[i.currency]);
             let unitPriceStr = (unitPriceHKD % 1 === 0) ? unitPriceHKD.toString() : unitPriceHKD.toFixed(2);
 
             let infoHtml;
             if (viewMode === 'grid') {
-                // 網格模式：右下角獨立顯示數量，價格下方顯示單價，總價字體放大至13px
                 infoHtml = `
                     <div class="info">
                         <div style="font-size:calc(9px * var(--info-scale,1)); color:var(--m-brown);">${i.role || ""} ${i.type? '| '+i.type : ""}</div>
@@ -700,7 +694,6 @@ function renderAll() {
                     <div class="card-qty">x${i.qty}</div>
                 `;
             } else if (viewMode === 'list') {
-                // 列表模式：價格下方顯示單價，數量跟在價格後方，總價字體放大至13px
                 infoHtml = `
                     <div class="info">
                         <div style="font-size:calc(9px * var(--info-scale,1)); color:var(--m-brown);">${i.role || ""} ${i.type? '| '+i.type : ""}</div>
@@ -710,7 +703,7 @@ function renderAll() {
                         ${noteHtml}
                     </div>
                 `;
-            } else { // image 模式：不顯示任何文字
+            } else {
                 infoHtml = '';
             }
 
@@ -725,7 +718,10 @@ function renderAll() {
         });
         const cld = status==='現貨'?'lib-count':(status==='非現貨'?'wait-count':'wish-count');
         const countLabel = document.getElementById(cld);
-        if(countLabel) countLabel.innerText = `顯示: ${filtered.length} / ${merchList.filter(x=>x.status===status).length}`;
+        if(countLabel) {
+            const total = merchList.filter(x=>x.status===status).length;
+            countLabel.innerHTML = `<span>顯示:</span><span class="number">${filtered.length}/${total}</span>`;
+        }
     });
     if (currentFilterModalStatus) {
         renderFiltersInModal(currentFilterModalStatus);
@@ -883,7 +879,7 @@ function openFilterModal(status) {
     renderFiltersInModal(status);
     document.getElementById('filterModal').style.display = 'block';
     document.getElementById('overlay').style.display = 'block';
-    document.getElementById('overlay').onclick = closeFilterModal;
+    // 移除 overlay 點擊關閉
 }
 
 function closeFilterModal() {
@@ -938,12 +934,11 @@ function openCropModal(imageSrc, callback, isZoom = false) {
 
     document.getElementById('cropModal').style.display = 'flex';
     document.getElementById('overlay').style.display = 'block';
-    document.getElementById('overlay').onclick = closeCropModal;
+    // 移除 overlay 點擊關閉
 
     if (cropper) cropper.destroy();
 
     if (isZoom) {
-        // 放大模式：只允許移動和縮放，沒有裁剪框
         cropper = new Cropper(img, {
             viewMode: 1,
             dragMode: 'move',
@@ -956,7 +951,6 @@ function openCropModal(imageSrc, callback, isZoom = false) {
             zoomOnWheel: true,
         });
     } else {
-        // 裁剪模式：允許縮放和移動，裁剪框跟隨
         cropper = new Cropper(img, {
             aspectRatio: 1,
             viewMode: 1,
@@ -1170,10 +1164,8 @@ document.getElementById('merchForm').onsubmit = function(e) {
         resetFormForNew();
 
         if (editIdx > -1) {
-            // 更新成功：不彈窗，直接切換到藏品頁
             switchTab('page-gallery', document.querySelectorAll('.nav-item')[0]);
         } else {
-            // 新增成功：彈窗，停留在新增頁
             setTimeout(() => { showModal("✨", "已存入庫"); }, 400);
         }
     };
@@ -1270,7 +1262,6 @@ function importData(input) {
 
 function renderStats() {
     if (charts.monthly) charts.monthly.destroy();
-    if (charts.work) charts.work.destroy();
     if (charts.role) charts.role.destroy();
     if (charts.typeCount) charts.typeCount.destroy();
     if (charts.roleCount) charts.roleCount.destroy();
@@ -1292,24 +1283,24 @@ function renderStats() {
         data: { labels: Object.keys(mData), datasets: [{ label: 'HKD', data: Object.values(mData), borderColor: '#6b7a63', tension: 0.3 }] }
     });
 
-    const wData = {}; 
-    statsList.forEach(i => { 
-        wData[i.work] = (wData[i.work] || 0) + parseFloat(i.totalHkd); 
-    });
-    charts.work = new Chart(document.getElementById('workChart'), {
-        type: 'doughnut',
-        data: { labels: Object.keys(wData), datasets: [{ data: Object.values(wData), backgroundColor: colors }] }
-    });
-
+    // 角色支出排行（只取前三，不同顏色）
     const rData = {}; 
     statsList.forEach(i => { 
         rData[i.role] = (rData[i.role] || 0) + parseFloat(i.totalHkd); 
     });
-    const rSorted = Object.entries(rData).sort((a,b) => b[1]-a[1]).slice(0, 5);
+    const rSorted = Object.entries(rData).sort((a,b) => b[1]-a[1]).slice(0, 3);
+    const rColors = ['#6b7a63', '#acc1ad', '#a68b7c']; // 深綠、sage、棕
     charts.role = new Chart(document.getElementById('roleChart'), {
         type: 'bar',
-        data: { labels: rSorted.map(x=>x[0]), datasets: [{ label: 'HKD', data: rSorted.map(x=>x[1]), backgroundColor: '#acc1ad' }] },
-        options: { indexAxis: 'y' }
+        data: { 
+            labels: rSorted.map(x=>x[0]), 
+            datasets: [{ 
+                label: 'HKD', 
+                data: rSorted.map(x=>x[1]), 
+                backgroundColor: rColors 
+            }] 
+        },
+        options: { indexAxis: 'y', maintainAspectRatio: false }
     });
 
     const tData = {};
@@ -1321,15 +1312,24 @@ function renderStats() {
         data: { labels: Object.keys(tData), datasets: [{ data: Object.values(tData), backgroundColor: colors }] }
     });
 
+    // 角色數量統計（只取前三，不同顏色）
     const rcData = {};
     statsList.forEach(i => {
         rcData[i.role] = (rcData[i.role] || 0) + 1;
     });
-    const rcSorted = Object.entries(rcData).sort((a,b) => b[1]-a[1]).slice(0, 5);
+    const rcSorted = Object.entries(rcData).sort((a,b) => b[1]-a[1]).slice(0, 3);
+    const rcColors = ['#6b7a63', '#acc1ad', '#a68b7c'];
     charts.roleCount = new Chart(document.getElementById('roleCountChart'), {
         type: 'bar',
-        data: { labels: rcSorted.map(x=>x[0]), datasets: [{ label: '數量', data: rcSorted.map(x=>x[1]), backgroundColor: '#acc1ad' }] },
-        options: { indexAxis: 'y' }
+        data: { 
+            labels: rcSorted.map(x=>x[0]), 
+            datasets: [{ 
+                label: '數量', 
+                data: rcSorted.map(x=>x[1]), 
+                backgroundColor: rcColors 
+            }] 
+        },
+        options: { indexAxis: 'y', maintainAspectRatio: false }
     });
 }
 
