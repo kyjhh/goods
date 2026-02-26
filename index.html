@@ -39,10 +39,10 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: 'PingFang HK', 'M
 .symbol-group { display: flex; gap: 12px; color: #ccc; align-items: center; }
 .symbol-btn { cursor: pointer; transition: color 0.3s; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 2px; }
 .symbol-btn svg { width: 18px; height: 18px; fill: currentColor; }
-.symbol-btn span { font-size: 8px; font-weight: bold; display: block; } /* 恢復文字 */
+.symbol-btn span { font-size: 8px; font-weight: bold; display: block; }
 .symbol-btn.active { color: var(--m-deep-green); }
-.sort-qty span { font-size: 8px; font-weight: bold; } /* 數量按鈕文字大小與其他一致 */
-.sort-qty svg { display: none; } /* 隱藏原 SVG */
+.sort-qty span { font-size: 8px; font-weight: bold; }
+.sort-qty svg { display: none; }
 .order-toggle { font-size: 11px; font-weight: bold; padding: 4px 10px; border: 1px solid #eee; border-radius: 6px; cursor: pointer; color: var(--m-brown); background: #fafafa; }
 .search-input { margin-bottom: 12px; padding: 10px 12px; font-size: 12px; border: 1px solid #eee; background: #fafafa; border-radius: 6px; width: 100%; box-sizing: border-box; outline: none; }
 .filter-row { display: flex; overflow-x: auto; white-space: nowrap; gap: 8px; margin-bottom: 10px; scrollbar-width: none; }
@@ -74,11 +74,22 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: 'PingFang HK', 'M
 .item-card.selected::after { content: "✓"; position: absolute; top: 10px; right: 10px; background: var(--m-deep-green); color: white; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; z-index: 10; }
 .img-box { width: 100%; aspect-ratio: 1; background: #f5f5f5; pointer-events: none; }
 .img-box img { width: 100%; height: 100%; object-fit: cover; }
+/* 卡片內數量樣式（網格模式） */
 .card-qty {
     position: absolute;
     bottom: 8px;
     right: 10px;
     font-size: calc(12px * var(--info-scale,1));
+    color: var(--m-deep-green);
+    font-weight: bold;
+    z-index: 2;
+}
+/* 卡片內價格樣式（網格模式左下角） */
+.card-price {
+    position: absolute;
+    bottom: 8px;
+    left: 10px;
+    font-size: calc(13px * var(--info-scale,1));
     color: var(--m-deep-green);
     font-weight: bold;
     z-index: 2;
@@ -146,8 +157,13 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
 .stat-card { background:#fff; padding:20px; border-radius:var(--radius); border:1px solid var(--m-clay); margin-bottom: 20px; position: relative; }
 .stat-title { font-size: 13px; font-weight: bold; color: var(--m-brown); margin-bottom: 15px; border-left: 4px solid var(--m-sage); padding-left: 10px; }
 .total-expense { position: absolute; top: 20px; right: 20px; background: var(--m-sage); color: white; padding: 5px 12px; border-radius: 20px; font-size: 13px; font-weight: bold; }
+/* 統計圖表固定高度 */
+#roleChart, #roleCountChart, #monthlyChart, #typeCountChart {
+    height: 200px !important;
+    width: 100%;
+}
 .image-pending-note { font-size: 11px; color: var(--m-deep-green); margin-top: 5px; font-weight: bold; }
-/* 條件檢索按鈕（底部）- 與管理按鈕相同樣式 */
+/* 條件檢索按鈕（底部） */
 .filter-btn-bottom {
     background: transparent;
     border: 1px solid var(--m-deep-green);
@@ -159,7 +175,6 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
     white-space: nowrap;
     font-weight: bold;
 }
-/* 管理按鈕保留原樣 */
 .edit-toggle-btn {
     font-size: 13px;
     color: var(--m-deep-green);
@@ -182,7 +197,7 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
     -webkit-appearance: none;
     width: 16px;
     height: 16px;
-    background: var(--m-clay); /* 灰色 */
+    background: var(--m-clay);
     border-radius: 50%;
     cursor: pointer;
     box-shadow: 0 1px 3px rgba(0,0,0,0.2);
@@ -292,7 +307,7 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
             <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 10px;">
                 <div id="lib-count" class="count-tag" style="margin:0;"><span>顯示:</span><span class="number">0/0</span></div>
                 <input type="range" class="grid-range-slider" min="50" max="170" value="160" oninput="handleGridSliderInput(this)">
-                <div style="margin-left: auto; display: flex; gap: 10px;"> <!-- 靠右 -->
+                <div style="margin-left: auto; display: flex; gap: 10px;">
                     <button class="filter-btn-bottom" onclick="openFilterModal('現貨')">條件檢索</button>
                     <span class="edit-toggle-btn" onclick="setBatchMode(true)">管理</span>
                 </div>
@@ -452,7 +467,7 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
         </div>
         <div class="stat-card">
             <div class="stat-title">角色支出排行(HKD)</div>
-            <canvas id="roleChart" height="200"></canvas>
+            <canvas id="roleChart"></canvas>
         </div>
         <div class="stat-card">
             <div class="stat-title">類別數量分佈</div>
@@ -460,7 +475,7 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
         </div>
         <div class="stat-card">
             <div class="stat-title">角色數量統計</div>
-            <canvas id="roleCountChart" height="200"></canvas>
+            <canvas id="roleCountChart"></canvas>
         </div>
     </div>
 
@@ -681,17 +696,19 @@ function renderAll() {
 
             let infoHtml;
             if (viewMode === 'grid') {
+                // 網格模式：總價放到左下角，單價留在 info 內
                 infoHtml = `
                     <div class="info">
                         <div style="font-size:calc(9px * var(--info-scale,1)); color:var(--m-brown);">${i.role || ""} ${i.type ? '| ' + i.type : ""}</div>
                         <div style="font-weight:bold; font-size:calc(12px * var(--info-scale,1)); margin:calc(4px * var(--info-scale,1)) 0;">${i.pattern || '無名'}</div>
                         <div style="color:#999; font-size: calc(9px * var(--info-scale,1)); margin-bottom: 2px;">單價 $ ${unitPriceStr}</div>
-                        <div style="color:var(--m-deep-green); font-size: calc(13px * var(--info-scale,1)); font-weight:bold;">$ ${totalInt}</div>
                         ${noteHtml}
                     </div>
+                    <div class="card-price">$ ${totalInt}</div>
                     <div class="card-qty">x${i.qty}</div>
                 `;
             } else if (viewMode === 'list') {
+                // 列表模式：總價保留在 info 內
                 infoHtml = `
                     <div class="info">
                         <div style="font-size:calc(9px * var(--info-scale,1)); color:var(--m-brown);">${i.role || ""} ${i.type ? '| ' + i.type : ""}</div>
