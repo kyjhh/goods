@@ -22,7 +22,7 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: 'PingFang HK', 'M
 #cover-page { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #d2cdc1; background-size: cover; background-position: center; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; z-index: 2000; transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
 #cover-page.open { transform: translateY(-100%); }
 .cover-upload-btn { position: absolute; top: 20px; left: 20px; background: rgba(255, 255, 255, 0.4); backdrop-filter: blur(5px); border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 2100; border: 1px solid rgba(255,255,255,0.3); }
-.cover-menu { width: 160px; margin-bottom: 70px; display: flex; flex-direction: column; gap: 8px; }
+.cover-menu { width: 160px; margin-bottom: 40px; display: flex; flex-direction: column; gap: 8px; } /* 上移 */
 .menu-btn { background: rgba(255, 255, 255, 0.65); backdrop-filter: blur(12px); padding: 14px; text-align: center; cursor: pointer; border-radius: var(--radius); font-size: 11px; letter-spacing: 2px; border: 1px solid rgba(255,255,255,0.2); }
 .nav-bar { position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%); width: 92%; max-width: 500px; background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); display: flex; justify-content: space-around; padding: 12px 5px; border-radius: 15px; box-shadow: 0 8px 30px rgba(0,0,0,0.08); z-index: 1000; transition: bottom 0.3s; }
 .nav-item { border: none; background: none; color: #b5b5b5; font-size: 10px; font-weight: 600; cursor: pointer; padding: 10px; flex-grow: 1; text-align: center; }
@@ -39,16 +39,15 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: 'PingFang HK', 'M
 .symbol-group { display: flex; gap: 12px; color: #ccc; align-items: center; }
 .symbol-btn { cursor: pointer; transition: color 0.3s; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 2px; }
 .symbol-btn svg { width: 18px; height: 18px; fill: currentColor; }
-.symbol-btn span { font-size: 8px; font-weight: bold; display: none; } /* 隱藏所有文字 */
+.symbol-btn span { font-size: 8px; font-weight: bold; display: none; }
 .symbol-btn.active { color: var(--m-deep-green); }
-/* 數量排序按鈕自定義樣式 */
 .sort-qty span {
     font-size: 14px;
     font-weight: bold;
-    display: block; /* 顯示文字 */
+    display: block;
 }
 .sort-qty svg {
-    display: none; /* 隱藏原 SVG */
+    display: none;
 }
 .order-toggle { font-size: 11px; font-weight: bold; padding: 4px 10px; border: 1px solid #eee; border-radius: 6px; cursor: pointer; color: var(--m-brown); background: #fafafa; }
 .search-input { margin-bottom: 12px; padding: 10px 12px; font-size: 12px; border: 1px solid #eee; background: #fafafa; border-radius: 6px; width: 100%; box-sizing: border-box; outline: none; }
@@ -60,7 +59,7 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: 'PingFang HK', 'M
     box-shadow: 0 0 0 2px var(--m-deep-green);
 }
 .count-tag { font-size: 10px; color: #aaa; text-align: right; margin-bottom: 5px; }
-.count-tag .number { font-size: 14px; font-weight: bold; color: var(--text); }
+.count-tag .number { font-size: 14px; font-weight: bold; color: var(--m-deep-green); } /* 改為深綠色 */
 /* 間距減半 */
 .list-container.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(var(--dynamic-grid), 1fr)); gap: 7px; }
 .list-container.list { display: flex; flex-direction: column; gap: 7px; }
@@ -81,7 +80,6 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: 'PingFang HK', 'M
 .item-card.selected::after { content: "✓"; position: absolute; top: 10px; right: 10px; background: var(--m-deep-green); color: white; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; z-index: 10; }
 .img-box { width: 100%; aspect-ratio: 1; background: #f5f5f5; pointer-events: none; }
 .img-box img { width: 100%; height: 100%; object-fit: cover; }
-/* 卡片內數量樣式（網格模式） */
 .card-qty {
     position: absolute;
     bottom: 8px;
@@ -94,7 +92,7 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: 'PingFang HK', 'M
 .info { padding: 10px; flex-grow: 1; overflow: hidden; pointer-events: none; }
 .info .note { display: none; }
 
-/* 新增頁行距減半，輸入框高度再減2（6px） */
+/* 新增頁 */
 .input-group { margin-bottom: 5px; }
 .input-label { font-size: 11px; color: var(--m-brown); font-weight: bold; margin-bottom: 5px; display: block; }
 #exchangePreview { margin-bottom: 8px; }
@@ -131,7 +129,6 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
 .crop-modal .crop-btn { flex: 1; background: var(--m-deep-green); color: white; border: none; padding: 12px; border-radius: var(--radius); font-size: 13px; cursor: pointer; }
 .crop-modal .cancel-btn { background: var(--m-clay); color: var(--text); }
 
-/* 標籤右鍵選單 */
 .tag-context-menu {
     position: fixed;
     background: white;
@@ -155,9 +152,7 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
 .stat-card { background:#fff; padding:20px; border-radius:var(--radius); border:1px solid var(--m-clay); margin-bottom: 20px; position: relative; }
 .stat-title { font-size: 13px; font-weight: bold; color: var(--m-brown); margin-bottom: 15px; border-left: 4px solid var(--m-sage); padding-left: 10px; }
 .total-expense { position: absolute; top: 20px; right: 20px; background: var(--m-sage); color: white; padding: 5px 12px; border-radius: 20px; font-size: 13px; font-weight: bold; }
-/* 新增圖片提示 */
 .image-pending-note { font-size: 11px; color: var(--m-deep-green); margin-top: 5px; font-weight: bold; }
-/* 條件檢索按鈕（底部） */
 .filter-btn-bottom {
     background: var(--m-clay);
     border: none;
@@ -168,7 +163,6 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
     cursor: pointer;
     white-space: nowrap;
 }
-/* 自訂滑桿樣式，融合主題 */
 .grid-range-slider {
     -webkit-appearance: none;
     width: 80px;
@@ -275,9 +269,9 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
                         <svg viewBox="0 0 24 24"><path d="M12.75 3h-1.5L6.5 14h1.5l1.12-3h5.75l1.12 3h1.5L12.75 3zm-3.13 6.5L12 3.25l2.38 6.25H9.62zM18 17H6v2h12v-2z"/></svg>
                     </span>
                     <span class="symbol-btn sort-qty" onclick="setSort('qty')">
-                        <span>123</span> <!-- 數字圖標 -->
+                        <span>123</span>
                     </span>
-                    <span class="order-toggle" onclick="toggleOrder()">↓</span> <!-- 只用符號 -->
+                    <span class="order-toggle" onclick="toggleOrder()">↓</span>
                 </div>
                 <div class="symbol-group">
                     <span class="symbol-btn view-grid" onclick="setView('grid')"><svg viewBox="0 0 24 24"><path d="M4 11h5V5H4v6zm0 7h5v-6H4v6zm7 0h5v-6h-5v6zm0-13v6h5V5h-5z"/></svg></span>
@@ -662,7 +656,6 @@ function renderAll() {
 
             let infoHtml;
             if (viewMode === 'grid') {
-                // 單價移到總價上方
                 infoHtml = `
                     <div class="info">
                         <div style="font-size:calc(9px * var(--info-scale,1)); color:var(--m-brown);">${i.role || ""} ${i.type ? '| ' + i.type : ""}</div>
@@ -674,7 +667,6 @@ function renderAll() {
                     <div class="card-qty">x${i.qty}</div>
                 `;
             } else if (viewMode === 'list') {
-                // 單價移到總價上方
                 infoHtml = `
                     <div class="info">
                         <div style="font-size:calc(9px * var(--info-scale,1)); color:var(--m-brown);">${i.role || ""} ${i.type ? '| ' + i.type : ""}</div>
@@ -690,9 +682,11 @@ function renderAll() {
 
             card.innerHTML = imgHtml + infoHtml;
             card.onclick = () => isBatchMode ? toggleSelectItem(i.originalIndex) : editItem(i.originalIndex);
-            handleLongPress(card, () => {
+            // 雙擊放大圖片
+            card.ondblclick = (e) => {
+                e.stopPropagation();
                 if (!isBatchMode && i.img) zoomImage(i.img);
-            });
+            };
             container.appendChild(card);
         });
         const cld = status === '現貨' ? 'lib-count' : (status === '非現貨' ? 'wait-count' : 'wish-count');
@@ -744,6 +738,7 @@ function renderFiltersInModal(status) {
                 else filters[key] = [...filters[key], item];
                 renderAll(); renderFiltersInModal(status);
             };
+            // 長按仍用於編輯/刪除標籤
             handleLongPress(chip, () => {
                 longPressedTag = { key, value: item };
                 const rect = chip.getBoundingClientRect();
