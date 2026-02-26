@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Morandi Archive - 網格功能移至各頁</title>
+<title>Morandi Archive - 最終版</title>
 <!-- Cropper.js 樣式與腳本 -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
@@ -65,6 +65,26 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: 'PingFang HK', 'M
 .item-card.selected::after { content: "✓"; position: absolute; top: 10px; right: 10px; background: var(--m-deep-green); color: white; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; z-index: 10; }
 .img-box { width: 100%; aspect-ratio: 1; background: #f5f5f5; pointer-events: none; }
 .img-box img { width: 100%; height: 100%; object-fit: cover; }
+/* 圖片放大按鈕 */
+.zoom-btn {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    width: 24px;
+    height: 24px;
+    background: rgba(255,255,255,0.7);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    cursor: pointer;
+    z-index: 5;
+    border: 1px solid rgba(0,0,0,0.1);
+    color: var(--m-deep-green);
+    pointer-events: auto;
+}
+.zoom-btn:hover { background: white; }
 .info { padding: 10px; flex-grow: 1; overflow: hidden; pointer-events: none; }
 .info .note { display: none; }
 
@@ -86,7 +106,7 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
 .filter-modal .filter-chip { margin: 2px; }
 .filter-modal .close-btn { background: var(--m-clay); border: none; padding: 10px; width: 100%; border-radius: var(--radius); font-size: 13px; cursor: pointer; margin-top: 10px; }
 
-/* 裁剪模態框 */
+/* 裁剪/放大模態框 */
 .crop-modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 25px; border-radius: var(--radius); z-index: 10000; width: 90%; max-width: 600px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); display: none; flex-direction: column; }
 .crop-modal .crop-container { max-height: 60vh; overflow: hidden; margin-bottom: 15px; }
 .crop-modal .crop-image { max-width: 100%; display: block; }
@@ -122,14 +142,14 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
     <button class="close-btn" onclick="closeFilterModal()">關閉</button>
 </div>
 
-<!-- 裁剪模態框（共用） -->
+<!-- 裁剪/放大模態框（共用） -->
 <div class="crop-modal" id="cropModal">
     <div class="crop-container">
         <img id="cropImage" class="crop-image" src="">
     </div>
     <div class="crop-actions">
-        <button class="crop-btn" id="cropConfirmBtn">確認裁剪</button>
-        <button class="crop-btn cancel-btn" onclick="closeCropModal()">取消</button>
+        <button class="crop-btn" id="cropConfirmBtn" style="display: none;">確認裁剪</button>
+        <button class="crop-btn cancel-btn" onclick="closeCropModal()">關閉</button>
     </div>
 </div>
 
@@ -178,11 +198,10 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
                     <span class="symbol-btn view-image" onclick="setView('image')"><svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg><span>圖片</span></span>
                 </div>
             </div>
-            <!-- 此處原本的 filter-box 已移除，改為按鈕 -->
             <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 10px;">
                 <div id="lib-count" class="count-tag" style="margin:0;">顯示:0/0</div>
                 <div style="display: flex; align-items: center; gap: 5px; flex: 1 1 auto; min-width: 150px;">
-                    <span style="font-size: 10px;">📏</span>
+                    <!-- 移除符號 -->
                     <input type="range" class="grid-range-slider" min="50" max="180" value="160" oninput="updateGridSize(this.value)" style="width: 100px;">
                     <span class="grid-val-display" style="font-size: 10px; min-width: 30px;">160</span>
                 </div>
@@ -226,7 +245,7 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
             <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 10px;">
                 <div id="wait-count" class="count-tag" style="margin:0;">顯示:0/0</div>
                 <div style="display: flex; align-items: center; gap: 5px; flex: 1 1 auto; min-width: 150px;">
-                    <span style="font-size: 10px;">📏</span>
+                    <!-- 移除符號 -->
                     <input type="range" class="grid-range-slider" min="50" max="180" value="160" oninput="updateGridSize(this.value)" style="width: 100px;">
                     <span class="grid-val-display" style="font-size: 10px; min-width: 30px;">160</span>
                 </div>
@@ -270,7 +289,7 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
             <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 10px;">
                 <div id="wish-count" class="count-tag" style="margin:0;">顯示:0/0</div>
                 <div style="display: flex; align-items: center; gap: 5px; flex: 1 1 auto; min-width: 150px;">
-                    <span style="font-size: 10px;">📏</span>
+                    <!-- 移除符號 -->
                     <input type="range" class="grid-range-slider" min="50" max="180" value="160" oninput="updateGridSize(this.value)" style="width: 100px;">
                     <span class="grid-val-display" style="font-size: 10px; min-width: 30px;">160</span>
                 </div>
@@ -359,7 +378,7 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
         </div>
     </div>
 
-    <!-- 系統設定頁（保留原有的網格滑桿，但會與其他頁面同步） -->
+    <!-- 系統設定頁 -->
     <div id="page-settings" class="page">
         <div class="page-header">
             <div class="back-btn-header" onclick="handleBack()">←</div>
@@ -400,10 +419,11 @@ let sortMode = 'date', sortDesc = true, viewMode = 'grid', charts = {};
 let isBatchMode = false, selectedIndices = [];
 let currentFilterModalStatus = null;
 
-// 裁剪相關變數
+// 裁剪/放大相關變數
 let cropper = null;
 let pendingCropImage = null; // 儲存裁剪後的圖片，用於帶入新增頁
 let cropCallback = null;      // 裁剪完成後的回呼函數
+let isZoomMode = false;       // 標記當前是否為放大模式（不顯示裁剪按鈕）
 
 // 壓縮圖片函數
 function compressImage(base64, maxWidth = 800, quality = 0.8) {
@@ -452,7 +472,7 @@ function init() {
     const savedCover = localStorage.getItem(COVER_KEY);
     if (savedCover) document.getElementById('cover-page').style.backgroundImage = `url(${savedCover})`;
     
-    // 讀取儲存的網格大小，並更新所有滑桿和顯示
+    // 讀取儲存的網格大小
     const savedGridSize = localStorage.getItem('archive_grid_size') || '160';
     updateGridSize(savedGridSize);
     
@@ -555,7 +575,10 @@ function renderAll() {
             const card = document.createElement('div');
             card.className = `item-card ${isBatchMode && selectedIndices.includes(i.originalIndex)? 'selected' : ""}`;
             const noteHtml = i.note ? `<div class="note" style="font-size:calc(9px * var(--info-scale,1)); margin-top:calc(4px * var(--info-scale,1));">📝 ${i.note}</div>` : '';
-            card.innerHTML = `<div class="img-box"><img src="${i.img || ""}"></div>
+            // 圖片部分，加入放大按鈕
+            const imgHtml = `<div class="img-box"><img src="${i.img || ""}"></div>`;
+            const zoomBtn = i.img ? `<div class="zoom-btn" onclick="zoomImage('${i.img}'); event.stopPropagation();">🔍</div>` : '';
+            card.innerHTML = zoomBtn + imgHtml + `
                 <div class="info">
                     <div style="font-size:calc(9px * var(--info-scale,1)); color:var(--m-brown);">${i.role || ""} ${i.type? '| '+i.type : ""}</div>
                     <div style="font-weight:bold; font-size:calc(12px * var(--info-scale,1)); margin:calc(4px * var(--info-scale,1)) 0;">${i.pattern || '無名'}</div>
@@ -689,7 +712,7 @@ function handleQuickUploadFile(input) {
             resetFormForNew();
             // 使用 openPage 關閉封面並切換到新增頁
             openPage('page-recent');
-        });
+        }, false); // 裁剪模式
     };
     reader.readAsDataURL(file);
     input.value = '';
@@ -705,34 +728,50 @@ function handleImageFileSelect(input) {
         openCropModal(e.target.result, async (croppedBase64) => {
             pendingCropImage = await compressImage(croppedBase64, 800, 0.8);
             document.getElementById('pendingImageNote').style.display = 'block';
-            // 清空 input 以便再次選擇同一檔案（可選）
             input.value = '';
-        });
+        }, false); // 裁剪模式
     };
     reader.readAsDataURL(file);
 }
 
-// 開啟裁剪模態框，傳入圖片 src 和完成回呼
-function openCropModal(imageSrc, callback) {
+// 開啟裁剪/放大模態框
+function openCropModal(imageSrc, callback, isZoom = false) {
     const img = document.getElementById('cropImage');
     img.src = imageSrc;
     cropCallback = callback;
+    isZoomMode = isZoom;
+
+    // 調整按鈕顯示
+    document.getElementById('cropConfirmBtn').style.display = isZoom ? 'none' : 'block';
 
     document.getElementById('cropModal').style.display = 'flex';
     document.getElementById('overlay').style.display = 'block';
     document.getElementById('overlay').onclick = closeCropModal;
 
     if (cropper) cropper.destroy();
-    cropper = new Cropper(img, {
-        aspectRatio: 1,
-        viewMode: 1,
-        autoCropArea: 0.8,
-        responsive: true,
-    });
+    if (isZoom) {
+        // 放大模式：只顯示圖片，可縮放移動
+        cropper = new Cropper(img, {
+            viewMode: 1,
+            dragMode: 'move',
+            autoCrop: false,
+            cropBoxMovable: false,
+            cropBoxResizable: false,
+            toggleDragModeOnDblclick: false,
+            background: false,
+        });
+    } else {
+        // 裁剪模式
+        cropper = new Cropper(img, {
+            aspectRatio: 1,
+            viewMode: 1,
+            autoCropArea: 0.8,
+            responsive: true,
+        });
+    }
 
-    // 綁定確認按鈕事件（避免重複綁定）
     document.getElementById('cropConfirmBtn').onclick = function() {
-        if (!cropper) return;
+        if (!cropper || isZoomMode) return;
         const canvas = cropper.getCroppedCanvas({
             width: 800,
             height: 800,
@@ -741,6 +780,11 @@ function openCropModal(imageSrc, callback) {
         if (cropCallback) cropCallback(croppedBase64);
         closeCropModal();
     };
+}
+
+// 放大圖片專用函數
+function zoomImage(imgSrc) {
+    openCropModal(imgSrc, null, true); // 不傳回呼，僅顯示
 }
 
 function closeCropModal() {
@@ -879,7 +923,6 @@ document.getElementById('merchForm').onsubmit = function(e) {
     const status = document.getElementById('status').value;
 
     const done = (imgBase64) => {
-        // 決定最終圖片：優先使用新上傳的（已存入 pendingCropImage），否則用原有圖片
         const finalImg = pendingCropImage || (editIdx > -1 ? merchList[editIdx].img : null);
 
         const data = {
@@ -929,11 +972,17 @@ document.getElementById('merchForm').onsubmit = function(e) {
         renderSelects();
         renderAll();
         resetFormForNew();
-        switchTab('page-gallery', document.querySelectorAll('.nav-item')[0]);
-        setTimeout(() => { showModal("✨", editIdx > -1 ? "更新成功" : "已存入庫"); }, 400);
+
+        if (editIdx > -1) {
+            // 更新成功：不彈窗
+            // 保持停留在編輯頁（不切換）
+        } else {
+            // 新增成功：彈窗，停留在新增頁
+            setTimeout(() => { showModal("✨", "已存入庫"); }, 400);
+            // 不切換頁面
+        }
     };
 
-    // 不再從檔案輸入直接讀取，因為圖片已透過裁剪存入 pendingCropImage
     done(null);
 };
 
@@ -970,22 +1019,13 @@ function renderSelects() {
 
 // 更新網格大小及相關顯示
 function updateGridSize(v) {
-    // 設定 CSS 變數
     document.documentElement.style.setProperty('--dynamic-grid', v + 'px');
-    
-    // 儲存到 localStorage
     localStorage.setItem('archive_grid_size', v);
-
-    // 更新所有網格大小數字顯示
     document.querySelectorAll('.grid-val-display').forEach(el => el.innerText = v);
-    // 更新系統設定頁的單獨顯示（如果存在）
     const gridVal = document.getElementById('gridVal');
     if (gridVal) gridVal.innerText = v;
-
-    // 更新所有滑桿的 value（確保同步）
     document.querySelectorAll('.grid-range-slider').forEach(slider => slider.value = v);
 
-    // 計算文字縮放
     let scale = 1;
     if (v <= 106) {
         scale = Math.max(0.7, v / 106);
