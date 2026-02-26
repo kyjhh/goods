@@ -19,10 +19,10 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: 'PingFang HK', 'M
 #batch-panel { display: none; background: var(--m-deep-green); color: white; padding: 15px 20px; position: fixed; top: 0; left: 0; width: 100%; box-sizing: border-box; z-index: 2500; justify-content: space-between; align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.15); transition: 0.3s; }
 .batch-btn { background: #cc9999; border: none; color: white; padding: 6px 15px; border-radius: 4px; font-size: 13px; cursor: pointer; font-weight: bold; }
 .edit-toggle-btn { font-size: 13px; color: var(--m-deep-green); border: 1px solid var(--m-deep-green); padding: 4px 12px; border-radius: 6px; cursor: pointer; margin-left: 10px; font-weight: bold; transition: 0.2s; }
-#cover-page { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #d2cdc1; background-size: cover; background-position: center; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 2000; transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); } /* 改為置中 */
+#cover-page { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #d2cdc1; background-size: cover; background-position: center; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 2000; transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
 #cover-page.open { transform: translateY(-100%); }
 .cover-upload-btn { position: absolute; top: 20px; left: 20px; background: rgba(255, 255, 255, 0.4); backdrop-filter: blur(5px); border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 2100; border: 1px solid rgba(255,255,255,0.3); }
-.cover-menu { width: 160px; display: flex; flex-direction: column; gap: 8px; } /* 移除 margin-bottom */
+.cover-menu { width: 160px; display: flex; flex-direction: column; gap: 8px; }
 .menu-btn { background: rgba(255, 255, 255, 0.65); backdrop-filter: blur(12px); padding: 14px; text-align: center; cursor: pointer; border-radius: var(--radius); font-size: 11px; letter-spacing: 2px; border: 1px solid rgba(255,255,255,0.2); }
 .nav-bar { position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%); width: 92%; max-width: 500px; background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); display: flex; justify-content: space-around; padding: 12px 5px; border-radius: 15px; box-shadow: 0 8px 30px rgba(0,0,0,0.08); z-index: 1000; transition: bottom 0.3s; }
 .nav-item { border: none; background: none; color: #b5b5b5; font-size: 10px; font-weight: 600; cursor: pointer; padding: 10px; flex-grow: 1; text-align: center; }
@@ -31,24 +31,18 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: 'PingFang HK', 'M
 .page { display: none; }
 .page.active { display: block; }
 /* 頁面頂欄 */
-.page-header { display: flex; align-items: center; justify-content: center; margin-bottom: 15px; } /* 改為置中 */
-.back-btn-header { font-size: 20px; cursor: pointer; color: var(--m-brown); width: 40px; position: absolute; left: 12px; } /* 絕對定位在左側 */
+.page-header { display: flex; align-items: center; justify-content: center; margin-bottom: 15px; position: relative; }
+.back-btn-header { font-size: 20px; cursor: pointer; color: var(--m-brown); width: 40px; position: absolute; left: 0; }
 .page-title { font-size: 18px; font-weight: bold; color: var(--m-deep-green); text-align: center; margin: 0 auto; }
 .control-panel { background: #fff; padding: 15px; border-radius: var(--radius); margin-bottom: 20px; border: 1px solid var(--m-clay); box-shadow: 0 2px 10px rgba(0,0,0,0.02); }
 .symbol-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid #f0f0f0; padding-bottom: 12px; }
 .symbol-group { display: flex; gap: 12px; color: #ccc; align-items: center; }
 .symbol-btn { cursor: pointer; transition: color 0.3s; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 2px; }
 .symbol-btn svg { width: 18px; height: 18px; fill: currentColor; }
-.symbol-btn span { font-size: 8px; font-weight: bold; display: none; }
+.symbol-btn span { font-size: 8px; font-weight: bold; display: block; } /* 恢復文字 */
 .symbol-btn.active { color: var(--m-deep-green); }
-.sort-qty span {
-    font-size: 14px;
-    font-weight: bold;
-    display: block;
-}
-.sort-qty svg {
-    display: none;
-}
+.sort-qty span { font-size: 8px; font-weight: bold; } /* 數量按鈕文字大小與其他一致 */
+.sort-qty svg { display: none; } /* 隱藏原 SVG */
 .order-toggle { font-size: 11px; font-weight: bold; padding: 4px 10px; border: 1px solid #eee; border-radius: 6px; cursor: pointer; color: var(--m-brown); background: #fafafa; }
 .search-input { margin-bottom: 12px; padding: 10px 12px; font-size: 12px; border: 1px solid #eee; background: #fafafa; border-radius: 6px; width: 100%; box-sizing: border-box; outline: none; }
 .filter-row { display: flex; overflow-x: auto; white-space: nowrap; gap: 8px; margin-bottom: 10px; scrollbar-width: none; }
@@ -59,7 +53,7 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: 'PingFang HK', 'M
     box-shadow: 0 0 0 2px var(--m-deep-green);
 }
 .count-tag { font-size: 10px; color: #aaa; text-align: right; margin-bottom: 5px; }
-.count-tag .number { font-size: 14px; font-weight: bold; color: #aaa; } /* 改為與文字同色 */
+.count-tag .number { font-size: 14px; font-weight: bold; color: #aaa; }
 /* 間距減半 */
 .list-container.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(var(--dynamic-grid), 1fr)); gap: 7px; }
 .list-container.list { display: flex; flex-direction: column; gap: 7px; }
@@ -153,15 +147,28 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
 .stat-title { font-size: 13px; font-weight: bold; color: var(--m-brown); margin-bottom: 15px; border-left: 4px solid var(--m-sage); padding-left: 10px; }
 .total-expense { position: absolute; top: 20px; right: 20px; background: var(--m-sage); color: white; padding: 5px 12px; border-radius: 20px; font-size: 13px; font-weight: bold; }
 .image-pending-note { font-size: 11px; color: var(--m-deep-green); margin-top: 5px; font-weight: bold; }
+/* 條件檢索按鈕（底部）- 與管理按鈕相同樣式 */
 .filter-btn-bottom {
-    background: var(--m-clay);
-    border: none;
+    background: transparent;
+    border: 1px solid var(--m-deep-green);
     border-radius: 6px;
-    padding: 5px 12px;
+    padding: 4px 12px;
     font-size: 13px;
-    color: var(--text);
+    color: var(--m-deep-green);
     cursor: pointer;
     white-space: nowrap;
+    font-weight: bold;
+}
+/* 管理按鈕保留原樣 */
+.edit-toggle-btn {
+    font-size: 13px;
+    color: var(--m-deep-green);
+    border: 1px solid var(--m-deep-green);
+    padding: 4px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: 0.2s;
 }
 .grid-range-slider {
     -webkit-appearance: none;
@@ -175,7 +182,7 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
     -webkit-appearance: none;
     width: 16px;
     height: 16px;
-    background: var(--m-deep-green);
+    background: var(--m-clay); /* 灰色 */
     border-radius: 50%;
     cursor: pointer;
     box-shadow: 0 1px 3px rgba(0,0,0,0.2);
@@ -183,7 +190,7 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
 .grid-range-slider::-moz-range-thumb {
     width: 16px;
     height: 16px;
-    background: var(--m-deep-green);
+    background: var(--m-clay);
     border-radius: 50%;
     cursor: pointer;
     border: none;
@@ -204,7 +211,7 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
         <button class="batch-btn" onclick="confirmBatchDelete()">刪除選中</button>
     </div>
 </div>
-<div class="overlay" id="overlay"></div> <!-- 移除 onclick -->
+<div class="overlay" id="overlay"></div>
 <div id="success-modal">
     <div id="modal-icon" style="font-size: 40px; margin-bottom: 15px; color: var(--m-deep-green);"></div>
     <div id="modal-text" style="font-weight: bold; font-size: 16px;">操作成功</div>
@@ -261,12 +268,15 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
                 <div class="symbol-group">
                     <span class="symbol-btn sort-date" onclick="setSort('date')">
                         <svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>
+                        <span>時間</span>
                     </span>
                     <span class="symbol-btn sort-price" onclick="setSort('price')">
                         <svg viewBox="0 0 24 24"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 2.01-1.79 2.7-1.79 2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>
+                        <span>金額</span>
                     </span>
                     <span class="symbol-btn sort-name" onclick="setSort('name')">
                         <svg viewBox="0 0 24 24"><path d="M12.75 3h-1.5L6.5 14h1.5l1.12-3h5.75l1.12 3h1.5L12.75 3zm-3.13 6.5L12 3.25l2.38 6.25H9.62zM18 17H6v2h12v-2z"/></svg>
+                        <span>名稱</span>
                     </span>
                     <span class="symbol-btn sort-qty" onclick="setSort('qty')">
                         <span>123</span>
@@ -274,16 +284,18 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
                     <span class="order-toggle" onclick="toggleOrder()">↓</span>
                 </div>
                 <div class="symbol-group">
-                    <span class="symbol-btn view-grid" onclick="setView('grid')"><svg viewBox="0 0 24 24"><path d="M4 11h5V5H4v6zm0 7h5v-6H4v6zm7 0h5v-6h-5v6zm0-13v6h5V5h-5z"/></svg></span>
-                    <span class="symbol-btn view-list" onclick="setView('list')"><svg viewBox="0 0 24 24"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zm0-10v2h14V7H7z"/></svg></span>
-                    <span class="symbol-btn view-image" onclick="setView('image')"><svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg></span>
+                    <span class="symbol-btn view-grid" onclick="setView('grid')"><svg viewBox="0 0 24 24"><path d="M4 11h5V5H4v6zm0 7h5v-6H4v6zm7 0h5v-6h-5v6zm0-13v6h5V5h-5z"/></svg><span>網格</span></span>
+                    <span class="symbol-btn view-list" onclick="setView('list')"><svg viewBox="0 0 24 24"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zm0-10v2h14V7H7z"/></svg><span>清單</span></span>
+                    <span class="symbol-btn view-image" onclick="setView('image')"><svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg><span>圖片</span></span>
                 </div>
             </div>
             <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 10px;">
                 <div id="lib-count" class="count-tag" style="margin:0;"><span>顯示:</span><span class="number">0/0</span></div>
                 <input type="range" class="grid-range-slider" min="50" max="170" value="160" oninput="handleGridSliderInput(this)">
-                <button class="filter-btn-bottom" onclick="openFilterModal('現貨')">條件檢索</button>
-                <span class="edit-toggle-btn" onclick="setBatchMode(true)">管理</span>
+                <div style="margin-left: auto; display: flex; gap: 10px;"> <!-- 靠右 -->
+                    <button class="filter-btn-bottom" onclick="openFilterModal('現貨')">條件檢索</button>
+                    <span class="edit-toggle-btn" onclick="setBatchMode(true)">管理</span>
+                </div>
             </div>
         </div>
         <div id="readyList" class="list-container grid"></div>
@@ -301,12 +313,15 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
                 <div class="symbol-group">
                     <span class="symbol-btn sort-date" onclick="setSort('date')">
                         <svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>
+                        <span>時間</span>
                     </span>
                     <span class="symbol-btn sort-price" onclick="setSort('price')">
                         <svg viewBox="0 0 24 24"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 2.01-1.79 2.7-1.79 2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>
+                        <span>金額</span>
                     </span>
                     <span class="symbol-btn sort-name" onclick="setSort('name')">
                         <svg viewBox="0 0 24 24"><path d="M12.75 3h-1.5L6.5 14h1.5l1.12-3h5.75l1.12 3h1.5L12.75 3zm-3.13 6.5L12 3.25l2.38 6.25H9.62zM18 17H6v2h12v-2z"/></svg>
+                        <span>名稱</span>
                     </span>
                     <span class="symbol-btn sort-qty" onclick="setSort('qty')">
                         <span>123</span>
@@ -314,16 +329,18 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
                     <span class="order-toggle" onclick="toggleOrder()">↓</span>
                 </div>
                 <div class="symbol-group">
-                    <span class="symbol-btn view-grid" onclick="setView('grid')"><svg viewBox="0 0 24 24"><path d="M4 11h5V5H4v6zm0 7h5v-6H4v6zm7 0h5v-6h-5v6zm0-13v6h5V5h-5z"/></svg></span>
-                    <span class="symbol-btn view-list" onclick="setView('list')"><svg viewBox="0 0 24 24"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zm0-10v2h14V7H7z"/></svg></span>
-                    <span class="symbol-btn view-image" onclick="setView('image')"><svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg></span>
+                    <span class="symbol-btn view-grid" onclick="setView('grid')"><svg viewBox="0 0 24 24"><path d="M4 11h5V5H4v6zm0 7h5v-6H4v6zm7 0h5v-6h-5v6zm0-13v6h5V5h-5z"/></svg><span>網格</span></span>
+                    <span class="symbol-btn view-list" onclick="setView('list')"><svg viewBox="0 0 24 24"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zm0-10v2h14V7H7z"/></svg><span>清單</span></span>
+                    <span class="symbol-btn view-image" onclick="setView('image')"><svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg><span>圖片</span></span>
                 </div>
             </div>
             <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 10px;">
                 <div id="wait-count" class="count-tag" style="margin:0;"><span>顯示:</span><span class="number">0/0</span></div>
                 <input type="range" class="grid-range-slider" min="50" max="170" value="160" oninput="handleGridSliderInput(this)">
-                <button class="filter-btn-bottom" onclick="openFilterModal('非現貨')">條件檢索</button>
-                <span class="edit-toggle-btn" onclick="setBatchMode(true)">管理</span>
+                <div style="margin-left: auto; display: flex; gap: 10px;">
+                    <button class="filter-btn-bottom" onclick="openFilterModal('非現貨')">條件檢索</button>
+                    <span class="edit-toggle-btn" onclick="setBatchMode(true)">管理</span>
+                </div>
             </div>
         </div>
         <div id="waitList" class="list-container grid"></div>
@@ -341,12 +358,15 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
                 <div class="symbol-group">
                     <span class="symbol-btn sort-date" onclick="setSort('date')">
                         <svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>
+                        <span>時間</span>
                     </span>
                     <span class="symbol-btn sort-price" onclick="setSort('price')">
                         <svg viewBox="0 0 24 24"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 2.01-1.79 2.7-1.79 2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>
+                        <span>金額</span>
                     </span>
                     <span class="symbol-btn sort-name" onclick="setSort('name')">
                         <svg viewBox="0 0 24 24"><path d="M12.75 3h-1.5L6.5 14h1.5l1.12-3h5.75l1.12 3h1.5L12.75 3zm-3.13 6.5L12 3.25l2.38 6.25H9.62zM18 17H6v2h12v-2z"/></svg>
+                        <span>名稱</span>
                     </span>
                     <span class="symbol-btn sort-qty" onclick="setSort('qty')">
                         <span>123</span>
@@ -354,16 +374,18 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
                     <span class="order-toggle" onclick="toggleOrder()">↓</span>
                 </div>
                 <div class="symbol-group">
-                    <span class="symbol-btn view-grid" onclick="setView('grid')"><svg viewBox="0 0 24 24"><path d="M4 11h5V5H4v6zm0 7h5v-6H4v6zm7 0h5v-6h-5v6zm0-13v6h5V5h-5z"/></svg></span>
-                    <span class="symbol-btn view-list" onclick="setView('list')"><svg viewBox="0 0 24 24"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zm0-10v2h14V7H7z"/></svg></span>
-                    <span class="symbol-btn view-image" onclick="setView('image')"><svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg></span>
+                    <span class="symbol-btn view-grid" onclick="setView('grid')"><svg viewBox="0 0 24 24"><path d="M4 11h5V5H4v6zm0 7h5v-6H4v6zm7 0h5v-6h-5v6zm0-13v6h5V5h-5z"/></svg><span>網格</span></span>
+                    <span class="symbol-btn view-list" onclick="setView('list')"><svg viewBox="0 0 24 24"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zm0-10v2h14V7H7z"/></svg><span>清單</span></span>
+                    <span class="symbol-btn view-image" onclick="setView('image')"><svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg><span>圖片</span></span>
                 </div>
             </div>
             <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 10px;">
                 <div id="wish-count" class="count-tag" style="margin:0;"><span>顯示:</span><span class="number">0/0</span></div>
                 <input type="range" class="grid-range-slider" min="50" max="170" value="160" oninput="handleGridSliderInput(this)">
-                <button class="filter-btn-bottom" onclick="openFilterModal('願望')">條件檢索</button>
-                <span class="edit-toggle-btn" onclick="setBatchMode(true)">管理</span>
+                <div style="margin-left: auto; display: flex; gap: 10px;">
+                    <button class="filter-btn-bottom" onclick="openFilterModal('願望')">條件檢索</button>
+                    <span class="edit-toggle-btn" onclick="setBatchMode(true)">管理</span>
+                </div>
             </div>
         </div>
         <div id="wishList" class="list-container grid"></div>
@@ -430,7 +452,7 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
         </div>
         <div class="stat-card">
             <div class="stat-title">角色支出排行(HKD)</div>
-            <canvas id="roleChart" height="200"></canvas> <!-- 固定高度 -->
+            <canvas id="roleChart" height="200"></canvas>
         </div>
         <div class="stat-card">
             <div class="stat-title">類別數量分佈</div>
@@ -438,7 +460,7 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
         </div>
         <div class="stat-card">
             <div class="stat-title">角色數量統計</div>
-            <canvas id="roleCountChart" height="200"></canvas> <!-- 固定高度 -->
+            <canvas id="roleCountChart" height="200"></canvas>
         </div>
     </div>
 
@@ -493,7 +515,6 @@ let isZoomMode = false;
 let longPressedTag = { key: null, value: null };
 let isUpdatingGrid = false;
 
-// 點擊遮罩時關閉成功彈窗（不關過濾/裁剪）
 document.getElementById('overlay').addEventListener('click', function() {
     if (document.getElementById('success-modal').style.display === 'block') {
         closeModal();
@@ -686,7 +707,6 @@ function renderAll() {
 
             card.innerHTML = imgHtml + infoHtml;
             card.onclick = () => isBatchMode ? toggleSelectItem(i.originalIndex) : editItem(i.originalIndex);
-            // 長按放大圖片（400ms）
             handleLongPress(card, () => {
                 if (!isBatchMode && i.img) zoomImage(i.img);
             });
