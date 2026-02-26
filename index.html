@@ -334,6 +334,18 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
     background: var(--m-clay);
     border-radius: 2px;
 }
+/* 版本號樣式 */
+.version-tag {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    font-size: 10px;
+    color: rgba(0,0,0,0.3);
+    background: rgba(255,255,255,0.3);
+    padding: 2px 6px;
+    border-radius: 4px;
+    backdrop-filter: blur(2px);
+}
 </style>
 </head>
 <body class="theme-1">
@@ -390,6 +402,8 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
         <div class="menu-btn" onclick="triggerQuickUpload()">上載藏品</div>
     </div>
     <input type="file" id="quickUploadInput" style="display:none;" accept="image/*" onchange="handleQuickUploadFile(this)">
+    <!-- 版本號 -->
+    <div class="version-tag">v0.86.0</div>
 </div>
 
 <div class="main-content" id="main-content">
@@ -1067,55 +1081,109 @@ function updateZoomDisplay(index) {
         </div>
     `;
     document.getElementById('zoomPrev').style.display = (index > 0 && merchList[index-1] && merchList[index-1].img) ? 'flex' : 'none';
-    document.getElementById('zoomNext').style.display = (index < merchList.length-1 && merchList[index+1] && merchList[index+1].img) ? 'flex' : 'none';
+    document.getElementById('zoomNext').styleList[index-1] && merchList[index-1].img) ? 'flex' : 'none';
+    document.getElementById('zoomNext').style.display = (index < merchList.length-1 && merchList[index.display = (index < merchList.length-1 && merchList[index+1] && merchList[index+1].img) ? 'flex'+1] && merchList[index+1].img) ? 'flex' : 'none';
+}
+
+function openCropModal(imageSrc, callback, isZoom = false, item = null) {
+    const img = document.getElementById(' : 'none';
 }
 
 function openCropModal(imageSrc, callback, isZoom = false, item = null) {
     const img = document.getElementById('cropImage');
     img.src = imageSrc;
     cropCallback = callback;
-    isZoomMode = isZoom;
+   cropImage');
+    img.src = imageSrc;
+    cropCallback = callback;
+    isZoom isZoomMode = isZoom;
+
+    document.getElementById('cropConfirmBtn').style.display = isZoom ? 'none' : 'block';
+   Mode = isZoom;
 
     document.getElementById('cropConfirmBtn').style.display = isZoom ? 'none' : 'block';
     document.getElementById('zoomPrev').style.display = 'none';
     document.getElementById('zoomNext').style.display = 'none';
+    document.getElementById('zoomInfo'). document.getElementById('zoomPrev').style.display = 'none';
+    document.getElementById('zoomNext').style.display = 'none';
     document.getElementById('zoomInfo').style.display = isZoom ? 'block' : 'none';
 
+   style.display = isZoom ? 'block' : 'none';
+
     document.getElementById('cropModal').style.display = 'flex';
+    document.getElementById('overlay').style.display document.getElementById('cropModal').style.display = 'flex';
     document.getElementById('overlay').style.display = 'block';
+
+    if (cropper) cropper.destroy();
+
+    if (isZoom) {
+ = 'block';
 
     if (cropper) cropper.destroy();
 
     if (isZoom) {
         cropper = new Cropper(img, { 
             viewMode: 1, 
+            dragMode        cropper = new Cropper(img, { 
+            viewMode: 1, 
             dragMode: 'move', 
             autoCrop: false, 
             cropBoxMovable: false, 
             cropBoxResizable: false, 
-            toggleDragModeOnDblclick: false, 
+           : 'move', 
+            autoCrop: false, 
+            cropBoxMovable: false, 
+            cropBoxResizable: false, 
+            toggleDragModeOnDblclick: false, toggleDragModeOnDblclick: false, 
             background: false, 
-            zoomable: true, 
+            zoomable: true 
+            background: false, 
+            zoomable, 
+            zoomOnWheel: true 
+        });
+        if (item) {
+            const index = currentZoomIndex;
+            const infoDiv = document.getElementById('zoomInfo');
+            const totalInt = parseInt(parseFloat: true, 
             zoomOnWheel: true 
         });
         if (item) {
             const index = currentZoomIndex;
             const infoDiv = document.getElementById('zoomInfo');
             const totalInt = parseInt(parseFloat(item.totalHkd));
+            let unitPriceHKD = (parseFloat(item(item.totalHkd));
             let unitPriceHKD = (parseFloat(item.price) * rates[item.currency]);
-            let unitPriceStr = (unitPriceHKD % 1 === 0) ? unitPriceHKD.toString() : unitPriceHKD.toFixed(2);
+            let unitPriceStr.price) * rates[item.currency]);
+            let unitPriceStr = (unitPriceHKD % 1 === 0) ? unitPriceHKD.toString() = (unitPriceHKD % 1 === 0) ? unitPriceHKD.toString() : unitPriceHKD.toFixed(2);
             infoDiv.innerHTML = `
-                <div class="zoom-info-item"><strong>作品</strong><span>${item.work || '無'}</span></div>
+                <div class : unitPriceHKD.toFixed(2);
+            infoDiv.innerHTML = `
+                <div class="zoom-info-item"><strong>作品</strong><span>${item.work ||="zoom-info-item"><strong>作品</strong><span>${item.work || '無'}</span></div>
+                <div class="zoom-info-item"><strong '無'}</span></div>
                 <div class="zoom-info-item"><strong>角色</strong><span>${item.role || '無'}</span></div>
+                <div class>角色</strong><span>${item.role || '無'}</span></div>
                 <div class="zoom-info-item"><strong>類別</strong><span>${item.type || '無'}</span></div>
-                <div class="zoom-info-item"><strong>總價</strong><span>$ ${totalInt}</span></div>
+                <div class="zoom-info-item"><strong>總="zoom-info-item"><strong>類別</strong><span>${item.type || '無'}</span></div>
+                <div class="zoom-info-item"><strong價</strong><span>$ ${totalInt}</span></div>
+                <div class="zoom-info-row">
+                    <div class=">總價</strong><span>$ ${totalInt}</span></div>
                 <div class="zoom-info-row">
                     <div class="zoom-info-item"><strong>數量</strong><span>${item.qty}</span></div>
+                    <div class="zoom-info-itemzoom-info-item"><strong>數量</strong><span>${item.qty}</span></div>
                     <div class="zoom-info-item"><strong>單價</strong><span>$ ${unitPriceStr}</span></div>
+"><strong>單價</strong><span>$ ${unitPriceStr}</span></div>
                 </div>
             `;
+            document.getElementById('zoomPrev').style.display = (index > 0 && merchList[index-1] && merchList[index-1].                </div>
+            `;
             document.getElementById('zoomPrev').style.display = (index > 0 && merchList[index-1] && merchList[index-1].img) ? 'flex' : 'none';
-            document.getElementById('zoomNext').style.display = (index < merchList.length-1 && merchList[index+1] && merchList[index+1].img) ? 'flex' : 'none';
+            document.getElementById('img) ? 'flex' : 'none';
+            document.getElementById('zoomNext').style.display = (index < merchList.length-1 && merchList[index+1zoomNext').style.display = (index < merchList.length-1 && merchList[index+1] && merchList[index+] && merchList[index+1].img) ? 'flex' : 'none';
+        }
+    } else {
+        cropper = new Cropper(img, { 
+            aspectRatio: 1, 
+            viewMode1].img) ? 'flex' : 'none';
         }
     } else {
         cropper = new Cropper(img, { 
@@ -1123,40 +1191,88 @@ function openCropModal(imageSrc, callback, isZoom = false, item = null) {
             viewMode: 1, 
             autoCropArea: 0.8, 
             responsive: true, 
+            zoomable: 1, 
+            autoCropArea: 0.8, 
+            responsive: true, 
             zoomable: true, 
             zoomOnWheel: true, 
             movable: true, 
             cropBoxMovable: true, 
-            cropBoxResizable: true, 
+            cropBoxResizable:: true, 
+            zoomOnWheel: true, 
+            movable: true, 
+            cropBoxMovable: true, 
+            cropBoxResizable: true, true, 
+            toggleDragModeOnDblclick: false 
+        });
+    }
+
+    document.getElementById('cropConfirmBtn').onclick = function () {
+        if (! 
             toggleDragModeOnDblclick: false 
         });
     }
 
     document.getElementById('cropConfirmBtn').onclick = function () {
         if (!cropper || isZoomMode) return;
+        const canvas = cropper.getCroppedCanvas({ width: 800, height: cropper || isZoomMode) return;
         const canvas = cropper.getCroppedCanvas({ width: 800, height: 800 });
+800 });
         const croppedBase64 = canvas.toDataURL('image/jpeg', 0.9);
+        if (cropCallback) cropCallback(croppedBase        const croppedBase64 = canvas.toDataURL('image/jpeg', 0.9);
         if (cropCallback) cropCallback(croppedBase64);
         closeCropModal();
     };
 }
 
 function zoomPrev() {
+    if (currentZoomIndex > 0 && merchList64);
+        closeCropModal();
+    };
+}
+
+function zoomPrev() {
     if (currentZoomIndex > 0 && merchList[currentZoomIndex-1] && merchList[currentZoomIndex-1].img) {
+[currentZoomIndex-1] && merchList[currentZoomIndex-1].img) {
         currentZoomIndex--;
         updateZoomDisplay(currentZoomIndex);
     }
 }
 
+function zoomNext()        currentZoomIndex--;
+        updateZoomDisplay(currentZoomIndex);
+    }
+}
+
 function zoomNext() {
+    if (currentZoomIndex < merchList.length-1 && merchList[currentZoom {
     if (currentZoomIndex < merchList.length-1 && merchList[currentZoomIndex+1] && merchList[currentZoomIndex+1].img) {
         currentZoomIndex++;
         updateZoomDisplay(currentZoomIndex);
     }
 }
 
+document.getElementById('zoomPrev').addEventListener('click', zoomIndex+1] && merchList[currentZoomIndex+1].img) {
+        currentZoomIndex++;
+        updateZoomDisplay(currentZoomIndex);
+    }
+}
+
 document.getElementById('zoomPrev').addEventListener('click', zoomPrev);
+document.getElementById('zoomNext').addEventListener('click', zoomPrev);
 document.getElementById('zoomNext').addEventListener('click', zoomNext);
+
+function closeCropModal() {
+    document.getElementById('cropModal').style.display = 'none';
+    document.getElementById('overlay').style.display = 'none';
+    if (cropper) { cropper.destroy(); cropper = null; }
+    cropCallback = null;
+    isZoomMode = false;
+    currentZoomIndex = -1;
+}
+
+function editItem(idx) {
+    pendingNext);
 
 function closeCropModal() {
     document.getElementById('cropModal').style.display = 'none';
@@ -1172,15 +1288,40 @@ function editItem(idx) {
     document.getElementById('pendingImageNote').style.display = 'none';
     const i = merchList[idx];
     document.getElementById('editIndex').value = idx;
-    document.getElementById('workSelect').value = i.work;
+    document.getElementById('workSelect').value =CropImage = null;
+    document.getElementById('pendingImageNote').style.display = 'none';
+    const i = merchList[idx];
+    document.getElementById('editIndex').value = idx;
+    document.getElementById('workSelect'). i.work;
+    document.getElementById('roleSelect').value = i.role;
+    document.getElementById('typeSelect').value = i.type;
+    document.getElementById('pattern').value = i.pattern;
+    document.getElementById('note').value = i.note || "";
+    document.getElementById('status').value = i.status;
+   value = i.work;
     document.getElementById('roleSelect').value = i.role;
     document.getElementById('typeSelect').value = i.type;
     document.getElementById('pattern').value = i.pattern;
     document.getElementById('note').value = i.note || "";
     document.getElementById('status').value = i.status;
     document.getElementById('qty').value = i.qty;
+    document.getElementById('buyDate').value = i.buy document.getElementById('qty').value = i.qty;
     document.getElementById('buyDate').value = i.buyDate || "";
+    document.getElementById('currency').value = i.currencyDate || "";
     document.getElementById('currency').value = i.currency || "HKD";
+    document.getElementById('inputPrice').value = i.price || 0;
+    document.getElementById('submitBtn').innerText = "更新藏品資料";
+    document.getElementById('delBtn').style.display = 'block';
+    liveExchange();
+    updateDateLabel();
+    document.getElementById('recent-page-title').innerText = '編輯藏品';
+    switchTab('page-recent');
+}
+
+function resetFormForNew() {
+    document.getElementById('merchForm').reset();
+    document.getElementById('editIndex').value = "-1";
+    document.getElementById('submitBtn').innerText || "HKD";
     document.getElementById('inputPrice').value = i.price || 0;
     document.getElementById('submitBtn').innerText = "更新藏品資料";
     document.getElementById('delBtn').style.display = 'block';
@@ -1196,17 +1337,35 @@ function resetFormForNew() {
     document.getElementById('submitBtn').innerText = "儲存至資料庫";
     document.getElementById('delBtn').style.display = 'none';
     document.getElementById('exchangePreview').innerText = "總額: HKD 0.00";
+    const lastInput = JSON.parse(localStorage.getItem( = "儲存至資料庫";
+    document.getElementById('delBtn').style.display = 'none';
+    document.getElementById('exchangePreview').innerText = "總額: HKD 0.00";
     const lastInput = JSON.parse(localStorage.getItem(LAST_INPUT_KEY) || '{}');
+    if (lastInput.work) document.getElementById('workSelect').value = lastInput.work;
+    if (lastInput.role) document.getElementById('roleSelect').value = lastInput.role;
+    if (lastInputLAST_INPUT_KEY) || '{}');
     if (lastInput.work) document.getElementById('workSelect').value = lastInput.work;
     if (lastInput.role) document.getElementById('roleSelect').value = lastInput.role;
     if (lastInput.type) document.getElementById('typeSelect').value = lastInput.type;
     if (lastInput.status) document.getElementById('status').value = lastInput.status;
-    if (lastInput.currency) document.getElementById('currency').value = lastInput.currency;
+    if (lastInput.currency) document.getElementById('currency').value.type) document.getElementById('typeSelect').value = lastInput.type;
+    if (lastInput.status) document.getElementById('status').value = lastInput.status;
+    if (lastInput.currency) = lastInput.currency;
+    liveExchange();
+    updateDateLabel();
+    document.getElementById('recent-page-title').innerText = '新增藏品';
+    if (pendingCropImage) document.getElementById(' document.getElementById('currency').value = lastInput.currency;
     liveExchange();
     updateDateLabel();
     document.getElementById('recent-page-title').innerText = '新增藏品';
     if (pendingCropImage) document.getElementById('pendingImageNote').style.display = 'block';
+    else document.getElementById('pendingImageNote').style.display =pendingImageNote').style.display = 'block';
     else document.getElementById('pendingImageNote').style.display = 'none';
+}
+
+function handleLongPress(element, callback) {
+    let timer;
+    const start = () => { timer = setTimeout(() => { if (window.navigator.vibrate) window.navigator.vibrate(60); callback(); 'none';
 }
 
 function handleLongPress(element, callback) {
@@ -1219,10 +1378,27 @@ function handleLongPress(element, callback) {
     element.addEventListener('mouseup', cancel);
 }
 
+ }, 700); };
+    const cancel = () => clearTimeout(timer);
+    element.addEventListener('touchstart', start, { passive: true });
+    element.addEventListener('touchend', cancel);
+    element.addEventListener('mousedown', start);
+    element.addEventListener('mouseup', cancel);
+}
+
 function switchTab(id, btn) {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById(id).classList.addfunction switchTab(id, btn) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     document.getElementById(id).classList.add('active');
+    if (btn) { document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); btn.classList.add('('active');
     if (btn) { document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); btn.classList.add('active'); }
+    if (id === 'page-stats') renderStats();
+    closeFilterModal();
+    if (isBatchMode) setBatchMode(false);
+}
+
+function openactive'); }
     if (id === 'page-stats') renderStats();
     closeFilterModal();
     if (isBatchMode) setBatchMode(false);
@@ -1231,6 +1407,15 @@ function switchTab(id, btn) {
 function openPage(id) {
     document.getElementById('cover-page').classList.add('open');
     document.getElementById('bottom-nav').style.display = 'flex';
+Page(id) {
+    document.getElementById('cover-page').classList.add('open');
+       switchTab(id, document.querySelectorAll('.nav-item')[['page-gallery', 'page-pending', 'page-wish', 'page-stats', 'page-recent', 'page-settings'].indexOf(id)]);
+}
+
+function handleBack() {
+    const activePage = document.querySelector('.page.active')?.id;
+    if (activePage === 'page-recent') switchTab('page-gallery', document.querySelector('.nav-item'));
+    else { document.getElementById('cover-page').classList document.getElementById('bottom-nav').style.display = 'flex';
     switchTab(id, document.querySelectorAll('.nav-item')[['page-gallery', 'page-pending', 'page-wish', 'page-stats', 'page-recent', 'page-settings'].indexOf(id)]);
 }
 
@@ -1240,7 +1425,17 @@ function handleBack() {
     else { document.getElementById('cover-page').classList.remove('open'); document.getElementById('bottom-nav').style.display = 'none'; }
 }
 
+function toggleInput(sid, iid.remove('open'); document.getElementById('bottom-nav').style.display = 'none'; }
+}
+
 function toggleInput(sid, iid) {
+) {
+    const s = document.getElementById(sid);
+    const i = document.getElementById(iid);
+    i.style.display = (s.value === 'NEW') ? 'block' : 'none';
+}
+
+function liveExchange() {
     const s = document.getElementById(sid);
     const i = document.getElementById(iid);
     i.style.display = (s.value === 'NEW') ? 'block' : 'none';
@@ -1248,20 +1443,36 @@ function toggleInput(sid, iid) {
 
 function liveExchange() {
     const c = document.getElementById('currency').value;
+    const p = parseFloat(document    const c = document.getElementById('currency').value;
     const p = parseFloat(document.getElementById('inputPrice').value) || 0;
+    const q = parseInt(document.getElementById('qty').value) || .getElementById('inputPrice').value) || 0;
     const q = parseInt(document.getElementById('qty').value) || 1;
+    const total = (p * rates[c] * q).toFixed(1;
     const total = (p * rates[c] * q).toFixed(2);
+    document.getElementById('exchangePreview2);
     document.getElementById('exchangePreview').innerText = `總額: HKD ${total}`;
+}
+
+document.getElementById('merchForm').onsub').innerText = `總額: HKD ${total}`;
 }
 
 document.getElementById('merchForm').onsubmit = async function (e) {
     e.preventDefault();
+    const editIdxmit = async function (e) {
+    e.preventDefault();
     const editIdx = parseInt(document.getElementById('editIndex').value);
+    if = parseInt(document.getElementById('editIndex').value);
     if (document.activeElement) document.activeElement.blur();
+
+    const getV = (document.activeElement) document.activeElement.blur();
 
     const getV = (sid, iid, dk) => {
         let sVal = document.getElementById(sid).value;
+        if ( (sid, iid, dk) => {
+        let sVal = document.getElementById(sid).value;
         if (sVal === 'NEW') {
+            let v = document.getElementById(iid).value.trim();
+            if (v && !dictsVal === 'NEW') {
             let v = document.getElementById(iid).value.trim();
             if (v && !dict[dk].includes(v)) { dict[dk].push(v); dict[dk].sort(); }
             return v;
@@ -1270,18 +1481,45 @@ document.getElementById('merchForm').onsubmit = async function (e) {
     };
 
     const work = getV('workSelect', 'workInput', 'works');
-    const role = getV('roleSelect', 'roleInput', 'roles');
+    const role[dk].includes(v)) { dict[dk].push(v); dict[dk].sort(); }
+            return v;
+        }
+        return sVal;
+    };
+
+    const work = getV('workSelect', 'workInput', 'works');
+    const role = get = getV('roleSelect', 'roleInput', 'roles');
+    const type = getV('typeSelect', 'typeInput', 'types');
+    const status = document.getElementById('status').V('roleSelect', 'roleInput', 'roles');
     const type = getV('typeSelect', 'typeInput', 'types');
     const status = document.getElementById('status').value;
 
+    const done = async (imgBasevalue;
+
     const done = async (imgBase64) => {
-        const finalImg = imgBase64 || pendingCropImage || (editIdx > -1 ? merchList[editIdx].img : null);
+        const finalImg = imgBase64 || pending64) => {
+        const finalImg = imgBase64CropImage || (editIdx > -1 ? merchList[editIdx].img : null);
+        const || pendingCropImage || (editIdx > -1 ? merchList[editIdx].img : null);
         const data = {
             work, role, type, status,
             pattern: document.getElementById('pattern').value,
+ data = {
+            work, role, type, status,
+            pattern: document.getElementById('pattern').value,
             note: document.getElementById('note').value,
+            qty: parseInt(document            note: document.getElementById('note').value,
             qty: parseInt(document.getElementById('qty').value),
+            buyDate: document.getElementById('.getElementById('qty').value),
             buyDate: document.getElementById('buyDate').value,
+            currency: document.getElementById('currency').value,
+            price: parseFloat(document.getElementById('inputPrice').value),
+            totalHkd: document.getElementById('exchangePreview').innerText.replace('總額: HKD ', ''),
+            img: finalImg,
+            timestamp: (editIdx > -1) ? merchList[editIdx].timestamp : Date.now()
+        };
+
+        let newList;
+        if (editIdx > -1) { newList =buyDate').value,
             currency: document.getElementById('currency').value,
             price: parseFloat(document.getElementById('inputPrice').value),
             totalHkd: document.getElementById('exchangePreview').innerText.replace('總額: HKD ', ''),
@@ -1296,8 +1534,20 @@ document.getElementById('merchForm').onsubmit = async function (e) {
         try {
             let quality = 0.8;
             for (let attempt = 0; attempt < 5; attempt++) {
+                [...merchList]; newList[editIdx] = data; }
+        else newList = [...merchList, data];
+
+        try {
+            let quality = 0.8;
+            for (let attempt = 0; attempt < 5; attempt++) {
                 try {
+ try {
                     localStorage.setItem(STORAGE_KEY, JSON.stringify(newList));
+                    localStorage.setItem(DICT_KEY, JSON.stringify(dict));
+                    break;
+                } catch (e) {
+                    if (attempt === 4) throw e;
+                    quality -=                     localStorage.setItem(STORAGE_KEY, JSON.stringify(newList));
                     localStorage.setItem(DICT_KEY, JSON.stringify(dict));
                     break;
                 } catch (e) {
@@ -1306,7 +1556,20 @@ document.getElementById('merchForm').onsubmit = async function (e) {
                     if (data.img) {
                         const compressed = await compressImage(data.img, 800, quality);
                         data.img = compressed;
-                        newList[editIdx > -1 ? editIdx : newList.length-1] = data;
+                        newList[editIdx >0.1;
+                    if (data.img) {
+                        const compressed = await compressImage(data.img, 800, quality);
+                        data.img = compressed;
+                        newList[editIdx > -1 -1 ? editIdx : newList.length-1] = data;
+                    }
+                }
+            }
+        } catch (e) {
+            showModal("❌", "儲存失敗，圖片過大");
+            return;
+        }
+
+        ? editIdx : newList.length-1] = data;
                     }
                 }
             }
@@ -1317,7 +1580,13 @@ document.getElementById('merchForm').onsubmit = async function (e) {
 
         merchList = newList;
 
-        const lastInput = { work: data.work, role: data.role, type: data.type, status: data.status, currency: data.currency };
+        const lastInput = { work: data.work, role: data.role, type: merchList = newList;
+
+        const lastInput = { work: data.work, role: data.role, type data.type, status: data.status, currency: data.currency };
+        localStorage.setItem(LAST_INPUT_KEY, JSON.stringify(lastInput));
+
+        pendingCropImage = null;
+        document.getElementById('pendingImageNote').style.display =: data.type, status: data.status, currency: data.currency };
         localStorage.setItem(LAST_INPUT_KEY, JSON.stringify(lastInput));
 
         pendingCropImage = null;
@@ -1327,7 +1596,16 @@ document.getElementById('merchForm').onsubmit = async function (e) {
         renderAll();
         resetFormForNew();
 
+ 'none';
+
+        renderSelects();
+        renderAll();
+        resetFormForNew();
+
         if (editIdx > -1) {
+            switchTab('page-gallery', document.querySelectorAll('.nav-item')[0]);
+        } else {
+            setTimeout(()        if (editIdx > -1) {
             switchTab('page-gallery', document.querySelectorAll('.nav-item')[0]);
         } else {
             setTimeout(() => { showModal("✨", "已存入庫"); }, 400);
@@ -1337,7 +1615,26 @@ document.getElementById('merchForm').onsubmit = async function (e) {
     const f = document.getElementById('imgFile').files[0];
     if (f) {
         const fr = new FileReader();
-        fr.onload = async () => {
+        fr.onload = async => { showModal("✨", "已存入庫"); }, 400);
+        }
+    };
+
+    const f = document.getElementById('imgFile').files[0];
+    if (f) {
+        const fr = new FileReader();
+        fr.onload () => {
+            const compressed = await compressImage(fr.result, 800, 0.8);
+            done(compressed);
+        };
+        fr.readAsDataURL(f);
+    } else {
+        done(null);
+    }
+};
+
+function deleteCurrentItem() {
+    const idx = parseInt(document.getElementById('editIndex').value);
+    if = async () => {
             const compressed = await compressImage(fr.result, 800, 0.8);
             done(compressed);
         };
@@ -1351,11 +1648,17 @@ function deleteCurrentItem() {
     const idx = parseInt(document.getElementById('editIndex').value);
     if (idx > -1 && confirm("確定刪除此藏品？")) {
         let newList = [...merchList]; newList.splice(idx, 1);
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(newList)); localStorage.setItem(D (idx > -1 && confirm("確定刪除此藏品？")) {
+        let newList = [...merchList]; newList.splice(idx, 1);
         try { localStorage.setItem(STORAGE_KEY, JSON.stringify(newList)); localStorage.setItem(DICT_KEY, JSON.stringify(dict)); } 
         catch (e) { showModal("❌", "刪除失敗，無法儲存"); return; }
         merchList = newList;
         renderSelects(); renderAll(); resetFormForNew();
-        switchTab('page-gallery', document.querySelectorAll('.nav-item')[0]);
+ICT_KEY, JSON.stringify(dict)); } 
+        catch (e) { showModal("❌", "刪除失敗，無法儲存"); return; }
+        merchList = newList;
+        renderSelects(); renderAll(); resetFormForNew();
+        switch        switchTab('page-gallery', document.querySelectorAll('.nav-item')[0]);
     }
 }
 
@@ -1363,7 +1666,18 @@ function renderSelects() {
     const fill = (id, list) => {
         const s = document.getElementById(id);
         const combined = [...list].sort();
-        s.innerHTML = '<option value="">請選擇...</option>' + combined.map(x => `<option value="${x}">${x}</option>`).join('') + '<option value="NEW">+ 新增標籤</option>';
+Tab('page-gallery', document.querySelectorAll('.nav-item')[0]);
+    }
+}
+
+function renderSelects() {
+    const fill = (id, list) => {
+        const s = document.getElementById(id);
+        const combined = [...list].sort();
+        s.innerHTML = '<option value="">請選擇...</option>' + combined.map(x => `<option value="${x}">${x}</option>`).join('')        s.innerHTML = '<option value="">請選擇...</option>' + combined.map(x => `<option value="${x}">${x}</option>`).join('') + '<option value="NEW">+ 新增標籤</option>';
+    };
+    fill('workSelect', dict.works);
+    fill('role + '<option value="NEW">+ 新增標籤</option>';
     };
     fill('workSelect', dict.works);
     fill('roleSelect', dict.roles);
@@ -1374,7 +1688,25 @@ function updateGridSize(v) {
     document.documentElement.style.setProperty('--dynamic-grid', v + 'px');
     localStorage.setItem('archive_grid_size', v);
     isUpdatingGrid = true;
-    document.querySelectorAll('.grid-range-slider').forEach(slider => slider.value = v);
+    document.querySelectorAll('.grid-range-slider').forEach(slider =>Select', dict.roles);
+    fill('typeSelect', dict.types);
+}
+
+function updateGridSize(v) {
+    document.documentElement.style.setProperty('--dynamic-grid', v + 'px');
+    localStorage.setItem('archive_grid_size', v);
+    isUpdatingGrid = true;
+    document.querySelectorAll('.grid-range-slider').forEach(sl slider.value = v);
+    isUpdatingGrid = false;
+    let scale = 1;
+    if (v <= 106) scale = Math.max(0.7, v / 106);
+    document.documentElement.style.setProperty('--info-scale', scale);
+}
+
+function updateCover(input) {
+    if (input.files && input.files[0]) {
+        const fr = new FileReader();
+ider => slider.value = v);
     isUpdatingGrid = false;
     let scale = 1;
     if (v <= 106) scale = Math.max(0.7, v / 106);
@@ -1385,6 +1717,7 @@ function updateCover(input) {
     if (input.files && input.files[0]) {
         const fr = new FileReader();
         fr.onload = (e) => {
+            document.getElementById('cover-page').style.backgroundImage = `url(${e.target.result})        fr.onload = (e) => {
             document.getElementById('cover-page').style.backgroundImage = `url(${e.target.result})`;
             localStorage.setItem(COVER_KEY, e.target.result);
         };
@@ -1393,7 +1726,24 @@ function updateCover(input) {
 }
 
 function exportData() {
-    const data = JSON.stringify({ merchList, dict, cover: localStorage.getItem(COVER_KEY) });
+    const data = JSON.stringify({`;
+            localStorage.setItem(COVER_KEY, e.target.result);
+        };
+        fr.readAsDataURL(input.files[0]);
+    }
+}
+
+function exportData() {
+    const data = JSON.stringify({ merchList, dict, cover: localStorage.getItem(CO merchList, dict, cover: localStorage.getItem(COVER_KEY) });
+    const blob = new Blob([data], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = `archive_backup_${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+}
+
+function importData(input) {
+    const reader = newVER_KEY) });
     const blob = new Blob([data], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -1407,11 +1757,30 @@ function importData(input) {
         try {
             const data = JSON.parse(e.target.result);
             merchList = data.merchList || [];
+            dict = data FileReader();
+    reader.onload = (e) => {
+        try {
+            const data = JSON.parse(e.target.result);
+            merchList = data.merchList || [];
             dict = data.dict || { works: [], roles: [], types: [] };
+            if (!dict.works) dict.works = [];
+            if (!dict.roles) dict.roles = [];
+            if (!dict.types) dict.types.dict || { works: [], roles: [], types: [] };
             if (!dict.works) dict.works = [];
             if (!dict.roles) dict.roles = [];
             if (!dict.types) dict.types = [];
             if (data.cover) localStorage.setItem(COVER_KEY, data.cover);
+            save();
+            location.reload();
+        } catch (ex) { showModal("❌", "匯 = [];
+            if (data.cover) localStorage.setItem(COVER_KEY, data.cover入檔案格式錯誤"); }
+    };
+    reader.readAsText(input.files[0]);
+}
+
+function renderStats() {
+    if (charts.monthly) charts.monthly.destroy();
+    if (charts.role) charts);
             save();
             location.reload();
         } catch (ex) { showModal("❌", "匯入檔案格式錯誤"); }
@@ -1422,6 +1791,7 @@ function importData(input) {
 function renderStats() {
     if (charts.monthly) charts.monthly.destroy();
     if (charts.role) charts.role.destroy();
+    if (charts.type.role.destroy();
     if (charts.typeCount) charts.typeCount.destroy();
     if (charts.roleCount) charts.roleCount.destroy();
 
@@ -1429,12 +1799,35 @@ function renderStats() {
     const totalExpense = statsList.reduce((sum, i) => sum + parseFloat(i.totalHkd || 0), 0).toFixed(2);
 
     document.getElementById('totalCountSpan').innerText = merchList.length;
-    document.getElementById('totalExpenseSpan').innerText = `HKD ${totalExpense}`;
+    document.getElementById('Count) charts.typeCount.destroy();
+    if (charts.roleCount) charts.roleCount.destroy();
+
+    const statsList = merchList.filter(i => i.status !== '願望');
+    const totalExpense = statsList.reduce((sum, i) => sum + parseFloat(i.totalHkd || 0), 0).toFixed(2);
+
+    document.getElementById('totalCountSpan').innerText = merchList.length;
+    documenttotalExpenseSpan').innerText = `HKD ${totalExpense}`.getElementById('totalExpenseSpan').innerText = `HKD ${totalExpense}`;
+
+    const colors = ['#6b7a63', '#acc1ad', '#a68b7c', '#d5cabd', '#e5;
 
     const colors = ['#6b7a63', '#acc1ad', '#a68b7c', '#d5cabd', '#e5ddd5', '#c2b2a3'];
 
     const mData = {};
-    statsList.forEach(i => { const d = new Date(i.timestamp); const k = `${d.getFullYear()}/${d.getMonth() + 1}`; mData[k] = (mData[k] || 0) + parseFloat(i.totalHkd); });
+    statsList.forEach(i => { const d = new Date(i.timestampddd5', '#c2b2a3'];
+
+    const mData = {};
+    statsList.forEach(i => { const d = new Date(i.timestamp); const k = `${d.getFullYear()}/${d.getMonth() + 1}`; mData[k]); const k = `${d.getFullYear()}/${d.getMonth() + 1}`; mData[k] = (mData[k] || 0) + parseFloat(i.totalHkd); });
+    charts.month = (mData[k] || 0) + parseFloat(i.totalHkd);ly = new Chart(document.getElementById('monthlyChart'), {
+        type: 'line',
+        data: { labels: Object.keys(mData), datasets: [{ label: 'HKD', data: Object.values(mData), borderColor: '#6b7a63', tension: 0.3 }] },
+        options: { 
+            plugins: { 
+                datalabels: {
+                    display: true,
+                    align: 'bottom',
+                    offset: 10,
+                    formatter: (value) => '$' + parseInt(value),
+                    font });
     charts.monthly = new Chart(document.getElementById('monthlyChart'), {
         type: 'line',
         data: { labels: Object.keys(mData), datasets: [{ label: 'HKD', data: Object.values(mData), borderColor: '#6b7a63', tension: 0.3 }] },
@@ -1447,6 +1840,8 @@ function renderStats() {
                     formatter: (value) => '$' + parseInt(value),
                     font: { size: 9, weight: 'bold' },
                     color: '#6b7a63'
+               : { size: 9, weight: 'bold' },
+                    color: '#6b7a63'
                 } 
             }, 
             maintainAspectRatio: false, 
@@ -1455,13 +1850,41 @@ function renderStats() {
     });
 
     const rData = {};
+    statsList.forEach(i => { rData[i.role] = (rData[i. } 
+            }, 
+            maintainAspectRatio: false, 
+            responsive: true 
+        }
+    });
+
+    const rData = {};
     statsList.forEach(i => { rData[i.role] = (rData[i.role] || 0) + parseFloat(i.totalHkd); });
+    const rSorted = Object.entries(rData).sort((a, b) => b[1] - a[1]).role] || 0) + parseFloat(i.totalHkd); });
     const rSorted = Object.entries(rData).sort((a, b) => b[1] - a[1]).slice(0, 3);
     const rColors = ['#6b7a63', '#acc1ad', '#a68b7c'];
+slice(0, 3);
+    const rColors = ['#6b7a63', '#acc1ad', '#a68b7c'];
     charts.role = new Chart(document.getElementById('roleChart'), {
+        type    charts.role = new Chart(document.getElementById('roleChart'), {
         type: 'bar',
         data: { 
+            labels: rSorted.map(x => x: 'bar',
+        data: { 
             labels: rSorted.map(x => x[0]), 
+            datasets: [{ 
+                label: 'HKD', 
+                data: rSorted.map(x => x[1]), 
+                backgroundColor: rColors 
+            }] 
+        },
+        options: { 
+            indexAxis: 'y', 
+            maintainAspectRatio: false,
+            responsive: true,
+            plugins: {
+                datalabels: {
+                    anchor: 'end',
+                    align[0]), 
             datasets: [{ 
                 label: 'HKD', 
                 data: rSorted.map(x => x[1]), 
@@ -1479,6 +1902,10 @@ function renderStats() {
                     offset: 4,
                     color: '#333',
                     font: { weight: 'bold', size: 11 },
+: 'right',
+                    offset: 4,
+                    color: '#333',
+                    font: { weight: 'bold', size: 11 },
                     formatter: (value) => '$ ' + parseInt(value)
                 }
             }
@@ -1486,15 +1913,45 @@ function renderStats() {
     });
 
     const rcData = {};
+    statsList.forEach(i => { rcData[i.role] =                    formatter: (value) => '$ ' + parseInt(value)
+                }
+            }
+        }
+    });
+
+    const rcData = {};
     statsList.forEach(i => { rcData[i.role] = (rcData[i.role] || 0) + 1; });
+    const rcSorted = Object.entries(rcData).sort((a, b) => b (rcData[i.role] || 0) + 1; });
     const rcSorted = Object.entries(rcData).sort((a, b) => b[1] - a[1]).slice(0, 3);
     const rcColors = ['#6b7a63', '#acc1ad', '#a68b7c'];
+    charts.roleCount = new Chart(document.getElementById('roleCountChart'), {
+        type: 'bar',
+[1] - a[1]).slice(0, 3);
+    const rcColors = ['#6b7a63', '#acc1ad', '#a68b7        data: { 
+            labels: rcSorted.map(x => x[0]), 
+            datasets: [{ 
+               c'];
     charts.roleCount = new Chart(document.getElementById('roleCountChart'), {
         type: 'bar',
         data: { 
             labels: rcSorted.map(x => x[0]), 
             datasets: [{ 
                 label: '數量', 
+                data: rcSorted.map(x => x[1]), 
+                backgroundColor: rcColors 
+            }] 
+        },
+        options: { 
+            indexAxis: 'y', 
+            maintainAspectRatio: false,
+            responsive: true,
+            plugins: {
+                datalabels: {
+                    anchor: 'end',
+                    align: 'right',
+                    offset: 4,
+                    color: '#333',
+                    label: '數量', 
                 data: rcSorted.map(x => x[1]), 
                 backgroundColor: rcColors 
             }] 
@@ -1517,10 +1974,23 @@ function renderStats() {
     });
 
     const tData = {};
-    statsList.forEach(i => { tData[i.type] = (tData[i.type] || 0) + 1; });
+    statsList.forEach(i => { tData[i.type] = (tData[i.type] || 0) font: { weight: 'bold', size: 11 },
+                    formatter: (value) => value
+                }
+            }
+        }
+    });
+
+    const tData = {};
+    statsList.forEach(i => { tData[i.type] = (tData[i.type] ||  + 1; });
     charts.typeCount = new Chart(document.getElementById('typeCountChart'), {
         type: 'doughnut',
-        data: { labels: Object.keys(tData), datasets: [{ data: Object.values(tData), backgroundColor: colors }] },
+        data: {0) + 1; });
+    charts.typeCount = new Chart(document.getElementById('typeCountChart'), {
+        type: 'doughnut',
+        data: { labels: Object.keys(tData), datasets labels: Object.keys(tData), datasets: [{ data: Object.values(tData), backgroundColor: colors }] },
+        options: { 
+            maintainAspect: [{ data: Object.values(tData), backgroundColor: colors }] },
         options: { 
             maintainAspectRatio: false,
             responsive: true,
@@ -1528,8 +1998,20 @@ function renderStats() {
                 datalabels: {
                     color: '#fff',
                     font: { weight: 'bold', size: 11 },
-                    formatter: (value, context) => {
+                    formatter: (value,Ratio: false,
+            responsive: true,
+            plugins: {
+                datalabels: {
+                    color: '#fff',
+                    font: { weight: 'bold', size: 11 },
+                    formatter: ( context) => {
+                        const total = context.dataset.data.reduce((a,b)=>avalue, context) => {
                         const total = context.dataset.data.reduce((a,b)=>a+b,0);
+                        const percentage = (value / total * 100).toFixed(1) + '%';
+                        return percentage;
+                    }
+                }
++b,0);
                         const percentage = (value / total * 100).toFixed(1) + '%';
                         return percentage;
                     }
@@ -1543,11 +2025,32 @@ function renderStats() {
         const topRoles = Object.entries(rData).sort((a,b)=>b[1]-a[1]).slice(0,3);
         let html = '';
         topRoles.forEach(([role, total], index) => {
+            const count = statsList.filter(i => i.role            }
+        }
+    });
+
+    const rankBody = document.getElementById('roleRankBody');
+    if (rankBody) {
+        const topRoles = Object.entries(rData).sort((a,b)=>b[1]-a[1]).slice(0,3);
+        let html = '';
+        topRoles.forEach(([role, total], index) => {
             const count = statsList.filter(i => i.role === role).length;
-            const className = index === 0 ? 'rank-1' : (index === 1 ? 'rank-2' : 'rank-3');
+            const className = index === 0 ? 'rank-1' : === role).length;
+            const className = index === 0 ? 'rank-1' : (index (index === 1 ? 'rank-2' : 'rank-3');
+            html += `<tr><td class="${className}">${role}</td><td>${count}</td><td>$ ${parseInt(total)}</td></tr>`;
+        });
+        rank === 1 ? 'rank-2' : 'rank-3');
             html += `<tr><td class="${className}">${role}</td><td>${count}</td><td>$ ${parseInt(total)}</td></tr>`;
         });
         rankBody.innerHTML = html;
+    }
+}
+
+window.onload = init;
+</script>
+</body>
+</html>
+```Body.innerHTML = html;
     }
 }
 
