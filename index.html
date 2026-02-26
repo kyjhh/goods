@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Morandi Archive - 最終版</title>
+<title>Morandi Archive - 主題版</title>
 <!-- Cropper.js 樣式與腳本 -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
@@ -16,6 +16,36 @@
     --m-sand: #d5cabd; --m-clay: #e5ddd5; --bg: #f2efeb;
     --text: #4a4a4a; --radius: 8px; --dynamic-grid: 160px;
     --info-scale: 1;
+}
+/* 主題1（預設） */
+body.theme-1 {
+    --m-deep-green: #6b7a63; --m-sage: #acc1ad; --m-brown: #a68b7c;
+    --m-sand: #d5cabd; --m-clay: #e5ddd5; --bg: #f2efeb;
+    --text: #4a4a4a;
+}
+/* 主題2：暖棕色系 */
+body.theme-2 {
+    --m-deep-green: #8b6e4b; --m-sage: #c9b79b; --m-brown: #a67b5b;
+    --m-sand: #edd9c0; --m-clay: #f0e1d0; --bg: #faf0e6;
+    --text: #4a3b2a;
+}
+/* 主題3：灰藍色系 */
+body.theme-3 {
+    --m-deep-green: #5f7b8c; --m-sage: #a3b9c9; --m-brown: #7f8c8d;
+    --m-sand: #d0dce8; --m-clay: #e5eef7; --bg: #f5f9ff;
+    --text: #2c3e50;
+}
+/* 主題4：復古粉 */
+body.theme-4 {
+    --m-deep-green: #b28b84; --m-sage: #e3c9c0; --m-brown: #c6a69a;
+    --m-sand: #f0ded5; --m-clay: #f9ece5; --bg: #fff7f2;
+    --text: #5e4b46;
+}
+/* 主題5：森林綠 */
+body.theme-5 {
+    --m-deep-green: #3d6b4a; --m-sage: #7aa782; --m-brown: #5f7b6e;
+    --m-sand: #bcd9c7; --m-clay: #e0efe5; --bg: #ecf7f0;
+    --text: #1f3a2b;
 }
 body, html { margin: 0; padding: 0; height: 100%; font-family: 'PingFang HK', 'Microsoft JhengHei', sans-serif; background: var(--bg); color: var(--text); overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
 #batch-panel { display: none; background: var(--m-deep-green); color: white; padding: 15px 20px; position: fixed; top: 0; left: 0; width: 100%; box-sizing: border-box; z-index: 2500; justify-content: space-between; align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.15); transition: 0.3s; }
@@ -306,7 +336,7 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
 }
 </style>
 </head>
-<body>
+<body class="theme-1">
 <div id="batch-panel">
     <span id="batch-count" style="font-weight: bold;">已選擇0項</span>
     <div>
@@ -565,7 +595,6 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
         </div>
         <div class="stat-card">
             <div class="stat-title">每月支出走勢(HKD)</div>
-            <!-- 移除總計標籤 -->
             <div id="totalExpense" class="total-expense" style="display: none;"></div>
             <canvas id="monthlyChart"></canvas>
         </div>
@@ -595,15 +624,21 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
         </div>
     </div>
 
-    <!-- 系統設定頁 -->
+    <!-- 系統設定頁 (移除網格大小，加入主題顏色) -->
     <div id="page-settings" class="page">
         <div class="page-header">
             <div class="back-btn-header" onclick="handleBack()">←</div>
             <div class="page-title">系統設定</div>
         </div>
         <div class="stat-card">
-            <label class="input-label">網格大小</label>
-            <input type="range" id="gridRange" min="50" max="170" value="160" oninput="handleGridSliderInput(this)" class="grid-range-slider">
+            <label class="input-label">主題顏色</label>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap; margin: 15px 0;">
+                <div onclick="setTheme(1)" style="width: 40px; height: 40px; border-radius: 50%; background: #6b7a63; cursor: pointer; border: 2px solid transparent; box-shadow: 0 2px 5px rgba(0,0,0,0.1);"></div>
+                <div onclick="setTheme(2)" style="width: 40px; height: 40px; border-radius: 50%; background: #8b6e4b; cursor: pointer; border: 2px solid transparent; box-shadow: 0 2px 5px rgba(0,0,0,0.1);"></div>
+                <div onclick="setTheme(3)" style="width: 40px; height: 40px; border-radius: 50%; background: #5f7b8c; cursor: pointer; border: 2px solid transparent; box-shadow: 0 2px 5px rgba(0,0,0,0.1);"></div>
+                <div onclick="setTheme(4)" style="width: 40px; height: 40px; border-radius: 50%; background: #b28b84; cursor: pointer; border: 2px solid transparent; box-shadow: 0 2px 5px rgba(0,0,0,0.1);"></div>
+                <div onclick="setTheme(5)" style="width: 40px; height: 40px; border-radius: 50%; background: #3d6b4a; cursor: pointer; border: 2px solid transparent; box-shadow: 0 2px 5px rgba(0,0,0,0.1);"></div>
+            </div>
             <hr style="border: 0.5px solid #f0f0f0; margin: 25px 0;">
             <button onclick="exportData()" class="btn-main" style="background:var(--m-brown);">匯出資料備份(.json)</button>
             <input type="file" id="importFile" style="display:none" accept=".json" onchange="importData(this)">
@@ -655,6 +690,13 @@ document.getElementById('overlay').addEventListener('click', function() {
     }
 });
 
+// 主題切換函數
+function setTheme(themeNum) {
+    document.body.className = ''; // 移除所有主題 class
+    document.body.classList.add(`theme-${themeNum}`);
+    localStorage.setItem('selected_theme', `theme-${themeNum}`);
+}
+
 // 壓縮圖片，可指定品質
 function compressImage(base64, maxWidth = 800, quality = 0.8) {
     return new Promise((resolve) => {
@@ -689,6 +731,13 @@ function init() {
     }
     const savedCover = localStorage.getItem(COVER_KEY);
     if (savedCover) document.getElementById('cover-page').style.backgroundImage = `url(${savedCover})`;
+    
+    // 讀取儲存的主題
+    const savedTheme = localStorage.getItem('selected_theme');
+    if (savedTheme) {
+        document.body.className = savedTheme;
+    }
+
     const savedGridSize = localStorage.getItem('archive_grid_size') || '160';
     const nearest = findNearestGridSize(parseInt(savedGridSize));
     updateGridSize(nearest);
@@ -1244,18 +1293,16 @@ document.getElementById('merchForm').onsubmit = async function (e) {
         if (editIdx > -1) { newList = [...merchList]; newList[editIdx] = data; }
         else newList = [...merchList, data];
 
-        // 嘗試儲存，若失敗則降低品質重試（最多5次）
         try {
             let quality = 0.8;
             for (let attempt = 0; attempt < 5; attempt++) {
                 try {
                     localStorage.setItem(STORAGE_KEY, JSON.stringify(newList));
                     localStorage.setItem(DICT_KEY, JSON.stringify(dict));
-                    break; // 成功跳出
+                    break;
                 } catch (e) {
                     if (attempt === 4) throw e;
                     quality -= 0.1;
-                    // 重新壓縮所有圖片（這裡假設只有當前圖片的品質需要調整）
                     if (data.img) {
                         const compressed = await compressImage(data.img, 800, quality);
                         data.img = compressed;
