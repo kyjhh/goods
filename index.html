@@ -667,7 +667,8 @@ function handleQuickUploadFile(input) {
             pendingCropImage = await compressImage(croppedBase64, 800, 0.8);
             document.getElementById('pendingImageNote').style.display = 'block';
             resetFormForNew();
-            switchTab('page-recent', document.querySelectorAll('.nav-item')[3]);
+            // 使用 openPage 關閉封面並切換到新增頁
+            openPage('page-recent');
         });
     };
     reader.readAsDataURL(file);
