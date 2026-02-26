@@ -36,7 +36,7 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: 'PingFang HK', 'M
 .page-header { display: flex; align-items: center; justify-content: center; margin-bottom: 15px; position: relative; }
 .back-btn-header { font-size: 20px; cursor: pointer; color: var(--m-brown); width: 40px; position: absolute; left: 0; }
 .page-title { font-size: 18px; font-weight: bold; color: var(--m-deep-green); text-align: center; margin: 0 auto; }
-.control-panel { background: #fff; padding: 15px; border-radius: var(--radius); margin-bottom: 10px; border: 1px solid var(--m-clay); box-shadow: 0 2px 10px rgba(0,0,0,0.02); } /* 頂部空隙減半 */
+.control-panel { background: #fff; padding: 15px; border-radius: var(--radius); margin-bottom: 10px; border: 1px solid var(--m-clay); box-shadow: 0 2px 10px rgba(0,0,0,0.02); }
 .symbol-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid #f0f0f0; padding-bottom: 12px; }
 .symbol-group { display: flex; gap: 12px; color: #ccc; align-items: center; }
 .symbol-btn { cursor: pointer; transition: color 0.3s; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 2px; }
@@ -60,7 +60,7 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: 'PingFang HK', 'M
 .list-container.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(var(--dynamic-grid), 1fr)); gap: 4px; }
 .list-container.list { display: flex; flex-direction: column; gap: 4px; }
 .list-container.list .item-card { min-height: 95px; height: auto; flex-direction: row; }
-.list-container.list .img-box { width: calc(var(--dynamic-grid) * 0.6); height: auto; aspect-ratio: 1; flex-shrink: 0; } /* 正方形 */
+.list-container.list .img-box { width: calc(var(--dynamic-grid) * 0.6); height: auto; aspect-ratio: 1; flex-shrink: 0; }
 .list-container.list .info { padding: 10px; overflow: hidden; }
 .list-container.list .note { display: block; font-size: calc(9px * var(--info-scale)); color: #999; margin-top: calc(4px * var(--info-scale)); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .list-container.image {
@@ -127,11 +127,59 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
 
 /* 裁剪/放大模態框 */
 .crop-modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 25px; border-radius: var(--radius); z-index: 10000; width: 90%; max-width: 600px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); display: none; flex-direction: column; }
-.crop-modal .crop-container { max-height: 60vh; overflow: hidden; margin-bottom: 15px; }
+.crop-modal .crop-container { max-height: 60vh; overflow: hidden; margin-bottom: 15px; position: relative; }
 .crop-modal .crop-image { max-width: 100%; display: block; }
-.crop-modal .crop-actions { display: flex; gap: 10px; }
+.crop-modal .crop-actions { display: flex; gap: 10px; margin-top: 15px; }
 .crop-modal .crop-btn { flex: 1; background: var(--m-deep-green); color: white; border: none; padding: 12px; border-radius: var(--radius); font-size: 13px; cursor: pointer; }
 .crop-modal .cancel-btn { background: var(--m-clay); color: var(--text); }
+/* 放大模式下的導航按鈕 */
+.zoom-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 40px;
+    height: 40px;
+    background: rgba(255,255,255,0.6);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    font-weight: bold;
+    color: var(--m-deep-green);
+    cursor: pointer;
+    z-index: 10;
+    border: 1px solid rgba(0,0,0,0.1);
+    backdrop-filter: blur(2px);
+}
+.zoom-nav.left { left: 10px; }
+.zoom-nav.right { right: 10px; }
+.zoom-nav:hover { background: white; }
+/* 放大模式下方資訊 */
+.zoom-info {
+    padding: 15px;
+    background: #fafafa;
+    border-top: 1px solid var(--m-clay);
+    font-size: 12px;
+    color: var(--text);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-top: 10px;
+}
+.zoom-info-item {
+    flex: 1 1 auto;
+}
+.zoom-info-item strong {
+    color: var(--m-brown);
+    font-size: 11px;
+    display: block;
+    margin-bottom: 2px;
+}
+.zoom-info-item span {
+    font-weight: bold;
+    color: var(--m-deep-green);
+}
 
 .tag-context-menu {
     position: fixed;
@@ -271,11 +319,16 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
 <div class="crop-modal" id="cropModal">
     <div class="crop-container">
         <img id="cropImage" class="crop-image" src="">
+        <!-- 導航箭頭（放大模式時顯示） -->
+        <div class="zoom-nav left" id="zoomPrev" style="display: none;">&lt;</div>
+        <div class="zoom-nav right" id="zoomNext" style="display: none;">&gt;</div>
     </div>
     <div class="crop-actions">
         <button class="crop-btn" id="cropConfirmBtn" style="display: none;">確認裁剪</button>
         <button class="crop-btn cancel-btn" onclick="closeCropModal()">關閉</button>
     </div>
+    <!-- 下方資訊（放大模式時顯示） -->
+    <div id="zoomInfo" class="zoom-info" style="display: none;"></div>
 </div>
 
 <!-- 標籤長按選單 -->
@@ -496,7 +549,7 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
             <div class="stat-title">角色支出排行(HKD)</div>
             <canvas id="roleChart"></canvas>
         </div>
-        <!-- 新增角色排名表格 -->
+        <!-- 角色排名表格 -->
         <div class="stat-card">
             <div class="stat-title">角色排名 (前三)</div>
             <table class="rank-table" id="roleRankTable">
@@ -565,11 +618,11 @@ let cropper = null;
 let pendingCropImage = null;
 let cropCallback = null;
 let isZoomMode = false;
+let currentZoomIndex = -1; // 當前放大顯示的藏品索引
 
 let longPressedTag = { key: null, value: null };
 let isUpdatingGrid = false;
 
-// 註冊 data labels 插件
 Chart.register(ChartDataLabels);
 
 document.getElementById('overlay').addEventListener('click', function() {
@@ -738,7 +791,6 @@ function renderAll() {
 
             let infoHtml;
             if (viewMode === 'grid') {
-                // 使用 flex 排列，單價在上，總價靠下
                 infoHtml = `
                     <div class="info">
                         <div style="font-size:calc(9px * var(--info-scale,1)); color:var(--m-brown);">${i.role || ""} ${i.type ? '| ' + i.type : ""}</div>
@@ -750,7 +802,6 @@ function renderAll() {
                     <div class="card-qty">x${i.qty}</div>
                 `;
             } else if (viewMode === 'list') {
-                // 列表模式保持不變
                 infoHtml = `
                     <div class="info">
                         <div style="font-size:calc(9px * var(--info-scale,1)); color:var(--m-brown);">${i.role || ""} ${i.type ? '| ' + i.type : ""}</div>
@@ -766,8 +817,9 @@ function renderAll() {
 
             card.innerHTML = imgHtml + infoHtml;
             card.onclick = () => isBatchMode ? toggleSelectItem(i.originalIndex) : editItem(i.originalIndex);
+            // 長按放大圖片，傳遞整個物件和索引
             handleLongPress(card, () => {
-                if (!isBatchMode && i.img) zoomImage(i.img);
+                if (!isBatchMode && i.img) zoomImage(i, i.originalIndex);
             });
             container.appendChild(card);
         });
@@ -912,20 +964,103 @@ function handleImageFileSelect(input) {
     reader.readAsDataURL(file);
 }
 
-function openCropModal(imageSrc, callback, isZoom = false) {
+// 放大圖片（新版本，接收藏品和索引）
+function zoomImage(item, index) {
+    currentZoomIndex = index;
+    openCropModal(item.img, null, true, item);
+}
+
+// 更新放大模式下的顯示
+function updateZoomDisplay(index) {
+    const item = merchList[index];
+    if (!item || !item.img) return;
+    const img = document.getElementById('cropImage');
+    // 更新圖片 src，cropper 會自動處理
+    if (cropper) {
+        cropper.replace(item.img);
+    } else {
+        img.src = item.img;
+    }
+    // 更新底部資訊
+    const infoDiv = document.getElementById('zoomInfo');
+    const totalInt = parseInt(parseFloat(item.totalHkd));
+    let unitPriceHKD = (parseFloat(item.price) * rates[item.currency]);
+    let unitPriceStr = (unitPriceHKD % 1 === 0) ? unitPriceHKD.toString() : unitPriceHKD.toFixed(2);
+    infoDiv.innerHTML = `
+        <div class="zoom-info-item"><strong>作品</strong><span>${item.work || '無'}</span></div>
+        <div class="zoom-info-item"><strong>角色</strong><span>${item.role || '無'}</span></div>
+        <div class="zoom-info-item"><strong>類別</strong><span>${item.type || '無'}</span></div>
+        <div class="zoom-info-item"><strong>總價</strong><span>$ ${totalInt}</span></div>
+        <div class="zoom-info-item"><strong>數量</strong><span>${item.qty}</span></div>
+        <div class="zoom-info-item"><strong>單價</strong><span>$ ${unitPriceStr}</span></div>
+    `;
+    // 更新箭頭顯示（根據是否有前後）
+    document.getElementById('zoomPrev').style.display = (index > 0 && merchList[index-1] && merchList[index-1].img) ? 'flex' : 'none';
+    document.getElementById('zoomNext').style.display = (index < merchList.length-1 && merchList[index+1] && merchList[index+1].img) ? 'flex' : 'none';
+}
+
+function openCropModal(imageSrc, callback, isZoom = false, item = null) {
     const img = document.getElementById('cropImage');
     img.src = imageSrc;
     cropCallback = callback;
     isZoomMode = isZoom;
+
     document.getElementById('cropConfirmBtn').style.display = isZoom ? 'none' : 'block';
+    document.getElementById('zoomPrev').style.display = 'none';
+    document.getElementById('zoomNext').style.display = 'none';
+    document.getElementById('zoomInfo').style.display = isZoom ? 'block' : 'none';
+
     document.getElementById('cropModal').style.display = 'flex';
     document.getElementById('overlay').style.display = 'block';
+
     if (cropper) cropper.destroy();
+
     if (isZoom) {
-        cropper = new Cropper(img, { viewMode: 1, dragMode: 'move', autoCrop: false, cropBoxMovable: false, cropBoxResizable: false, toggleDragModeOnDblclick: false, background: false, zoomable: true, zoomOnWheel: true });
+        cropper = new Cropper(img, { 
+            viewMode: 1, 
+            dragMode: 'move', 
+            autoCrop: false, 
+            cropBoxMovable: false, 
+            cropBoxResizable: false, 
+            toggleDragModeOnDblclick: false, 
+            background: false, 
+            zoomable: true, 
+            zoomOnWheel: true 
+        });
+        if (item) {
+            // 顯示當前藏品資訊
+            const index = currentZoomIndex;
+            const infoDiv = document.getElementById('zoomInfo');
+            const totalInt = parseInt(parseFloat(item.totalHkd));
+            let unitPriceHKD = (parseFloat(item.price) * rates[item.currency]);
+            let unitPriceStr = (unitPriceHKD % 1 === 0) ? unitPriceHKD.toString() : unitPriceHKD.toFixed(2);
+            infoDiv.innerHTML = `
+                <div class="zoom-info-item"><strong>作品</strong><span>${item.work || '無'}</span></div>
+                <div class="zoom-info-item"><strong>角色</strong><span>${item.role || '無'}</span></div>
+                <div class="zoom-info-item"><strong>類別</strong><span>${item.type || '無'}</span></div>
+                <div class="zoom-info-item"><strong>總價</strong><span>$ ${totalInt}</span></div>
+                <div class="zoom-info-item"><strong>數量</strong><span>${item.qty}</span></div>
+                <div class="zoom-info-item"><strong>單價</strong><span>$ ${unitPriceStr}</span></div>
+            `;
+            // 更新箭頭
+            document.getElementById('zoomPrev').style.display = (index > 0 && merchList[index-1] && merchList[index-1].img) ? 'flex' : 'none';
+            document.getElementById('zoomNext').style.display = (index < merchList.length-1 && merchList[index+1] && merchList[index+1].img) ? 'flex' : 'none';
+        }
     } else {
-        cropper = new Cropper(img, { aspectRatio: 1, viewMode: 1, autoCropArea: 0.8, responsive: true, zoomable: true, zoomOnWheel: true, movable: true, cropBoxMovable: true, cropBoxResizable: true, toggleDragModeOnDblclick: false });
+        cropper = new Cropper(img, { 
+            aspectRatio: 1, 
+            viewMode: 1, 
+            autoCropArea: 0.8, 
+            responsive: true, 
+            zoomable: true, 
+            zoomOnWheel: true, 
+            movable: true, 
+            cropBoxMovable: true, 
+            cropBoxResizable: true, 
+            toggleDragModeOnDblclick: false 
+        });
     }
+
     document.getElementById('cropConfirmBtn').onclick = function () {
         if (!cropper || isZoomMode) return;
         const canvas = cropper.getCroppedCanvas({ width: 800, height: 800 });
@@ -935,13 +1070,33 @@ function openCropModal(imageSrc, callback, isZoom = false) {
     };
 }
 
-function zoomImage(imgSrc) { openCropModal(imgSrc, null, true); }
+// 切換到上一張
+function zoomPrev() {
+    if (currentZoomIndex > 0 && merchList[currentZoomIndex-1] && merchList[currentZoomIndex-1].img) {
+        currentZoomIndex--;
+        updateZoomDisplay(currentZoomIndex);
+    }
+}
+
+// 切換到下一張
+function zoomNext() {
+    if (currentZoomIndex < merchList.length-1 && merchList[currentZoomIndex+1] && merchList[currentZoomIndex+1].img) {
+        currentZoomIndex++;
+        updateZoomDisplay(currentZoomIndex);
+    }
+}
+
+// 綁定箭頭事件
+document.getElementById('zoomPrev').addEventListener('click', zoomPrev);
+document.getElementById('zoomNext').addEventListener('click', zoomNext);
 
 function closeCropModal() {
     document.getElementById('cropModal').style.display = 'none';
     document.getElementById('overlay').style.display = 'none';
     if (cropper) { cropper.destroy(); cropper = null; }
     cropCallback = null;
+    isZoomMode = false;
+    currentZoomIndex = -1;
 }
 
 function editItem(idx) {
@@ -988,7 +1143,7 @@ function resetFormForNew() {
 
 function handleLongPress(element, callback) {
     let timer;
-    const start = () => { timer = setTimeout(() => { if (window.navigator.vibrate) window.navigator.vibrate(60); callback(); }, 800); };
+    const start = () => { timer = setTimeout(() => { if (window.navigator.vibrate) window.navigator.vibrate(60); callback(); }, 700); }; // 700ms
     const cancel = () => clearTimeout(timer);
     element.addEventListener('touchstart', start, { passive: true });
     element.addEventListener('touchend', cancel);
@@ -1185,7 +1340,6 @@ function renderStats() {
         options: { plugins: { datalabels: { display: false } } }
     });
 
-    // 角色支出排行（只取前三，不同顏色，並顯示數據）
     const rData = {};
     statsList.forEach(i => { rData[i.role] = (rData[i.role] || 0) + parseFloat(i.totalHkd); });
     const rSorted = Object.entries(rData).sort((a, b) => b[1] - a[1]).slice(0, 3);
@@ -1216,7 +1370,6 @@ function renderStats() {
         }
     });
 
-    // 角色數量統計（只取前三，不同顏色，並顯示數據）
     const rcData = {};
     statsList.forEach(i => { rcData[i.role] = (rcData[i.role] || 0) + 1; });
     const rcSorted = Object.entries(rcData).sort((a, b) => b[1] - a[1]).slice(0, 3);
@@ -1247,7 +1400,6 @@ function renderStats() {
         }
     });
 
-    // 類別數量分佈（圓餅圖，顯示百分比或數量）
     const tData = {};
     statsList.forEach(i => { tData[i.type] = (tData[i.type] || 0) + 1; });
     charts.typeCount = new Chart(document.getElementById('typeCountChart'), {
@@ -1269,7 +1421,6 @@ function renderStats() {
         }
     });
 
-    // 更新角色排名表格
     const rankBody = document.getElementById('roleRankBody');
     if (rankBody) {
         const topRoles = Object.entries(rData).sort((a,b)=>b[1]-a[1]).slice(0,3);
