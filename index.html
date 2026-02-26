@@ -36,7 +36,7 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: 'PingFang HK', 'M
 .page-header { display: flex; align-items: center; justify-content: center; margin-bottom: 15px; position: relative; }
 .back-btn-header { font-size: 20px; cursor: pointer; color: var(--m-brown); width: 40px; position: absolute; left: 0; }
 .page-title { font-size: 18px; font-weight: bold; color: var(--m-deep-green); text-align: center; margin: 0 auto; }
-.control-panel { background: #fff; padding: 15px; border-radius: var(--radius); margin-bottom: 20px; border: 1px solid var(--m-clay); box-shadow: 0 2px 10px rgba(0,0,0,0.02); }
+.control-panel { background: #fff; padding: 15px; border-radius: var(--radius); margin-bottom: 10px; border: 1px solid var(--m-clay); box-shadow: 0 2px 10px rgba(0,0,0,0.02); } /* 頂部空隙減半 */
 .symbol-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid #f0f0f0; padding-bottom: 12px; }
 .symbol-group { display: flex; gap: 12px; color: #ccc; align-items: center; }
 .symbol-btn { cursor: pointer; transition: color 0.3s; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 2px; }
@@ -57,16 +57,16 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: 'PingFang HK', 'M
 .count-tag { font-size: 10px; color: #aaa; text-align: right; margin-bottom: 5px; }
 .count-tag .number { font-size: 14px; font-weight: bold; color: #aaa; }
 /* 間距減半 */
-.list-container.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(var(--dynamic-grid), 1fr)); gap: 7px; }
-.list-container.list { display: flex; flex-direction: column; gap: 7px; }
+.list-container.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(var(--dynamic-grid), 1fr)); gap: 4px; }
+.list-container.list { display: flex; flex-direction: column; gap: 4px; }
 .list-container.list .item-card { min-height: 95px; height: auto; flex-direction: row; }
-.list-container.list .img-box { width: calc(var(--dynamic-grid) * 0.6); height: auto; aspect-ratio: 1; flex-shrink: 0; }
+.list-container.list .img-box { width: calc(var(--dynamic-grid) * 0.6); height: auto; aspect-ratio: 1; flex-shrink: 0; } /* 正方形 */
 .list-container.list .info { padding: 10px; overflow: hidden; }
 .list-container.list .note { display: block; font-size: calc(9px * var(--info-scale)); color: #999; margin-top: calc(4px * var(--info-scale)); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .list-container.image {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(var(--dynamic-grid), 1fr));
-    gap: 7px;
+    gap: 4px;
 }
 .list-container.image .item-card .info {
     display: none;
@@ -76,6 +76,7 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: 'PingFang HK', 'M
 .item-card.selected::after { content: "✓"; position: absolute; top: 10px; right: 10px; background: var(--m-deep-green); color: white; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; z-index: 10; }
 .img-box { width: 100%; aspect-ratio: 1; background: #f5f5f5; pointer-events: none; }
 .img-box img { width: 100%; height: 100%; object-fit: cover; }
+/* 卡片內數量樣式（網格模式） */
 .card-qty {
     position: absolute;
     bottom: 8px;
@@ -85,16 +86,14 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: 'PingFang HK', 'M
     font-weight: bold;
     z-index: 2;
 }
-.card-price {
-    position: absolute;
-    bottom: 8px;
-    left: 10px;
-    font-size: calc(13px * var(--info-scale,1));
-    color: var(--m-deep-green);
-    font-weight: bold;
-    z-index: 2;
+.info {
+    padding: 10px;
+    flex-grow: 1;
+    overflow: hidden;
+    pointer-events: none;
+    display: flex;
+    flex-direction: column;
 }
-.info { padding: 10px; flex-grow: 1; overflow: hidden; pointer-events: none; }
 .info .note { display: none; }
 
 /* 新增頁 */
@@ -445,7 +444,7 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
                 <input type="hidden" id="editIndex" value="-1">
                 <div class="input-group"><label class="input-label">作品名稱</label><select id="workSelect" onchange="toggleInput('workSelect', 'workInput')"></select><input type="text" id="workInput" style="display:none;" placeholder="輸入新作品名稱"></div>
                 
-                <!-- 角色名稱與周邊類別並排，但類別將移到最後？目前保持原樣，因用戶要求「周邊類別放最後」可能指數據頁順序 -->
+                <!-- 角色名稱與周邊類別並排 -->
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 5px;">
                     <div class="input-group" style="margin-bottom: 0;">
                         <label class="input-label">角色名稱</label>
@@ -739,17 +738,19 @@ function renderAll() {
 
             let infoHtml;
             if (viewMode === 'grid') {
+                // 使用 flex 排列，單價在上，總價靠下
                 infoHtml = `
                     <div class="info">
                         <div style="font-size:calc(9px * var(--info-scale,1)); color:var(--m-brown);">${i.role || ""} ${i.type ? '| ' + i.type : ""}</div>
                         <div style="font-weight:bold; font-size:calc(12px * var(--info-scale,1)); margin:calc(4px * var(--info-scale,1)) 0;">${i.pattern || '無名'}</div>
-                        <div style="color:#999; font-size: calc(9px * var(--info-scale,1)); margin-bottom: 2px;">單價 $ ${unitPriceStr}</div>
+                        <div style="color:#999; font-size: calc(9px * var(--info-scale,1));">單價 $ ${unitPriceStr}</div>
+                        <div style="color:var(--m-deep-green); font-size: calc(13px * var(--info-scale,1)); font-weight:bold; margin-top: auto;">$ ${totalInt}</div>
                         ${noteHtml}
                     </div>
-                    <div class="card-price">$ ${totalInt}</div>
                     <div class="card-qty">x${i.qty}</div>
                 `;
             } else if (viewMode === 'list') {
+                // 列表模式保持不變
                 infoHtml = `
                     <div class="info">
                         <div style="font-size:calc(9px * var(--info-scale,1)); color:var(--m-brown);">${i.role || ""} ${i.type ? '| ' + i.type : ""}</div>
@@ -987,7 +988,7 @@ function resetFormForNew() {
 
 function handleLongPress(element, callback) {
     let timer;
-    const start = () => { timer = setTimeout(() => { if (window.navigator.vibrate) window.navigator.vibrate(60); callback(); }, 800); }; // 800ms
+    const start = () => { timer = setTimeout(() => { if (window.navigator.vibrate) window.navigator.vibrate(60); callback(); }, 800); };
     const cancel = () => clearTimeout(timer);
     element.addEventListener('touchstart', start, { passive: true });
     element.addEventListener('touchend', cancel);
@@ -1181,7 +1182,7 @@ function renderStats() {
     charts.monthly = new Chart(document.getElementById('monthlyChart'), {
         type: 'line',
         data: { labels: Object.keys(mData), datasets: [{ label: 'HKD', data: Object.values(mData), borderColor: '#6b7a63', tension: 0.3 }] },
-        options: { plugins: { datalabels: { display: false } } } // 折線圖不顯示標籤
+        options: { plugins: { datalabels: { display: false } } }
     });
 
     // 角色支出排行（只取前三，不同顏色，並顯示數據）
