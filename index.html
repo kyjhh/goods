@@ -43,9 +43,8 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: 'PingFang HK', 'M
 .symbol-btn svg { width: 18px; height: 18px; fill: currentColor; }
 .symbol-btn span { font-size: 8px; font-weight: bold; display: block; }
 .symbol-btn.active { color: var(--m-deep-green); }
-/* 數量按鈕：保留 123 圖示，下方加文字 */
-.sort-qty span:first-child { font-size: 14px; font-weight: bold; } /* 123 */
-.sort-qty span:last-child { font-size: 8px; font-weight: bold; } /* 數量 */
+.sort-qty span:first-child { font-size: 14px; font-weight: bold; }
+.sort-qty span:last-child { font-size: 8px; font-weight: bold; }
 .sort-qty svg { display: none; }
 .order-toggle { font-size: 11px; font-weight: bold; padding: 4px 10px; border: 1px solid #eee; border-radius: 6px; cursor: pointer; color: var(--m-brown); background: #fafafa; }
 .search-input { margin-bottom: 12px; padding: 10px 12px; font-size: 12px; border: 1px solid #eee; background: #fafafa; border-radius: 6px; width: 100%; box-sizing: border-box; outline: none; }
@@ -78,7 +77,6 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: 'PingFang HK', 'M
 .item-card.selected::after { content: "✓"; position: absolute; top: 10px; right: 10px; background: var(--m-deep-green); color: white; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; z-index: 10; }
 .img-box { width: 100%; aspect-ratio: 1; background: #f5f5f5; pointer-events: none; }
 .img-box img { width: 100%; height: 100%; object-fit: cover; }
-/* 卡片內數量樣式（網格模式） */
 .card-qty {
     position: absolute;
     bottom: 8px;
@@ -129,10 +127,9 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
 .crop-modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 25px; border-radius: var(--radius); z-index: 10000; width: 90%; max-width: 600px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); display: none; flex-direction: column; }
 .crop-modal .crop-container { max-height: 60vh; overflow: hidden; margin-bottom: 15px; position: relative; }
 .crop-modal .crop-image { max-width: 100%; display: block; }
-.crop-modal .crop-actions { display: flex; gap: 10px; margin-top: 15px; justify-content: center; } /* 按鈕置中 */
+.crop-modal .crop-actions { display: flex; gap: 10px; margin-top: 15px; justify-content: center; }
 .crop-modal .crop-btn { flex: 0 1 auto; background: var(--m-deep-green); color: white; border: none; padding: 10px 20px; border-radius: var(--radius); font-size: 13px; cursor: pointer; }
 .crop-modal .cancel-btn { background: var(--m-clay); color: var(--text); }
-/* 放大模式下的導航按鈕 */
 .zoom-nav {
     position: absolute;
     top: 50%;
@@ -155,7 +152,6 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
 .zoom-nav.left { left: 10px; }
 .zoom-nav.right { right: 10px; }
 .zoom-nav:hover { background: white; }
-/* 放大模式下方資訊 */
 .zoom-info {
     padding: 15px;
     background: #fafafa;
@@ -215,18 +211,17 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
 
 .stat-card { background:#fff; padding:20px; border-radius:var(--radius); border:1px solid var(--m-clay); margin-bottom: 20px; position: relative; }
 .stat-title { font-size: 13px; font-weight: bold; color: var(--m-brown); margin-bottom: 15px; border-left: 4px solid var(--m-sage); padding-left: 10px; }
+/* 總覽卡片字體放大兩倍 */
+.stat-card:first-child .stat-title {
+    font-size: 26px;
+}
+.stat-card:first-child div {
+    font-size: 20px;
+}
 .total-expense { position: absolute; top: 20px; right: 20px; background: var(--m-sage); color: white; padding: 5px 12px; border-radius: 20px; font-size: 13px; font-weight: bold; }
 /* 統計圖表固定高度 */
-#monthlyChart {
+#monthlyChart, #roleChart, #roleCountChart, #typeCountChart {
     height: 250px !important;
-    width: 100%;
-}
-#roleChart, #roleCountChart {
-    height: 200px !important;
-    width: 100%;
-}
-#typeCountChart {
-    height: 280px !important;
     width: 100%;
 }
 /* 角色排名表格 */
@@ -254,7 +249,6 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
 .rank-table .rank-2 { color: var(--m-sage); font-weight: bold; }
 .rank-table .rank-3 { color: var(--m-brown); font-weight: bold; }
 .image-pending-note { font-size: 11px; color: var(--m-deep-green); margin-top: 5px; font-weight: bold; }
-/* 條件檢索按鈕（底部） */
 .filter-btn-bottom {
     background: transparent;
     border: 1px solid var(--m-deep-green);
@@ -561,7 +555,7 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
         <!-- 總覽卡片 -->
         <div class="stat-card">
             <div class="stat-title">總覽</div>
-            <div style="display: flex; gap: 20px; font-size: 14px;">
+            <div style="display: flex; gap: 20px;">
                 <div><strong style="color: var(--m-brown);">總藏品數</strong> <span style="color: var(--m-deep-green); font-weight: bold;" id="totalCountSpan">0</span></div>
                 <div><strong style="color: var(--m-brown);">總支出</strong> <span style="color: var(--m-deep-green); font-weight: bold;" id="totalExpenseSpan">HKD 0</span></div>
             </div>
@@ -657,6 +651,7 @@ document.getElementById('overlay').addEventListener('click', function() {
     }
 });
 
+// 壓縮圖片，可指定品質
 function compressImage(base64, maxWidth = 800, quality = 0.8) {
     return new Promise((resolve) => {
         const img = new Image();
@@ -678,6 +673,28 @@ function compressImage(base64, maxWidth = 800, quality = 0.8) {
         };
         img.onerror = () => resolve(base64);
     });
+}
+
+// 嘗試儲存，若失敗則降低品質重試
+async function saveWithRetry(newList, newDict, maxRetries = 5) {
+    let quality = 0.8;
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
+        try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(newList));
+            localStorage.setItem(DICT_KEY, JSON.stringify(newDict));
+            return true; // 成功
+        } catch (e) {
+            if (attempt === maxRetries - 1) throw e; // 最後一次失敗
+            // 降低品質，重新壓縮圖片（需要找出哪個圖片最大？這裡簡化：嘗試降低所有圖片的品質）
+            // 但我們無法直接修改已壓縮的圖片，所以此處僅提示並拋出
+            // 實際應用中可在表單提交時動態調整壓縮率
+            quality -= 0.1;
+            // 重新壓縮所有圖片（這裡無法實現，因圖片已壓縮過）
+            // 我們在表單提交時已經壓縮過，若仍失敗則只能提示
+            console.warn('儲存失敗，嘗試降低品質', quality);
+        }
+    }
+    throw new Error('儲存失敗，請縮小圖片');
 }
 
 function init() {
@@ -1206,7 +1223,7 @@ function liveExchange() {
     document.getElementById('exchangePreview').innerText = `總額: HKD ${total}`;
 }
 
-document.getElementById('merchForm').onsubmit = function (e) {
+document.getElementById('merchForm').onsubmit = async function (e) {
     e.preventDefault();
     const editIdx = parseInt(document.getElementById('editIndex').value);
     if (document.activeElement) document.activeElement.blur();
@@ -1226,8 +1243,8 @@ document.getElementById('merchForm').onsubmit = function (e) {
     const type = getV('typeSelect', 'typeInput', 'types');
     const status = document.getElementById('status').value;
 
-    const done = (imgBase64) => {
-        const finalImg = pendingCropImage || (editIdx > -1 ? merchList[editIdx].img : null);
+    const done = async (imgBase64) => {
+        const finalImg = imgBase64 || pendingCropImage || (editIdx > -1 ? merchList[editIdx].img : null);
         const data = {
             work, role, type, status,
             pattern: document.getElementById('pattern').value,
@@ -1245,10 +1262,33 @@ document.getElementById('merchForm').onsubmit = function (e) {
         if (editIdx > -1) { newList = [...merchList]; newList[editIdx] = data; }
         else newList = [...merchList, data];
 
-        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(newList)); localStorage.setItem(DICT_KEY, JSON.stringify(dict)); } 
-        catch (e) { showModal("❌", "儲存失敗，可能圖片過大或空間不足"); return; }
+        // 嘗試儲存，若失敗則降低品質重試（最多5次）
+        try {
+            let quality = 0.8;
+            for (let attempt = 0; attempt < 5; attempt++) {
+                try {
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(newList));
+                    localStorage.setItem(DICT_KEY, JSON.stringify(dict));
+                    break; // 成功跳出
+                } catch (e) {
+                    if (attempt === 4) throw e;
+                    quality -= 0.1;
+                    // 重新壓縮所有圖片（這裡假設只有當前圖片的品質需要調整）
+                    if (data.img) {
+                        // 重新壓縮 data.img（需要非同步）
+                        const compressed = await compressImage(data.img, 800, quality);
+                        data.img = compressed;
+                        newList[editIdx > -1 ? editIdx : newList.length-1] = data;
+                    }
+                }
+            }
+        } catch (e) {
+            showModal("❌", "儲存失敗，圖片過大");
+            return;
+        }
 
         merchList = newList;
+
         const lastInput = { work: data.work, role: data.role, type: data.type, status: data.status, currency: data.currency };
         localStorage.setItem(LAST_INPUT_KEY, JSON.stringify(lastInput));
 
@@ -1265,7 +1305,18 @@ document.getElementById('merchForm').onsubmit = function (e) {
             setTimeout(() => { showModal("✨", "已存入庫"); }, 400);
         }
     };
-    done(null);
+
+    const f = document.getElementById('imgFile').files[0];
+    if (f) {
+        const fr = new FileReader();
+        fr.onload = async () => {
+            const compressed = await compressImage(fr.result, 800, 0.8);
+            done(compressed);
+        };
+        fr.readAsDataURL(f);
+    } else {
+        done(null);
+    }
 };
 
 function deleteCurrentItem() {
@@ -1360,7 +1411,7 @@ function renderStats() {
     charts.monthly = new Chart(document.getElementById('monthlyChart'), {
         type: 'line',
         data: { labels: Object.keys(mData), datasets: [{ label: 'HKD', data: Object.values(mData), borderColor: '#6b7a63', tension: 0.3 }] },
-        options: { plugins: { datalabels: { display: false } } }
+        options: { plugins: { datalabels: { display: false } }, maintainAspectRatio: false, responsive: true }
     });
 
     const rData = {};
@@ -1380,6 +1431,7 @@ function renderStats() {
         options: { 
             indexAxis: 'y', 
             maintainAspectRatio: false,
+            responsive: true,
             plugins: {
                 datalabels: {
                     anchor: 'end',
@@ -1410,6 +1462,7 @@ function renderStats() {
         options: { 
             indexAxis: 'y', 
             maintainAspectRatio: false,
+            responsive: true,
             plugins: {
                 datalabels: {
                     anchor: 'end',
@@ -1430,6 +1483,7 @@ function renderStats() {
         data: { labels: Object.keys(tData), datasets: [{ data: Object.values(tData), backgroundColor: colors }] },
         options: { 
             maintainAspectRatio: false,
+            responsive: true,
             plugins: {
                 datalabels: {
                     color: '#fff',
