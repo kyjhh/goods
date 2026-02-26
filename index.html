@@ -34,7 +34,6 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: 'PingFang HK', 'M
 .page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; }
 .back-btn-header { font-size: 20px; cursor: pointer; color: var(--m-brown); width: 40px; text-align: left; }
 .page-title { font-size: 18px; font-weight: bold; color: var(--m-deep-green); text-align: center; flex: 1; }
-/* 移除頂部的條件檢索按鈕 */
 .control-panel { background: #fff; padding: 15px; border-radius: var(--radius); margin-bottom: 20px; border: 1px solid var(--m-clay); box-shadow: 0 2px 10px rgba(0,0,0,0.02); }
 .symbol-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid #f0f0f0; padding-bottom: 12px; }
 .symbol-group { display: flex; gap: 12px; color: #ccc; align-items: center; }
@@ -138,6 +137,38 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
     cursor: pointer;
     white-space: nowrap;
 }
+/* 自訂滑桿樣式，融合主題 */
+.grid-range-slider {
+    -webkit-appearance: none;
+    width: 80px;
+    height: 4px;
+    background: var(--m-clay);
+    border-radius: 2px;
+    outline: none;
+}
+.grid-range-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    background: var(--m-deep-green);
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+.grid-range-slider::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    background: var(--m-deep-green);
+    border-radius: 50%;
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+.grid-range-slider::-moz-range-track {
+    height: 4px;
+    background: var(--m-clay);
+    border-radius: 2px;
+}
 </style>
 </head>
 <body>
@@ -197,7 +228,6 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
         <div class="page-header">
             <div class="back-btn-header" onclick="handleBack()">←</div>
             <div class="page-title">館藏</div>
-            <!-- 頂部條件檢索按鈕已移除 -->
         </div>
         <div class="control-panel">
             <input type="text" class="search-input" id="lib-search" placeholder="搜尋款式或備註..." oninput="renderAll()">
@@ -223,14 +253,11 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
                     <span class="symbol-btn view-image" onclick="setView('image')"><svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg><span>圖片</span></span>
                 </div>
             </div>
+            <!-- 底部控制列：數量、滑桿、條件檢索、編輯管理 -->
             <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 10px;">
                 <div id="lib-count" class="count-tag" style="margin:0;">顯示:0/0</div>
-                <!-- 條件檢索按鈕移至這裡 -->
+                <input type="range" class="grid-range-slider" min="50" max="170" value="160" oninput="handleGridSliderInput(this)">
                 <button class="filter-btn-bottom" onclick="openFilterModal('現貨')">條件檢索</button>
-                <div style="display: flex; align-items: center; gap: 5px; flex: 1 1 auto; min-width: 150px;">
-                    <input type="range" class="grid-range-slider" min="50" max="170" value="160" oninput="handleGridSliderInput(this)" style="width: 100px;">
-                    <!-- 數字顯示已移除 -->
-                </div>
                 <span class="edit-toggle-btn" onclick="setBatchMode(true)">編輯管理</span>
             </div>
         </div>
@@ -269,10 +296,8 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
             </div>
             <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 10px;">
                 <div id="wait-count" class="count-tag" style="margin:0;">顯示:0/0</div>
+                <input type="range" class="grid-range-slider" min="50" max="170" value="160" oninput="handleGridSliderInput(this)">
                 <button class="filter-btn-bottom" onclick="openFilterModal('非現貨')">條件檢索</button>
-                <div style="display: flex; align-items: center; gap: 5px; flex: 1 1 auto; min-width: 150px;">
-                    <input type="range" class="grid-range-slider" min="50" max="170" value="160" oninput="handleGridSliderInput(this)" style="width: 100px;">
-                </div>
                 <span class="edit-toggle-btn" onclick="setBatchMode(true)">編輯管理</span>
             </div>
         </div>
@@ -311,10 +336,8 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
             </div>
             <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 10px;">
                 <div id="wish-count" class="count-tag" style="margin:0;">顯示:0/0</div>
+                <input type="range" class="grid-range-slider" min="50" max="170" value="160" oninput="handleGridSliderInput(this)">
                 <button class="filter-btn-bottom" onclick="openFilterModal('願望')">條件檢索</button>
-                <div style="display: flex; align-items: center; gap: 5px; flex: 1 1 auto; min-width: 150px;">
-                    <input type="range" class="grid-range-slider" min="50" max="170" value="160" oninput="handleGridSliderInput(this)" style="width: 100px;">
-                </div>
                 <span class="edit-toggle-btn" onclick="setBatchMode(true)">編輯管理</span>
             </div>
         </div>
@@ -410,7 +433,6 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
         <div class="stat-card">
             <label class="input-label">網格大小</label>
             <input type="range" id="gridRange" min="50" max="170" value="160" oninput="handleGridSliderInput(this)" class="grid-range-slider">
-            <!-- 移除數字顯示 -->
             <hr style="border: 0.5px solid #f0f0f0; margin: 25px 0;">
             <button onclick="exportData()" class="btn-main" style="background:var(--m-brown);">匯出資料備份(.json)</button>
             <input type="file" id="importFile" style="display:none" accept=".json" onchange="importData(this)">
@@ -505,7 +527,6 @@ function init() {
     if (savedCover) document.getElementById('cover-page').style.backgroundImage = `url(${savedCover})`;
     
     const savedGridSize = localStorage.getItem('archive_grid_size') || '160';
-    // 確保初始值在固定選項中
     const nearest = findNearestGridSize(parseInt(savedGridSize));
     updateGridSize(nearest);
     
@@ -521,20 +542,17 @@ function init() {
     });
 }
 
-// 尋找最近的固定網格大小
 function findNearestGridSize(val) {
     return GRID_SIZES.reduce((prev, curr) => {
         return (Math.abs(curr - val) < Math.abs(prev - val) ? curr : prev);
     });
 }
 
-// 滑桿輸入處理
 function handleGridSliderInput(slider) {
     if (isUpdatingGrid) return;
     const val = parseInt(slider.value);
     const nearest = findNearestGridSize(val);
     if (nearest !== val) {
-        // 立即將滑塊吸附到最近值，但避免遞迴
         isUpdatingGrid = true;
         slider.value = nearest;
         isUpdatingGrid = false;
@@ -645,7 +663,6 @@ function renderAll() {
                     ${noteHtml}
                 </div>`;
             card.onclick = () => isBatchMode? toggleSelectItem(i.originalIndex): editItem(i.originalIndex);
-            // 長按時間改為400ms
             handleLongPress(card, () => {
                 if (!isBatchMode && i.img) {
                     zoomImage(i.img);
@@ -738,7 +755,7 @@ function editTagFromMenu() {
     const { key, value } = longPressedTag;
     if (!key || !value) return;
 
-    const dictKey = key + 's'; // work -> works, role -> roles, type -> types
+    const dictKey = key + 's';
     const newValue = prompt(`編輯 ${key} 標籤「${value}」為：`, value);
     if (!newValue || newValue === value) {
         document.getElementById('tagContextMenu').style.display = 'none';
@@ -968,7 +985,7 @@ function resetFormForNew() {
 
 function handleLongPress(element, callback) {
     let timer;
-    const start = () => { timer = setTimeout(() => { if (window.navigator.vibrate) window.navigator.vibrate(60); callback(); }, 400); }; // 縮短至400ms
+    const start = () => { timer = setTimeout(() => { if (window.navigator.vibrate) window.navigator.vibrate(60); callback(); }, 400); };
     const cancel = () => clearTimeout(timer);
     element.addEventListener('touchstart', start, {passive: true});
     element.addEventListener('touchend', cancel);
@@ -1131,16 +1148,13 @@ function renderSelects() {
 }
 
 function updateGridSize(v) {
-    // 設定 CSS 變數
     document.documentElement.style.setProperty('--dynamic-grid', v + 'px');
     localStorage.setItem('archive_grid_size', v);
 
-    // 更新所有滑桿的值（避免觸發事件）
     isUpdatingGrid = true;
     document.querySelectorAll('.grid-range-slider').forEach(slider => slider.value = v);
     isUpdatingGrid = false;
 
-    // 計算文字縮放
     let scale = 1;
     if (v <= 106) {
         scale = Math.max(0.7, v / 106);
