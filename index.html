@@ -218,7 +218,10 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
 .stat-card:first-child div {
     font-size: 20px;
 }
-.total-expense { position: absolute; top: 20px; right: 20px; background: var(--m-sage); color: white; padding: 5px 12px; border-radius: 20px; font-size: 13px; font-weight: bold; }
+/* 移除總計標籤（預設隱藏） */
+.total-expense {
+    display: none;
+}
 /* 統計圖表固定高度 */
 #monthlyChart, #roleChart, #roleCountChart, #typeCountChart {
     height: 250px !important;
@@ -562,7 +565,8 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
         </div>
         <div class="stat-card">
             <div class="stat-title">每月支出走勢(HKD)</div>
-            <div id="totalExpense" class="total-expense">總計: HKD 0</div>
+            <!-- 移除總計標籤 -->
+            <div id="totalExpense" class="total-expense" style="display: none;"></div>
             <canvas id="monthlyChart"></canvas>
         </div>
         <div class="stat-card">
@@ -673,28 +677,6 @@ function compressImage(base64, maxWidth = 800, quality = 0.8) {
         };
         img.onerror = () => resolve(base64);
     });
-}
-
-// 嘗試儲存，若失敗則降低品質重試
-async function saveWithRetry(newList, newDict, maxRetries = 5) {
-    let quality = 0.8;
-    for (let attempt = 0; attempt < maxRetries; attempt++) {
-        try {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(newList));
-            localStorage.setItem(DICT_KEY, JSON.stringify(newDict));
-            return true; // 成功
-        } catch (e) {
-            if (attempt === maxRetries - 1) throw e; // 最後一次失敗
-            // 降低品質，重新壓縮圖片（需要找出哪個圖片最大？這裡簡化：嘗試降低所有圖片的品質）
-            // 但我們無法直接修改已壓縮的圖片，所以此處僅提示並拋出
-            // 實際應用中可在表單提交時動態調整壓縮率
-            quality -= 0.1;
-            // 重新壓縮所有圖片（這裡無法實現，因圖片已壓縮過）
-            // 我們在表單提交時已經壓縮過，若仍失敗則只能提示
-            console.warn('儲存失敗，嘗試降低品質', quality);
-        }
-    }
-    throw new Error('儲存失敗，請縮小圖片');
 }
 
 function init() {
@@ -1275,7 +1257,6 @@ document.getElementById('merchForm').onsubmit = async function (e) {
                     quality -= 0.1;
                     // 重新壓縮所有圖片（這裡假設只有當前圖片的品質需要調整）
                     if (data.img) {
-                        // 重新壓縮 data.img（需要非同步）
                         const compressed = await compressImage(data.img, 800, quality);
                         data.img = compressed;
                         newList[editIdx > -1 ? editIdx : newList.length-1] = data;
@@ -1399,7 +1380,6 @@ function renderStats() {
 
     const statsList = merchList.filter(i => i.status !== '願望');
     const totalExpense = statsList.reduce((sum, i) => sum + parseFloat(i.totalHkd || 0), 0).toFixed(2);
-    document.getElementById('totalExpense').innerText = `總計: HKD ${totalExpense}`;
 
     document.getElementById('totalCountSpan').innerText = merchList.length;
     document.getElementById('totalExpenseSpan').innerText = `HKD ${totalExpense}`;
@@ -1411,7 +1391,20 @@ function renderStats() {
     charts.monthly = new Chart(document.getElementById('monthlyChart'), {
         type: 'line',
         data: { labels: Object.keys(mData), datasets: [{ label: 'HKD', data: Object.values(mData), borderColor: '#6b7a63', tension: 0.3 }] },
-        options: { plugins: { datalabels: { display: false } }, maintainAspectRatio: false, responsive: true }
+        options: { 
+            plugins: { 
+                datalabels: {
+                    display: true,
+                    align: 'bottom',
+                    offset: 10,
+                    formatter: (value) => '$' + parseInt(value),
+                    font: { size: 9, weight: 'bold' },
+                    color: '#6b7a63'
+                } 
+            }, 
+            maintainAspectRatio: false, 
+            responsive: true 
+        }
     });
 
     const rData = {};
