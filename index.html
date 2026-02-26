@@ -65,26 +65,25 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: 'PingFang HK', 'M
 .item-card.selected::after { content: "✓"; position: absolute; top: 10px; right: 10px; background: var(--m-deep-green); color: white; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; z-index: 10; }
 .img-box { width: 100%; aspect-ratio: 1; background: #f5f5f5; pointer-events: none; }
 .img-box img { width: 100%; height: 100%; object-fit: cover; }
-/* 圖片放大按鈕 */
+/* 圖片放大按鈕 - SVG 圖標，尺寸 18px */
 .zoom-btn {
     position: absolute;
-    top: 5px;
-    right: 5px;
-    width: 24px;
-    height: 24px;
-    background: rgba(255,255,255,0.7);
+    top: 3px;
+    right: 3px;
+    width: 18px;
+    height: 18px;
+    background: rgba(255,255,255,0.8);
     border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 16px;
     cursor: pointer;
     z-index: 5;
     border: 1px solid rgba(0,0,0,0.1);
-    color: var(--m-deep-green);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%236b7a63'%3E%3Cpath d='M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z'/%3E%3C/svg%3E");
+    background-size: 70%;
+    background-position: center;
+    background-repeat: no-repeat;
     pointer-events: auto;
 }
-.zoom-btn:hover { background: white; }
+.zoom-btn:hover { background-color: white; }
 .info { padding: 10px; flex-grow: 1; overflow: hidden; pointer-events: none; }
 .info .note { display: none; }
 
@@ -499,7 +498,6 @@ function init() {
     const savedCover = localStorage.getItem(COVER_KEY);
     if (savedCover) document.getElementById('cover-page').style.backgroundImage = `url(${savedCover})`;
     
-    // 讀取儲存的網格大小
     const savedGridSize = localStorage.getItem('archive_grid_size') || '160';
     updateGridSize(savedGridSize);
     
@@ -507,7 +505,6 @@ function init() {
     renderAll(); 
     updateToolUI();
 
-    // 點擊其他地方隱藏標籤選單
     document.addEventListener('click', function(e) {
         const menu = document.getElementById('tagContextMenu');
         if (menu.style.display === 'block' && !menu.contains(e.target)) {
@@ -610,9 +607,8 @@ function renderAll() {
             const card = document.createElement('div');
             card.className = `item-card ${isBatchMode && selectedIndices.includes(i.originalIndex)? 'selected' : ""}`;
             const noteHtml = i.note ? `<div class="note" style="font-size:calc(9px * var(--info-scale,1)); margin-top:calc(4px * var(--info-scale,1));">📝 ${i.note}</div>` : '';
-            // 圖片部分，加入放大按鈕
             const imgHtml = `<div class="img-box"><img src="${i.img || ""}"></div>`;
-            const zoomBtn = i.img ? `<div class="zoom-btn" onclick="zoomImage('${i.img}'); event.stopPropagation();">🔍</div>` : '';
+            const zoomBtn = i.img ? `<div class="zoom-btn" onclick="zoomImage('${i.img}'); event.stopPropagation();"></div>` : '';
             card.innerHTML = zoomBtn + imgHtml + `
                 <div class="info">
                     <div style="font-size:calc(9px * var(--info-scale,1)); color:var(--m-brown);">${i.role || ""} ${i.type? '| '+i.type : ""}</div>
@@ -644,7 +640,6 @@ function updateToolUI() {
     document.querySelectorAll('.order-toggle').forEach(b => b.innerText = sortDesc?"倒序↓":"正序↑");
 }
 
-// 在模態框中渲染過濾器
 function renderFiltersInModal(status) {
     const container = document.getElementById('filterModalContent');
     if (!container) return;
@@ -686,7 +681,6 @@ function renderFiltersInModal(status) {
                 renderAll();
                 renderFiltersInModal(status);
             };
-            // 長按顯示選單
             handleLongPress(chip, () => {
                 longPressedTag = { key, value: item };
                 const rect = chip.getBoundingClientRect();
@@ -707,31 +701,28 @@ function renderFiltersInModal(status) {
     container.appendChild(buildSection('類別', dict.types, 'type'));
 }
 
-// 編輯標籤（從選單呼叫）
 function editTagFromMenu() {
     const { key, value } = longPressedTag;
     if (!key || !value) return;
 
+    const dictKey = key + 's'; // work -> works, role -> roles, type -> types
     const newValue = prompt(`編輯 ${key} 標籤「${value}」為：`, value);
     if (!newValue || newValue === value) {
         document.getElementById('tagContextMenu').style.display = 'none';
         return;
     }
 
-    // 檢查新名稱是否已存在於 dict 中（避免重複）
-    if (dict[key].includes(newValue)) {
+    if (dict[dictKey].includes(newValue)) {
         alert('該標籤名稱已存在，請使用其他名稱');
         return;
     }
 
-    // 更新 dict
-    const index = dict[key].indexOf(value);
+    const index = dict[dictKey].indexOf(value);
     if (index !== -1) {
-        dict[key][index] = newValue;
-        dict[key].sort();
+        dict[dictKey][index] = newValue;
+        dict[dictKey].sort();
     }
 
-    // 更新所有藏品中對應欄位的值
     merchList = merchList.map(item => {
         if (item[key] === value) {
             item[key] = newValue;
@@ -739,12 +730,10 @@ function editTagFromMenu() {
         return item;
     });
 
-    // 同步更新 filters（如果該標籤被選中）
     if (filters[key].includes(value)) {
         filters[key] = filters[key].map(v => v === value ? newValue : v);
     }
 
-    // 儲存
     try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(merchList));
         localStorage.setItem(DICT_KEY, JSON.stringify(dict));
@@ -752,26 +741,23 @@ function editTagFromMenu() {
         showModal("❌", "儲存失敗");
     }
 
-    // 重新渲染
     renderSelects();
     renderAll();
 
-    // 隱藏選單
     document.getElementById('tagContextMenu').style.display = 'none';
     longPressedTag = { key: null, value: null };
 }
 
-// 刪除標籤（從選單呼叫）
 function deleteTagFromMenu() {
     const { key, value } = longPressedTag;
     if (!key || !value) return;
 
+    const dictKey = key + 's'; // work -> works, role -> roles, type -> types
+
     if (!confirm(`確定刪除標籤「${value}」嗎？此操作不會影響現有藏品。`)) return;
 
-    // 從 dict 移除
-    dict[key] = dict[key].filter(v => v !== value);
+    dict[dictKey] = dict[dictKey].filter(v => v !== value);
 
-    // 從 filters 中移除（如果被選中）
     if (filters[key].includes(value)) {
         filters[key] = filters[key].filter(v => v !== value);
     }
@@ -782,7 +768,6 @@ function deleteTagFromMenu() {
         showModal("⚠️", "儲存失敗");
     }
 
-    // 重新渲染
     renderSelects();
     renderAll();
 
@@ -804,12 +789,10 @@ function closeFilterModal() {
     currentFilterModalStatus = null;
 }
 
-// 快速上傳：觸發檔案選擇
 function triggerQuickUpload() {
     document.getElementById('quickUploadInput').click();
 }
 
-// 處理快速上傳的檔案
 function handleQuickUploadFile(input) {
     const file = input.files[0];
     if (!file) return;
@@ -827,7 +810,6 @@ function handleQuickUploadFile(input) {
     input.value = '';
 }
 
-// 新增/編輯頁圖片選擇處理
 function handleImageFileSelect(input) {
     const file = input.files[0];
     if (!file) return;
@@ -843,7 +825,6 @@ function handleImageFileSelect(input) {
     reader.readAsDataURL(file);
 }
 
-// 開啟裁剪/放大模態框
 function openCropModal(imageSrc, callback, isZoom = false) {
     const img = document.getElementById('cropImage');
     img.src = imageSrc;
@@ -1076,9 +1057,8 @@ document.getElementById('merchForm').onsubmit = function(e) {
         resetFormForNew();
 
         if (editIdx > -1) {
-            // 更新成功：不彈窗，停留在編輯頁
+            // 更新成功：不彈窗
         } else {
-            // 新增成功：彈窗，停留在新增頁
             setTimeout(() => { showModal("✨", "已存入庫"); }, 400);
         }
     };
