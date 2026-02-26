@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Morandi Archive - 並排版</title>
+<title>Morandi Archive - 完整裁剪版</title>
 <!-- Cropper.js 樣式與腳本 -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
@@ -122,13 +122,13 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
     <button class="close-btn" onclick="closeFilterModal()">關閉</button>
 </div>
 
-<!-- 裁剪模態框 -->
+<!-- 裁剪模態框（共用） -->
 <div class="crop-modal" id="cropModal">
     <div class="crop-container">
         <img id="cropImage" class="crop-image" src="">
     </div>
     <div class="crop-actions">
-        <button class="crop-btn" onclick="cropAndGoToAdd()">確認裁剪</button>
+        <button class="crop-btn" id="cropConfirmBtn">確認裁剪</button>
         <button class="crop-btn cancel-btn" onclick="closeCropModal()">取消</button>
     </div>
 </div>
@@ -304,7 +304,7 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
                 <div id="exchangePreview" style="margin-bottom: 8px; font-size:12px; color:var(--m-deep-green); font-weight:bold;">總額: HKD 0.00</div>
                 <div class="input-group">
                     <label class="input-label">藏品照片</label>
-                    <input type="file" id="imgFile" accept="image/*">
+                    <input type="file" id="imgFile" accept="image/*" onchange="handleImageFileSelect(this)">
                     <div id="pendingImageNote" class="image-pending-note" style="display: none;">📷 已準備裁剪圖片，可繼續選擇其他檔案覆蓋</div>
                 </div>
                 <button type="submit" class="btn-main" id="submitBtn">儲存至資料庫</button>
@@ -387,6 +387,7 @@ let currentFilterModalStatus = null;
 // 裁剪相關變數
 let cropper = null;
 let pendingCropImage = null; // 儲存裁剪後的圖片，用於帶入新增頁
+let cropCallback = null;      // 裁剪完成後的回呼函數
 
 // 壓縮圖片函數
 function compressImage(base64, maxWidth = 800, quality = 0.8) {
@@ -662,23 +663,63 @@ function handleQuickUploadFile(input) {
 
     const reader = new FileReader();
     reader.onload = (e) => {
-        const img = document.getElementById('cropImage');
-        img.src = e.target.result;
-        // 打開裁剪模態框
-        document.getElementById('cropModal').style.display = 'flex';
-        document.getElementById('overlay').style.display = 'block';
-        document.getElementById('overlay').onclick = closeCropModal;
-
-        if (cropper) cropper.destroy();
-        cropper = new Cropper(img, {
-            aspectRatio: 1,
-            viewMode: 1,
-            autoCropArea: 0.8,
-            responsive: true,
+        openCropModal(e.target.result, async (croppedBase64) => {
+            pendingCropImage = await compressImage(croppedBase64, 800, 0.8);
+            document.getElementById('pendingImageNote').style.display = 'block';
+            resetFormForNew();
+            switchTab('page-recent', document.querySelectorAll('.nav-item')[3]);
         });
     };
     reader.readAsDataURL(file);
     input.value = '';
+}
+
+// 新增/編輯頁圖片選擇處理
+function handleImageFileSelect(input) {
+    const file = input.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        openCropModal(e.target.result, async (croppedBase64) => {
+            pendingCropImage = await compressImage(croppedBase64, 800, 0.8);
+            document.getElementById('pendingImageNote').style.display = 'block';
+            // 清空 input 以便再次選擇同一檔案（可選）
+            input.value = '';
+        });
+    };
+    reader.readAsDataURL(file);
+}
+
+// 開啟裁剪模態框，傳入圖片 src 和完成回呼
+function openCropModal(imageSrc, callback) {
+    const img = document.getElementById('cropImage');
+    img.src = imageSrc;
+    cropCallback = callback;
+
+    document.getElementById('cropModal').style.display = 'flex';
+    document.getElementById('overlay').style.display = 'block';
+    document.getElementById('overlay').onclick = closeCropModal;
+
+    if (cropper) cropper.destroy();
+    cropper = new Cropper(img, {
+        aspectRatio: 1,
+        viewMode: 1,
+        autoCropArea: 0.8,
+        responsive: true,
+    });
+
+    // 綁定確認按鈕事件（避免重複綁定）
+    document.getElementById('cropConfirmBtn').onclick = function() {
+        if (!cropper) return;
+        const canvas = cropper.getCroppedCanvas({
+            width: 800,
+            height: 800,
+        });
+        const croppedBase64 = canvas.toDataURL('image/jpeg', 0.9);
+        if (cropCallback) cropCallback(croppedBase64);
+        closeCropModal();
+    };
 }
 
 function closeCropModal() {
@@ -688,28 +729,7 @@ function closeCropModal() {
         cropper.destroy();
         cropper = null;
     }
-}
-
-// 裁剪並跳轉到新增頁
-async function cropAndGoToAdd() {
-    if (!cropper) return;
-
-    const canvas = cropper.getCroppedCanvas({
-        width: 800,
-        height: 800,
-    });
-    const croppedBase64 = canvas.toDataURL('image/jpeg', 0.9);
-    pendingCropImage = await compressImage(croppedBase64, 800, 0.8);
-
-    closeCropModal();
-
-    // 顯示提示
-    document.getElementById('pendingImageNote').style.display = 'block';
-
-    // 切換到新增頁（保留上次輸入）
-    resetFormForNew();
-    switchTab('page-recent', document.querySelectorAll('.nav-item')[3]);
-    showModal("📸", "圖片已準備，請填寫其他資訊");
+    cropCallback = null;
 }
 
 function editItem(idx) {
@@ -838,8 +858,8 @@ document.getElementById('merchForm').onsubmit = function(e) {
     const status = document.getElementById('status').value;
 
     const done = (imgBase64) => {
-        // 決定最終圖片：優先使用新上傳的，否則用 pendingCropImage，否則用原有圖片
-        const finalImg = imgBase64 || pendingCropImage || (editIdx > -1 ? merchList[editIdx].img : null);
+        // 決定最終圖片：優先使用新上傳的（已存入 pendingCropImage），否則用原有圖片
+        const finalImg = pendingCropImage || (editIdx > -1 ? merchList[editIdx].img : null);
 
         const data = {
             work, role, type, status,
@@ -892,20 +912,8 @@ document.getElementById('merchForm').onsubmit = function(e) {
         setTimeout(() => { showModal("✨", editIdx > -1 ? "更新成功" : "已存入庫"); }, 400);
     };
 
-    const f = document.getElementById('imgFile').files[0];
-    if (f) {
-        const fr = new FileReader();
-        fr.onload = async () => {
-            const compressed = await compressImage(fr.result);
-            // 如果手動選擇檔案，清除暫存圖片
-            pendingCropImage = null;
-            document.getElementById('pendingImageNote').style.display = 'none';
-            done(compressed);
-        };
-        fr.readAsDataURL(f);
-    } else {
-        done(null);
-    }
+    // 不再從檔案輸入直接讀取，因為圖片已透過裁剪存入 pendingCropImage
+    done(null);
 };
 
 function deleteCurrentItem() {
