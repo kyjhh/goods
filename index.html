@@ -114,6 +114,27 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
 .crop-modal .crop-btn { flex: 1; background: var(--m-deep-green); color: white; border: none; padding: 12px; border-radius: var(--radius); font-size: 13px; cursor: pointer; }
 .crop-modal .cancel-btn { background: var(--m-clay); color: var(--text); }
 
+/* 標籤右鍵選單 */
+.tag-context-menu {
+    position: fixed;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 5px 0;
+    z-index: 10001;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    display: none;
+}
+.tag-context-menu div {
+    padding: 10px 20px;
+    cursor: pointer;
+    font-size: 13px;
+    color: var(--text);
+}
+.tag-context-menu div:hover {
+    background: var(--m-clay);
+}
+
 .stat-card { background:#fff; padding:20px; border-radius:var(--radius); border:1px solid var(--m-clay); margin-bottom: 20px; position: relative; }
 .stat-title { font-size: 13px; font-weight: bold; color: var(--m-brown); margin-bottom: 15px; border-left: 4px solid var(--m-sage); padding-left: 10px; }
 .total-expense { position: absolute; top: 20px; right: 20px; background: var(--m-sage); color: white; padding: 5px 12px; border-radius: 20px; font-size: 13px; font-weight: bold; }
@@ -151,6 +172,12 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
         <button class="crop-btn" id="cropConfirmBtn" style="display: none;">確認裁剪</button>
         <button class="crop-btn cancel-btn" onclick="closeCropModal()">關閉</button>
     </div>
+</div>
+
+<!-- 標籤長按選單 -->
+<div class="tag-context-menu" id="tagContextMenu">
+    <div onclick="editTagFromMenu()">編輯標籤</div>
+    <div onclick="deleteTagFromMenu()">刪除標籤</div>
 </div>
 
 <div id="cover-page">
@@ -201,7 +228,6 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
             <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 10px;">
                 <div id="lib-count" class="count-tag" style="margin:0;">顯示:0/0</div>
                 <div style="display: flex; align-items: center; gap: 5px; flex: 1 1 auto; min-width: 150px;">
-                    <!-- 移除符號 -->
                     <input type="range" class="grid-range-slider" min="50" max="180" value="160" oninput="updateGridSize(this.value)" style="width: 100px;">
                     <span class="grid-val-display" style="font-size: 10px; min-width: 30px;">160</span>
                 </div>
@@ -245,7 +271,6 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
             <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 10px;">
                 <div id="wait-count" class="count-tag" style="margin:0;">顯示:0/0</div>
                 <div style="display: flex; align-items: center; gap: 5px; flex: 1 1 auto; min-width: 150px;">
-                    <!-- 移除符號 -->
                     <input type="range" class="grid-range-slider" min="50" max="180" value="160" oninput="updateGridSize(this.value)" style="width: 100px;">
                     <span class="grid-val-display" style="font-size: 10px; min-width: 30px;">160</span>
                 </div>
@@ -289,7 +314,6 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
             <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 10px;">
                 <div id="wish-count" class="count-tag" style="margin:0;">顯示:0/0</div>
                 <div style="display: flex; align-items: center; gap: 5px; flex: 1 1 auto; min-width: 150px;">
-                    <!-- 移除符號 -->
                     <input type="range" class="grid-range-slider" min="50" max="180" value="160" oninput="updateGridSize(this.value)" style="width: 100px;">
                     <span class="grid-val-display" style="font-size: 10px; min-width: 30px;">160</span>
                 </div>
@@ -425,6 +449,9 @@ let pendingCropImage = null; // 儲存裁剪後的圖片，用於帶入新增頁
 let cropCallback = null;      // 裁剪完成後的回呼函數
 let isZoomMode = false;       // 標記當前是否為放大模式（不顯示裁剪按鈕）
 
+// 長按標籤選單
+let longPressedTag = { key: null, value: null };
+
 // 壓縮圖片函數
 function compressImage(base64, maxWidth = 800, quality = 0.8) {
     return new Promise((resolve) => {
@@ -479,6 +506,14 @@ function init() {
     renderSelects(); 
     renderAll(); 
     updateToolUI();
+
+    // 點擊其他地方隱藏標籤選單
+    document.addEventListener('click', function(e) {
+        const menu = document.getElementById('tagContextMenu');
+        if (menu.style.display === 'block' && !menu.contains(e.target)) {
+            menu.style.display = 'none';
+        }
+    });
 }
 
 function save() {
@@ -651,22 +686,14 @@ function renderFiltersInModal(status) {
                 renderAll();
                 renderFiltersInModal(status);
             };
+            // 長按顯示選單
             handleLongPress(chip, () => {
-                if (confirm(`確定刪除標籤「${item}」嗎？`)) {
-                    const dk = key;
-                    dict[dk] = dict[dk].filter(x => x !== item);
-                    try {
-                        localStorage.setItem(DICT_KEY, JSON.stringify(dict));
-                    } catch (e) {
-                        showModal("⚠️", "標籤刪除後儲存失敗");
-                    }
-                    if (filters[key].includes(item)) {
-                        filters[key] = filters[key].filter(v => v !== item);
-                    }
-                    renderSelects();
-                    renderAll();
-                    renderFiltersInModal(status);
-                }
+                longPressedTag = { key, value: item };
+                const rect = chip.getBoundingClientRect();
+                const menu = document.getElementById('tagContextMenu');
+                menu.style.left = rect.left + 'px';
+                menu.style.top = rect.bottom + 'px';
+                menu.style.display = 'block';
             });
             row.appendChild(chip);
         });
@@ -678,6 +705,89 @@ function renderFiltersInModal(status) {
     container.appendChild(buildSection('作品', dict.works, 'work'));
     container.appendChild(buildSection('角色', dict.roles, 'role'));
     container.appendChild(buildSection('類別', dict.types, 'type'));
+}
+
+// 編輯標籤（從選單呼叫）
+function editTagFromMenu() {
+    const { key, value } = longPressedTag;
+    if (!key || !value) return;
+
+    const newValue = prompt(`編輯 ${key} 標籤「${value}」為：`, value);
+    if (!newValue || newValue === value) {
+        document.getElementById('tagContextMenu').style.display = 'none';
+        return;
+    }
+
+    // 檢查新名稱是否已存在於 dict 中（避免重複）
+    if (dict[key].includes(newValue)) {
+        alert('該標籤名稱已存在，請使用其他名稱');
+        return;
+    }
+
+    // 更新 dict
+    const index = dict[key].indexOf(value);
+    if (index !== -1) {
+        dict[key][index] = newValue;
+        dict[key].sort();
+    }
+
+    // 更新所有藏品中對應欄位的值
+    merchList = merchList.map(item => {
+        if (item[key] === value) {
+            item[key] = newValue;
+        }
+        return item;
+    });
+
+    // 同步更新 filters（如果該標籤被選中）
+    if (filters[key].includes(value)) {
+        filters[key] = filters[key].map(v => v === value ? newValue : v);
+    }
+
+    // 儲存
+    try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(merchList));
+        localStorage.setItem(DICT_KEY, JSON.stringify(dict));
+    } catch (e) {
+        showModal("❌", "儲存失敗");
+    }
+
+    // 重新渲染
+    renderSelects();
+    renderAll();
+
+    // 隱藏選單
+    document.getElementById('tagContextMenu').style.display = 'none';
+    longPressedTag = { key: null, value: null };
+}
+
+// 刪除標籤（從選單呼叫）
+function deleteTagFromMenu() {
+    const { key, value } = longPressedTag;
+    if (!key || !value) return;
+
+    if (!confirm(`確定刪除標籤「${value}」嗎？此操作不會影響現有藏品。`)) return;
+
+    // 從 dict 移除
+    dict[key] = dict[key].filter(v => v !== value);
+
+    // 從 filters 中移除（如果被選中）
+    if (filters[key].includes(value)) {
+        filters[key] = filters[key].filter(v => v !== value);
+    }
+
+    try {
+        localStorage.setItem(DICT_KEY, JSON.stringify(dict));
+    } catch (e) {
+        showModal("⚠️", "儲存失敗");
+    }
+
+    // 重新渲染
+    renderSelects();
+    renderAll();
+
+    document.getElementById('tagContextMenu').style.display = 'none';
+    longPressedTag = { key: null, value: null };
 }
 
 function openFilterModal(status) {
@@ -710,9 +820,8 @@ function handleQuickUploadFile(input) {
             pendingCropImage = await compressImage(croppedBase64, 800, 0.8);
             document.getElementById('pendingImageNote').style.display = 'block';
             resetFormForNew();
-            // 使用 openPage 關閉封面並切換到新增頁
             openPage('page-recent');
-        }, false); // 裁剪模式
+        }, false);
     };
     reader.readAsDataURL(file);
     input.value = '';
@@ -729,7 +838,7 @@ function handleImageFileSelect(input) {
             pendingCropImage = await compressImage(croppedBase64, 800, 0.8);
             document.getElementById('pendingImageNote').style.display = 'block';
             input.value = '';
-        }, false); // 裁剪模式
+        }, false);
     };
     reader.readAsDataURL(file);
 }
@@ -741,7 +850,6 @@ function openCropModal(imageSrc, callback, isZoom = false) {
     cropCallback = callback;
     isZoomMode = isZoom;
 
-    // 調整按鈕顯示
     document.getElementById('cropConfirmBtn').style.display = isZoom ? 'none' : 'block';
 
     document.getElementById('cropModal').style.display = 'flex';
@@ -750,7 +858,6 @@ function openCropModal(imageSrc, callback, isZoom = false) {
 
     if (cropper) cropper.destroy();
     if (isZoom) {
-        // 放大模式：只顯示圖片，可縮放移動
         cropper = new Cropper(img, {
             viewMode: 1,
             dragMode: 'move',
@@ -761,7 +868,6 @@ function openCropModal(imageSrc, callback, isZoom = false) {
             background: false,
         });
     } else {
-        // 裁剪模式
         cropper = new Cropper(img, {
             aspectRatio: 1,
             viewMode: 1,
@@ -782,9 +888,8 @@ function openCropModal(imageSrc, callback, isZoom = false) {
     };
 }
 
-// 放大圖片專用函數
 function zoomImage(imgSrc) {
-    openCropModal(imgSrc, null, true); // 不傳回呼，僅顯示
+    openCropModal(imgSrc, null, true);
 }
 
 function closeCropModal() {
@@ -798,7 +903,6 @@ function closeCropModal() {
 }
 
 function editItem(idx) {
-    // 編輯時清除暫存圖片
     pendingCropImage = null;
     document.getElementById('pendingImageNote').style.display = 'none';
 
@@ -841,7 +945,6 @@ function resetFormForNew() {
     updateDateLabel();
     document.getElementById('recent-page-title').innerText = '新增藏品';
 
-    // 如果有暫存圖片，顯示提示
     if (pendingCropImage) {
         document.getElementById('pendingImageNote').style.display = 'block';
     } else {
@@ -965,7 +1068,6 @@ document.getElementById('merchForm').onsubmit = function(e) {
         };
         localStorage.setItem(LAST_INPUT_KEY, JSON.stringify(lastInput));
 
-        // 清除暫存圖片
         pendingCropImage = null;
         document.getElementById('pendingImageNote').style.display = 'none';
 
@@ -974,12 +1076,10 @@ document.getElementById('merchForm').onsubmit = function(e) {
         resetFormForNew();
 
         if (editIdx > -1) {
-            // 更新成功：不彈窗
-            // 保持停留在編輯頁（不切換）
+            // 更新成功：不彈窗，停留在編輯頁
         } else {
             // 新增成功：彈窗，停留在新增頁
             setTimeout(() => { showModal("✨", "已存入庫"); }, 400);
-            // 不切換頁面
         }
     };
 
@@ -1017,7 +1117,6 @@ function renderSelects() {
     fill('typeSelect', dict.types);
 }
 
-// 更新網格大小及相關顯示
 function updateGridSize(v) {
     document.documentElement.style.setProperty('--dynamic-grid', v + 'px');
     localStorage.setItem('archive_grid_size', v);
