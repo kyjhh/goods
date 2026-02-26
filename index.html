@@ -44,6 +44,13 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: 'PingFang HK', 'M
 .symbol-btn.active { color: var(--m-deep-green); }
 .order-toggle { font-size: 11px; font-weight: bold; padding: 4px 10px; border: 1px solid #eee; border-radius: 6px; cursor: pointer; color: var(--m-brown); background: #fafafa; }
 .search-input { margin-bottom: 12px; padding: 10px 12px; font-size: 12px; border: 1px solid #eee; background: #fafafa; border-radius: 6px; width: 100%; box-sizing: border-box; outline: none; }
+.filter-row { display: flex; overflow-x: auto; white-space: nowrap; gap: 8px; margin-bottom: 10px; scrollbar-width: none; }
+.filter-chip { background: var(--m-clay); padding: 6px 14px; border-radius: 15px; font-size: 11px; cursor: pointer; color: #8a8a8a; user-select: none; transition: 0.2s; }
+.filter-chip.active { 
+    background: var(--m-sage); 
+    color: white; 
+    box-shadow: 0 0 0 2px var(--m-deep-green);
+}
 .count-tag { font-size: 10px; color: #aaa; text-align: right; margin-bottom: 5px; }
 /* 間距減半 */
 .list-container.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(var(--dynamic-grid), 1fr)); gap: 7px; }
@@ -65,25 +72,7 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: 'PingFang HK', 'M
 .item-card.selected::after { content: "✓"; position: absolute; top: 10px; right: 10px; background: var(--m-deep-green); color: white; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; z-index: 10; }
 .img-box { width: 100%; aspect-ratio: 1; background: #f5f5f5; pointer-events: none; }
 .img-box img { width: 100%; height: 100%; object-fit: cover; }
-/* 圖片放大按鈕 - SVG 圖標，尺寸 18px */
-.zoom-btn {
-    position: absolute;
-    top: 3px;
-    right: 3px;
-    width: 18px;
-    height: 18px;
-    background: rgba(255,255,255,0.8);
-    border-radius: 50%;
-    cursor: pointer;
-    z-index: 5;
-    border: 1px solid rgba(0,0,0,0.1);
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%236b7a63'%3E%3Cpath d='M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z'/%3E%3C/svg%3E");
-    background-size: 70%;
-    background-position: center;
-    background-repeat: no-repeat;
-    pointer-events: auto;
-}
-.zoom-btn:hover { background-color: white; }
+/* 移除放大鏡按鈕樣式 */
 .info { padding: 10px; flex-grow: 1; overflow: hidden; pointer-events: none; }
 .info .note { display: none; }
 
@@ -444,14 +433,13 @@ let currentFilterModalStatus = null;
 
 // 裁剪/放大相關變數
 let cropper = null;
-let pendingCropImage = null; // 儲存裁剪後的圖片，用於帶入新增頁
-let cropCallback = null;      // 裁剪完成後的回呼函數
-let isZoomMode = false;       // 標記當前是否為放大模式（不顯示裁剪按鈕）
+let pendingCropImage = null;
+let cropCallback = null;
+let isZoomMode = false;
 
 // 長按標籤選單
 let longPressedTag = { key: null, value: null };
 
-// 壓縮圖片函數
 function compressImage(base64, maxWidth = 800, quality = 0.8) {
     return new Promise((resolve) => {
         const img = new Image();
@@ -608,8 +596,8 @@ function renderAll() {
             card.className = `item-card ${isBatchMode && selectedIndices.includes(i.originalIndex)? 'selected' : ""}`;
             const noteHtml = i.note ? `<div class="note" style="font-size:calc(9px * var(--info-scale,1)); margin-top:calc(4px * var(--info-scale,1));">📝 ${i.note}</div>` : '';
             const imgHtml = `<div class="img-box"><img src="${i.img || ""}"></div>`;
-            const zoomBtn = i.img ? `<div class="zoom-btn" onclick="zoomImage('${i.img}'); event.stopPropagation();"></div>` : '';
-            card.innerHTML = zoomBtn + imgHtml + `
+            // 移除放大鏡按鈕
+            card.innerHTML = imgHtml + `
                 <div class="info">
                     <div style="font-size:calc(9px * var(--info-scale,1)); color:var(--m-brown);">${i.role || ""} ${i.type? '| '+i.type : ""}</div>
                     <div style="font-weight:bold; font-size:calc(12px * var(--info-scale,1)); margin:calc(4px * var(--info-scale,1)) 0;">${i.pattern || '無名'}</div>
@@ -617,7 +605,12 @@ function renderAll() {
                     ${noteHtml}
                 </div>`;
             card.onclick = () => isBatchMode? toggleSelectItem(i.originalIndex): editItem(i.originalIndex);
-            handleLongPress(card, () => { if (!isBatchMode) { setBatchMode(true); toggleSelectItem(i.originalIndex); } });
+            // 長按改為放大圖片
+            handleLongPress(card, () => {
+                if (!isBatchMode && i.img) {
+                    zoomImage(i.img);
+                }
+            });
             container.appendChild(card);
         });
         const cld = status==='現貨'?'lib-count':(status==='非現貨'?'wait-count':'wish-count');
@@ -752,7 +745,7 @@ function deleteTagFromMenu() {
     const { key, value } = longPressedTag;
     if (!key || !value) return;
 
-    const dictKey = key + 's'; // work -> works, role -> roles, type -> types
+    const dictKey = key + 's';
 
     if (!confirm(`確定刪除標籤「${value}」嗎？此操作不會影響現有藏品。`)) return;
 
