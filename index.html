@@ -3,7 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Morandi Archive - 穩定版</title>
+<title>Morandi Archive - 裁剪版</title>
+<!-- Cropper.js 樣式與腳本 -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
 :root {
@@ -83,6 +86,14 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
 .filter-modal .filter-chip { margin: 2px; }
 .filter-modal .close-btn { background: var(--m-clay); border: none; padding: 10px; width: 100%; border-radius: var(--radius); font-size: 13px; cursor: pointer; margin-top: 10px; }
 
+/* 裁剪模態框 */
+.crop-modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 25px; border-radius: var(--radius); z-index: 10000; width: 90%; max-width: 600px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); display: none; flex-direction: column; }
+.crop-modal .crop-container { max-height: 60vh; overflow: hidden; margin-bottom: 15px; }
+.crop-modal .crop-image { max-width: 100%; display: block; }
+.crop-modal .crop-actions { display: flex; gap: 10px; }
+.crop-modal .crop-btn { flex: 1; background: var(--m-deep-green); color: white; border: none; padding: 12px; border-radius: var(--radius); font-size: 13px; cursor: pointer; }
+.crop-modal .cancel-btn { background: var(--m-clay); color: var(--text); }
+
 .stat-card { background:#fff; padding:20px; border-radius:var(--radius); border:1px solid var(--m-clay); margin-bottom: 20px; position: relative; }
 .stat-title { font-size: 13px; font-weight: bold; color: var(--m-brown); margin-bottom: 15px; border-left: 4px solid var(--m-sage); padding-left: 10px; }
 .total-expense { position: absolute; top: 20px; right: 20px; background: var(--m-sage); color: white; padding: 5px 12px; border-radius: 20px; font-size: 13px; font-weight: bold; }
@@ -109,6 +120,17 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
     <button class="close-btn" onclick="closeFilterModal()">關閉</button>
 </div>
 
+<!-- 裁剪模態框 -->
+<div class="crop-modal" id="cropModal">
+    <div class="crop-container">
+        <img id="cropImage" class="crop-image" src="">
+    </div>
+    <div class="crop-actions">
+        <button class="crop-btn" onclick="cropAndUpload()">確認裁剪</button>
+        <button class="crop-btn cancel-btn" onclick="closeCropModal()">取消</button>
+    </div>
+</div>
+
 <div id="cover-page">
     <div class="cover-upload-btn" onclick="document.getElementById('coverInput').click()">
         <svg viewBox="0 0 24 24" width="20" height="20" fill="var(--m-deep-green)"><path d="M4 4h3l2-2h6l2 2h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zm8 3a5 5 0 1 0 0 10 5 5 0 0 0 0-10zm0 2a3 3 0 1 1 0 6 3 3 0 0 1 0-6z"/></svg>
@@ -116,13 +138,12 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
     <input type="file" id="coverInput" style="display:none;" accept="image/*" onchange="updateCover(this)">
     <div class="cover-menu">
         <h4 style="text-align:center; font-weight:400; letter-spacing:6px; margin-bottom:25px; color: var(--m-deep-green);">M.ARCHIVE</h4>
-        <div class="menu-btn" onclick="openPage('page-gallery')">圖書館</div>
-        <div class="menu-btn" onclick="openPage('page-pending')">等候區</div>
-        <div class="menu-btn" onclick="openPage('page-wish')">願望清單</div>
-        <div class="menu-btn" onclick="openPage('page-stats')">數據統計</div>
-        <div class="menu-btn" onclick="resetFormForNew(); openPage('page-recent')">新增藏品</div>
-        <div class="menu-btn" onclick="openPage('page-settings')">系統設定</div>
+        <!-- 封面頁只保留兩個按鈕 -->
+        <div class="menu-btn" onclick="openPage('page-gallery')">進入藏品庫</div>
+        <div class="menu-btn" onclick="triggerQuickUpload()">上載藏品</div>
     </div>
+    <!-- 隱藏的檔案輸入，用於快速上傳 -->
+    <input type="file" id="quickUploadInput" style="display:none;" accept="image/*" onchange="handleQuickUploadFile(this)">
 </div>
 
 <div class="main-content" id="main-content">
@@ -345,6 +366,10 @@ let filters = { work: [], role: [], type: [] };
 let sortMode = 'date', sortDesc = true, viewMode = 'grid', charts = {};
 let isBatchMode = false, selectedIndices = [];
 let currentFilterModalStatus = null;
+
+// 裁剪相關變數
+let cropper = null;
+let quickUploadFile = null;
 
 // 壓縮圖片函數 (加入錯誤處理，若圖片載入失敗則返回原圖)
 function compressImage(base64, maxWidth = 800, quality = 0.8) {
@@ -607,6 +632,103 @@ function closeFilterModal() {
     document.getElementById('filterModal').style.display = 'none';
     document.getElementById('overlay').style.display = 'none';
     currentFilterModalStatus = null;
+}
+
+// 快速上傳：觸發檔案選擇
+function triggerQuickUpload() {
+    document.getElementById('quickUploadInput').click();
+}
+
+// 處理快速上傳的檔案
+function handleQuickUploadFile(input) {
+    const file = input.files[0];
+    if (!file) return;
+    quickUploadFile = file;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        const img = document.getElementById('cropImage');
+        img.src = e.target.result;
+        // 打開裁剪模態框
+        document.getElementById('cropModal').style.display = 'flex';
+        document.getElementById('overlay').style.display = 'block';
+        document.getElementById('overlay').onclick = closeCropModal;
+
+        // 初始化 Cropper
+        if (cropper) cropper.destroy();
+        cropper = new Cropper(img, {
+            aspectRatio: 1, // 1:1 正方形，可根據需要修改
+            viewMode: 1,
+            autoCropArea: 0.8,
+            responsive: true,
+        });
+    };
+    reader.readAsDataURL(file);
+    // 清空 input 以便再次選擇同一檔案
+    input.value = '';
+}
+
+function closeCropModal() {
+    document.getElementById('cropModal').style.display = 'none';
+    document.getElementById('overlay').style.display = 'none';
+    if (cropper) {
+        cropper.destroy();
+        cropper = null;
+    }
+}
+
+// 裁剪並上傳
+async function cropAndUpload() {
+    if (!cropper) return;
+
+    // 獲取裁剪後的 canvas
+    const canvas = cropper.getCroppedCanvas({
+        width: 800, // 可調整輸出尺寸
+        height: 800,
+    });
+    const croppedBase64 = canvas.toDataURL('image/jpeg', 0.9);
+
+    // 可選壓縮
+    const compressed = await compressImage(croppedBase64, 800, 0.8);
+
+    // 建立新藏品，只有圖片，其他欄位留空
+    const newItem = {
+        work: '',
+        role: '',
+        type: '',
+        status: '現貨', // 預設狀態
+        pattern: '未命名',
+        note: '',
+        qty: 1,
+        buyDate: '',
+        currency: 'HKD',
+        price: 0,
+        totalHkd: '0.00',
+        img: compressed,
+        timestamp: Date.now()
+    };
+
+    const newList = [...merchList, newItem];
+    try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(newList));
+        localStorage.setItem(DICT_KEY, JSON.stringify(dict)); // 字典不變
+    } catch (e) {
+        showModal("❌", "儲存失敗，可能圖片過大或空間不足");
+        closeCropModal();
+        return;
+    }
+
+    merchList = newList;
+    renderSelects();
+    renderAll();
+
+    closeCropModal();
+    showModal("✨", "已存入庫");
+
+    // 跳轉到圖書館頁
+    if (!document.getElementById('page-gallery').classList.contains('active')) {
+        switchTab('page-gallery', document.querySelectorAll('.nav-item')[0]);
+    }
 }
 
 function editItem(idx) {
