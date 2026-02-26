@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Morandi Archive - 裁剪版</title>
+<title>Morandi Archive - 裁剪後跳轉新增</title>
 <!-- Cropper.js 樣式與腳本 -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
@@ -97,6 +97,8 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
 .stat-card { background:#fff; padding:20px; border-radius:var(--radius); border:1px solid var(--m-clay); margin-bottom: 20px; position: relative; }
 .stat-title { font-size: 13px; font-weight: bold; color: var(--m-brown); margin-bottom: 15px; border-left: 4px solid var(--m-sage); padding-left: 10px; }
 .total-expense { position: absolute; top: 20px; right: 20px; background: var(--m-sage); color: white; padding: 5px 12px; border-radius: 20px; font-size: 13px; font-weight: bold; }
+/* 新增圖片提示 */
+.image-pending-note { font-size: 11px; color: var(--m-deep-green); margin-top: 5px; font-weight: bold; }
 </style>
 </head>
 <body>
@@ -126,7 +128,7 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
         <img id="cropImage" class="crop-image" src="">
     </div>
     <div class="crop-actions">
-        <button class="crop-btn" onclick="cropAndUpload()">確認裁剪</button>
+        <button class="crop-btn" onclick="cropAndGoToAdd()">確認裁剪</button>
         <button class="crop-btn cancel-btn" onclick="closeCropModal()">取消</button>
     </div>
 </div>
@@ -138,11 +140,9 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
     <input type="file" id="coverInput" style="display:none;" accept="image/*" onchange="updateCover(this)">
     <div class="cover-menu">
         <h4 style="text-align:center; font-weight:400; letter-spacing:6px; margin-bottom:25px; color: var(--m-deep-green);">M.ARCHIVE</h4>
-        <!-- 封面頁只保留兩個按鈕 -->
         <div class="menu-btn" onclick="openPage('page-gallery')">進入藏品庫</div>
         <div class="menu-btn" onclick="triggerQuickUpload()">上載藏品</div>
     </div>
-    <!-- 隱藏的檔案輸入，用於快速上傳 -->
     <input type="file" id="quickUploadInput" style="display:none;" accept="image/*" onchange="handleQuickUploadFile(this)">
 </div>
 
@@ -289,7 +289,12 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
                     <div><label class="input-label">單價</label><input type="number" id="inputPrice" step="0.01" value="0" oninput="liveExchange()"></div>
                 </div>
                 <div id="exchangePreview" style="margin-bottom: 8px; font-size:12px; color:var(--m-deep-green); font-weight:bold;">總額: HKD 0.00</div>
-                <div class="input-group"><label class="input-label">藏品照片</label><input type="file" id="imgFile" accept="image/*"></div>
+                <div class="input-group">
+                    <label class="input-label">藏品照片</label>
+                    <input type="file" id="imgFile" accept="image/*">
+                    <!-- 顯示圖片待處理提示 -->
+                    <div id="pendingImageNote" class="image-pending-note" style="display: none;">📷 已準備裁剪圖片，可繼續選擇其他檔案覆蓋</div>
+                </div>
                 <button type="submit" class="btn-main" id="submitBtn">儲存至資料庫</button>
                 <button type="button" id="delBtn" class="btn-main" style="background:#cc9999; display:none;" onclick="deleteCurrentItem()">刪除單項藏品</button>
             </form>
@@ -369,9 +374,9 @@ let currentFilterModalStatus = null;
 
 // 裁剪相關變數
 let cropper = null;
-let quickUploadFile = null;
+let pendingCropImage = null; // 儲存裁剪後的圖片，用於帶入新增頁
 
-// 壓縮圖片函數 (加入錯誤處理，若圖片載入失敗則返回原圖)
+// 壓縮圖片函數
 function compressImage(base64, maxWidth = 800, quality = 0.8) {
     return new Promise((resolve) => {
         const img = new Image();
@@ -392,7 +397,6 @@ function compressImage(base64, maxWidth = 800, quality = 0.8) {
             resolve(compressed);
         };
         img.onerror = () => {
-            // 若圖片無法載入（例如非圖片檔案），直接返回原 base64，避免卡死
             resolve(base64);
         };
     });
@@ -643,7 +647,6 @@ function triggerQuickUpload() {
 function handleQuickUploadFile(input) {
     const file = input.files[0];
     if (!file) return;
-    quickUploadFile = file;
 
     const reader = new FileReader();
     reader.onload = (e) => {
@@ -654,17 +657,15 @@ function handleQuickUploadFile(input) {
         document.getElementById('overlay').style.display = 'block';
         document.getElementById('overlay').onclick = closeCropModal;
 
-        // 初始化 Cropper
         if (cropper) cropper.destroy();
         cropper = new Cropper(img, {
-            aspectRatio: 1, // 1:1 正方形，可根據需要修改
+            aspectRatio: 1,
             viewMode: 1,
             autoCropArea: 0.8,
             responsive: true,
         });
     };
     reader.readAsDataURL(file);
-    // 清空 input 以便再次選擇同一檔案
     input.value = '';
 }
 
@@ -677,61 +678,33 @@ function closeCropModal() {
     }
 }
 
-// 裁剪並上傳
-async function cropAndUpload() {
+// 裁剪並跳轉到新增頁
+async function cropAndGoToAdd() {
     if (!cropper) return;
 
-    // 獲取裁剪後的 canvas
     const canvas = cropper.getCroppedCanvas({
-        width: 800, // 可調整輸出尺寸
+        width: 800,
         height: 800,
     });
     const croppedBase64 = canvas.toDataURL('image/jpeg', 0.9);
-
-    // 可選壓縮
-    const compressed = await compressImage(croppedBase64, 800, 0.8);
-
-    // 建立新藏品，只有圖片，其他欄位留空
-    const newItem = {
-        work: '',
-        role: '',
-        type: '',
-        status: '現貨', // 預設狀態
-        pattern: '未命名',
-        note: '',
-        qty: 1,
-        buyDate: '',
-        currency: 'HKD',
-        price: 0,
-        totalHkd: '0.00',
-        img: compressed,
-        timestamp: Date.now()
-    };
-
-    const newList = [...merchList, newItem];
-    try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(newList));
-        localStorage.setItem(DICT_KEY, JSON.stringify(dict)); // 字典不變
-    } catch (e) {
-        showModal("❌", "儲存失敗，可能圖片過大或空間不足");
-        closeCropModal();
-        return;
-    }
-
-    merchList = newList;
-    renderSelects();
-    renderAll();
+    pendingCropImage = await compressImage(croppedBase64, 800, 0.8);
 
     closeCropModal();
-    showModal("✨", "已存入庫");
 
-    // 跳轉到圖書館頁
-    if (!document.getElementById('page-gallery').classList.contains('active')) {
-        switchTab('page-gallery', document.querySelectorAll('.nav-item')[0]);
-    }
+    // 顯示提示
+    document.getElementById('pendingImageNote').style.display = 'block';
+
+    // 切換到新增頁（保留上次輸入）
+    resetFormForNew();
+    switchTab('page-recent', document.querySelectorAll('.nav-item')[3]);
+    showModal("📸", "圖片已準備，請填寫其他資訊");
 }
 
 function editItem(idx) {
+    // 編輯時清除暫存圖片
+    pendingCropImage = null;
+    document.getElementById('pendingImageNote').style.display = 'none';
+
     const i = merchList[idx];
     document.getElementById('editIndex').value = idx;
     document.getElementById('workSelect').value = i.work;
@@ -770,6 +743,13 @@ function resetFormForNew() {
     liveExchange();
     updateDateLabel();
     document.getElementById('recent-page-title').innerText = '新增藏品';
+
+    // 如果有暫存圖片，顯示提示
+    if (pendingCropImage) {
+        document.getElementById('pendingImageNote').style.display = 'block';
+    } else {
+        document.getElementById('pendingImageNote').style.display = 'none';
+    }
 }
 
 function handleLongPress(element, callback) {
@@ -846,7 +826,9 @@ document.getElementById('merchForm').onsubmit = function(e) {
     const status = document.getElementById('status').value;
 
     const done = (imgBase64) => {
-        const existingImg = (editIdx > -1) ? merchList[editIdx].img : null;
+        // 決定最終圖片：優先使用新上傳的，否則用 pendingCropImage，否則用原有圖片
+        const finalImg = imgBase64 || pendingCropImage || (editIdx > -1 ? merchList[editIdx].img : null);
+
         const data = {
             work, role, type, status,
             pattern: document.getElementById('pattern').value,
@@ -856,7 +838,7 @@ document.getElementById('merchForm').onsubmit = function(e) {
             currency: document.getElementById('currency').value,
             price: parseFloat(document.getElementById('inputPrice').value),
             totalHkd: document.getElementById('exchangePreview').innerText.replace('總額: HKD ', ''),
-            img: imgBase64 || existingImg,
+            img: finalImg,
             timestamp: (editIdx > -1) ? merchList[editIdx].timestamp : Date.now()
         };
 
@@ -887,6 +869,10 @@ document.getElementById('merchForm').onsubmit = function(e) {
         };
         localStorage.setItem(LAST_INPUT_KEY, JSON.stringify(lastInput));
 
+        // 清除暫存圖片
+        pendingCropImage = null;
+        document.getElementById('pendingImageNote').style.display = 'none';
+
         renderSelects();
         renderAll();
         resetFormForNew();
@@ -899,6 +885,9 @@ document.getElementById('merchForm').onsubmit = function(e) {
         const fr = new FileReader();
         fr.onload = async () => {
             const compressed = await compressImage(fr.result);
+            // 如果手動選擇檔案，清除暫存圖片
+            pendingCropImage = null;
+            document.getElementById('pendingImageNote').style.display = 'none';
             done(compressed);
         };
         fr.readAsDataURL(f);
