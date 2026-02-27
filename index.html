@@ -1337,7 +1337,7 @@ function openCropModal(imageSrc, callback, isZoom = false, item = null) {
 
     document.getElementById('cropConfirmBtn').onclick = function () {
         if (!cropper || isZoomMode) return;
-        const canvas = cropper.getCroppedCanvas({ width: 500, height: 500 });
+        const canvas = cropper.getCroppedCanvas({ width: 700, height: 700 });
         const croppedBase64 = canvas.toDataURL('image/jpeg', 0.9);
         if (cropCallback) cropCallback(croppedBase64);
         closeCropModal();
