@@ -425,7 +425,7 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
         <div class="menu-btn" onclick="triggerQuickUpload()">上載藏品</div>
     </div>
     <!-- 版本號 -->
-    <div class="version-tag">v0.99.3</div>
+    <div class="version-tag">v1.0.3</div>
 </div>
 <input type="file" id="quickUploadInput" style="display:none;" accept="image/*" onchange="handleQuickUploadFile(this)">
 
@@ -732,7 +732,7 @@ const LAST_INPUT_KEY = 'archive_last_input';
 const DEFAULT_WORKS = ['作品1', '作品2'];
 const DEFAULT_TYPES = ['襟','色紙','掛件','立牌', '拍立得'];
 
-const GRID_SIZES = [50, 72, 109, 170, 180]; // 新的網格尺寸
+const GRID_SIZES = [50, 72, 109, 170, 180];
 const rates = { HKD: 1, RMB: 1.1, JPY: 0.053 };
 
 let merchList = [], dict = { works: [], roles: [], types: [] };
@@ -746,11 +746,12 @@ let pendingCropImage = null;
 let cropCallback = null;
 let isZoomMode = false;
 let currentZoomIndex = -1;
+let currentZoomList = []; // 當前放大圖片所屬的列表（過濾後的陣列）
+let currentZoomStatus = ''; // 當前放大圖片所屬的狀態（'現貨', '非現貨', '願望'）
 
 let longPressedTag = { key: null, value: null };
 let isUpdatingGrid = false;
 
-// 記錄編輯前所在的頁面，以便編輯後返回
 let lastActivePageBeforeEdit = 'page-gallery';
 
 Chart.register(ChartDataLabels);
@@ -774,8 +775,8 @@ function setTheme(themeNum) {
     localStorage.setItem('selected_theme', 'theme-' + themeNum);
 }
 
-// 壓縮圖片 (可指定最大邊長與品質)
-function compressImage(base64, maxSize = 300, quality = 0.5) {
+// 壓縮圖片，可指定最大邊長與品質
+function compressImage(base64, maxSize = 700, quality = 0.9) {
     return new Promise((resolve) => {
         const img = new Image();
         img.src = base64;
@@ -783,7 +784,6 @@ function compressImage(base64, maxSize = 300, quality = 0.5) {
             const canvas = document.createElement('canvas');
             let width = img.width;
             let height = img.height;
-            // 以較長邊為基準縮放
             if (width > height) {
                 if (width > maxSize) {
                     height *= maxSize / width;
@@ -802,37 +802,50 @@ function compressImage(base64, maxSize = 300, quality = 0.5) {
             const compressed = canvas.toDataURL('image/jpeg', quality);
             resolve(compressed);
         };
-        img.onerror = () => resolve(base64);
+        img.onerror = () => {
+            console.warn('圖片載入失敗，返回原始 base64');
+            resolve(base64);
+        };
     });
 }
 
+// 檢查是否為有效 base64 圖片
+function isValidImageBase64(str) {
+    return str && typeof str === 'string' && str.startsWith('data:image');
+}
+
 function init() {
-    merchList = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-    const savedDict = JSON.parse(localStorage.getItem(DICT_KEY));
-    if (savedDict) {
-        dict = { works: savedDict.works || [], roles: savedDict.roles || [], types: savedDict.types || [] };
-    } else {
-        dict = { works: [...DEFAULT_WORKS], roles: [], types: [...DEFAULT_TYPES] };
-    }
-    const savedCover = localStorage.getItem(COVER_KEY);
-    if (savedCover) document.getElementById('cover-page').style.backgroundImage = `url(${savedCover})`;
+    console.log('Initializing...');
+    try {
+        merchList = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+        const savedDict = JSON.parse(localStorage.getItem(DICT_KEY));
+        if (savedDict) {
+            dict = { works: savedDict.works || [], roles: savedDict.roles || [], types: savedDict.types || [] };
+        } else {
+            dict = { works: [...DEFAULT_WORKS], roles: [], types: [...DEFAULT_TYPES] };
+        }
+        const savedCover = localStorage.getItem(COVER_KEY);
+        if (savedCover) document.getElementById('cover-page').style.backgroundImage = `url(${savedCover})`;
 
-    // 讀取儲存的主題
-    const savedTheme = localStorage.getItem('selected_theme');
-    if (savedTheme) {
-        document.body.className = savedTheme;
-    }
+        const savedTheme = localStorage.getItem('selected_theme');
+        if (savedTheme) {
+            document.body.className = savedTheme;
+        }
 
-    const savedGridSize = localStorage.getItem('archive_grid_size') || '160';
-    const nearest = findNearestGridSize(parseInt(savedGridSize));
-    updateGridSize(nearest);
-    renderSelects(); 
-    renderAll(); 
-    updateToolUI();
-    document.addEventListener('click', function(e) {
-        const menu = document.getElementById('tagContextMenu');
-        if (menu.style.display === 'block' && !menu.contains(e.target)) menu.style.display = 'none';
-    });
+        const savedGridSize = localStorage.getItem('archive_grid_size') || '160';
+        const nearest = findNearestGridSize(parseInt(savedGridSize));
+        updateGridSize(nearest);
+        renderSelects(); 
+        renderAll(); 
+        updateToolUI();
+        document.addEventListener('click', function(e) {
+            const menu = document.getElementById('tagContextMenu');
+            if (menu.style.display === 'block' && !menu.contains(e.target)) menu.style.display = 'none';
+        });
+        console.log('Initialization complete.');
+    } catch (e) {
+        console.error('Init error:', e);
+    }
 }
 
 function findNearestGridSize(val) {
@@ -938,9 +951,13 @@ function renderAll() {
         });
 
         container.innerHTML = ""; container.className = `list-container ${viewMode}`;
-        filtered.forEach(i => {
+        filtered.forEach((i, idx) => {
             const card = document.createElement('div');
             card.className = `item-card ${isBatchMode && selectedIndices.includes(i.originalIndex) ? 'selected' : ""}`;
+            // 儲存該卡片在過濾列表中的索引以及所屬狀態，供放大圖片使用
+            card.dataset.status = status;
+            card.dataset.filteredIndex = idx;
+            
             const noteHtml = i.note ? `<div class="note" style="font-size:calc(9px * var(--info-scale,1)); margin-top:calc(4px * var(--info-scale,1));">📝 ${i.note}</div>` : '';
             const imgHtml = `<div class="img-box"><img src="${i.img || ""}"></div>`;
 
@@ -977,7 +994,10 @@ function renderAll() {
             card.innerHTML = imgHtml + infoHtml;
             card.onclick = () => isBatchMode ? toggleSelectItem(i.originalIndex) : editItem(i.originalIndex);
             handleLongPress(card, () => {
-                if (!isBatchMode && i.img) zoomImage(i, i.originalIndex);
+                if (!isBatchMode && i.img && isValidImageBase64(i.img)) {
+                    // 長按時，將當前列表及索引傳入
+                    zoomImage(i, filtered, status, idx);
+                }
             });
             container.appendChild(card);
         });
@@ -1010,7 +1030,6 @@ function renderFiltersInModal(status) {
     const buildSection = (title, list, key) => {
         const section = document.createElement('div'); section.className = 'filter-section';
         const titleEl = document.createElement('div'); titleEl.className = 'filter-section-title'; 
-        // 只在 key 為 'work' 時加入提示
         if (key === 'work') {
             titleEl.innerHTML = `${title} <span class="tip">長按編輯或刪除標籤</span>`;
         } else {
@@ -1096,15 +1115,18 @@ function closeFilterModal() {
     currentFilterModalStatus = null;
 }
 
-function triggerQuickUpload() { document.getElementById('quickUploadInput').click(); }
+function triggerQuickUpload() { 
+    console.log('Trigger quick upload');
+    document.getElementById('quickUploadInput').click(); 
+}
 
 function handleQuickUploadFile(input) {
+    console.log('Quick upload file selected');
     const file = input.files[0];
     if (!file) return;
     
-    // 預先檢查檔案大小 (超過 4MB 直接拒絕)
-    if (file.size > 4 * 1024 * 1024) {
-        showModal("❌", "圖片過大，請選擇小於 4MB 的圖片。");
+    if (file.size > 5 * 1024 * 1024) {
+        showModal("❌", "圖片過大，請選擇小於 5MB 的圖片。");
         input.value = '';
         return;
     }
@@ -1112,7 +1134,7 @@ function handleQuickUploadFile(input) {
     const reader = new FileReader();
     reader.onload = (e) => {
         openCropModal(e.target.result, async (croppedBase64) => {
-            pendingCropImage = await compressImage(croppedBase64, 300, 0.5);
+            pendingCropImage = croppedBase64;
             document.getElementById('pendingImageNote').style.display = 'block';
             resetFormForNew();
             openPage('page-recent');
@@ -1123,11 +1145,12 @@ function handleQuickUploadFile(input) {
 }
 
 function handleImageFileSelect(input) {
+    console.log('Image file selected');
     const file = input.files[0];
     if (!file) return;
     
-    if (file.size > 4 * 1024 * 1024) {
-        showModal("❌", "圖片過大，請選擇小於 4MB 的圖片。");
+    if (file.size > 5 * 1024 * 1024) {
+        showModal("❌", "圖片過大，請選擇小於 5MB 的圖片。");
         input.value = '';
         return;
     }
@@ -1135,7 +1158,7 @@ function handleImageFileSelect(input) {
     const reader = new FileReader();
     reader.onload = (e) => {
         openCropModal(e.target.result, async (croppedBase64) => {
-            pendingCropImage = await compressImage(croppedBase64, 300, 0.5);
+            pendingCropImage = croppedBase64;
             document.getElementById('pendingImageNote').style.display = 'block';
             input.value = '';
         }, false);
@@ -1143,14 +1166,18 @@ function handleImageFileSelect(input) {
     reader.readAsDataURL(file);
 }
 
-function zoomImage(item, index) {
-    currentZoomIndex = index;
+// zoomImage 接收列表和索引
+function zoomImage(item, list, status, filteredIndex) {
+    currentZoomList = list;
+    currentZoomStatus = status;
+    currentZoomIndex = filteredIndex;
     openCropModal(item.img, null, true, item);
 }
 
 function updateZoomDisplay(index) {
-    const item = merchList[index];
-    if (!item || !item.img) {
+    if (!currentZoomList || index < 0 || index >= currentZoomList.length) return;
+    const item = currentZoomList[index];
+    if (!item || !item.img || !isValidImageBase64(item.img)) {
         document.getElementById('zoomInfo').style.display = 'none';
         return;
     }
@@ -1175,13 +1202,19 @@ function updateZoomDisplay(index) {
         </div>
         <div class="zoom-info-item" style="flex: 0 0 100%;"><strong>總價</strong><span>$ ${totalInt}</span></div>
     `;
-    // 箭頭顯示條件（與排序無關，僅檢查是否存在前後圖片）
-    document.getElementById('zoomPrev').style.display = (index > 0 && merchList[index-1] && merchList[index-1].img) ? 'flex' : 'none';
-    document.getElementById('zoomNext').style.display = (index < merchList.length-1 && merchList[index+1] && merchList[index+1].img) ? 'flex' : 'none';
+    // 循環模式：只要列表多於一項，兩個箭頭都顯示
+    if (currentZoomList.length > 1) {
+        document.getElementById('zoomPrev').style.display = 'flex';
+        document.getElementById('zoomNext').style.display = 'flex';
+    } else {
+        document.getElementById('zoomPrev').style.display = 'none';
+        document.getElementById('zoomNext').style.display = 'none';
+    }
 }
 
 function openCropModal(imageSrc, callback, isZoom = false, item = null) {
-    pendingCropImage = null; // 每次開啟時清除暫存
+    console.log('Open crop modal, isZoom:', isZoom);
+    pendingCropImage = null;
     
     const img = document.getElementById('cropImage');
     img.src = imageSrc;
@@ -1198,69 +1231,84 @@ function openCropModal(imageSrc, callback, isZoom = false, item = null) {
 
     if (cropper) cropper.destroy();
 
-    if (isZoom) {
-        cropper = new Cropper(img, { 
-            viewMode: 1, 
-            dragMode: 'move', 
-            autoCrop: false, 
-            cropBoxMovable: false, 
-            cropBoxResizable: false, 
-            toggleDragModeOnDblclick: false, 
-            background: false, 
-            zoomable: true, 
-            zoomOnWheel: true 
-        });
-        if (item) {
-            updateZoomDisplay(currentZoomIndex);
+    // 等待圖片完全載入後再初始化 Cropper
+    img.onload = function() {
+        if (isZoom) {
+            cropper = new Cropper(img, { 
+                viewMode: 1, 
+                dragMode: 'move', 
+                autoCrop: false, 
+                cropBoxMovable: false, 
+                cropBoxResizable: false, 
+                toggleDragModeOnDblclick: false, 
+                background: false, 
+                zoomable: true, 
+                zoomOnWheel: true 
+            });
+            if (item) {
+                updateZoomDisplay(currentZoomIndex);
+            }
+        } else {
+            cropper = new Cropper(img, { 
+                aspectRatio: 1, 
+                viewMode: 1, 
+                autoCropArea: 0.8, 
+                responsive: true, 
+                zoomable: true, 
+                zoomOnWheel: true, 
+                movable: true, 
+                cropBoxMovable: true, 
+                cropBoxResizable: true, 
+                toggleDragModeOnDblclick: false 
+            });
         }
-    } else {
-        cropper = new Cropper(img, { 
-            aspectRatio: 1, 
-            viewMode: 1, 
-            autoCropArea: 0.8, 
-            responsive: true, 
-            zoomable: true, 
-            zoomOnWheel: true, 
-            movable: true, 
-            cropBoxMovable: true, 
-            cropBoxResizable: true, 
-            toggleDragModeOnDblclick: false 
-        });
-    }
+    };
+
+    img.onerror = function() {
+        console.error('圖片載入失敗');
+        showModal("❌", "圖片載入失敗，請重新選擇");
+        closeCropModal();
+    };
 
     document.getElementById('cropConfirmBtn').onclick = function () {
         if (!cropper || isZoomMode) return;
-        const canvas = cropper.getCroppedCanvas({ width: 400, height: 400 });
+        const canvas = cropper.getCroppedCanvas({ width: 700, height: 700 });
         const croppedBase64 = canvas.toDataURL('image/jpeg', 0.9);
         if (cropCallback) cropCallback(croppedBase64);
         closeCropModal();
     };
 }
 
-// 根據排序順序決定箭頭移動方向
+// 箭頭方向：
+// 降序時 (sortDesc = true) : 左上一張, 右下一張
+// 升序時 (sortDesc = false): 左下一張, 右上一張 (與原方向相反)
 function zoomPrev() {
-    // 升序時左箭頭是上一張 (index-1)，降序時左箭頭是下一張 (index+1)
+    if (!currentZoomList || currentZoomList.length === 0) return;
     let newIndex;
-    if (sortDesc) { // 降序：左箭頭下一張
-        newIndex = currentZoomIndex + 1;
-    } else { // 升序：左箭頭上一張
+    if (sortDesc) { // 降序：左箭頭上一張 (索引-1)
         newIndex = currentZoomIndex - 1;
+        if (newIndex < 0) newIndex = currentZoomList.length - 1;
+    } else { // 升序：左箭頭下一張 (索引+1)
+        newIndex = currentZoomIndex + 1;
+        if (newIndex >= currentZoomList.length) newIndex = 0;
     }
-    if (newIndex >= 0 && newIndex < merchList.length && merchList[newIndex] && merchList[newIndex].img) {
+    if (currentZoomList[newIndex] && currentZoomList[newIndex].img && isValidImageBase64(currentZoomList[newIndex].img)) {
         currentZoomIndex = newIndex;
         updateZoomDisplay(currentZoomIndex);
     }
 }
 
 function zoomNext() {
-    // 升序時右箭頭是下一張 (index+1)，降序時右箭頭是上一張 (index-1)
+    if (!currentZoomList || currentZoomList.length === 0) return;
     let newIndex;
-    if (sortDesc) { // 降序：右箭頭上一張
-        newIndex = currentZoomIndex - 1;
-    } else { // 升序：右箭頭下一張
+    if (sortDesc) { // 降序：右箭頭下一張 (索引+1)
         newIndex = currentZoomIndex + 1;
+        if (newIndex >= currentZoomList.length) newIndex = 0;
+    } else { // 升序：右箭頭上一張 (索引-1)
+        newIndex = currentZoomIndex - 1;
+        if (newIndex < 0) newIndex = currentZoomList.length - 1;
     }
-    if (newIndex >= 0 && newIndex < merchList.length && merchList[newIndex] && merchList[newIndex].img) {
+    if (currentZoomList[newIndex] && currentZoomList[newIndex].img && isValidImageBase64(currentZoomList[newIndex].img)) {
         currentZoomIndex = newIndex;
         updateZoomDisplay(currentZoomIndex);
     }
@@ -1277,10 +1325,11 @@ function closeCropModal() {
     cropCallback = null;
     isZoomMode = false;
     currentZoomIndex = -1;
+    currentZoomList = [];
+    currentZoomStatus = '';
 }
 
 function editItem(idx) {
-    // 記錄當前頁面
     const activePage = document.querySelector('.page.active')?.id;
     if (activePage) lastActivePageBeforeEdit = activePage;
     
@@ -1318,6 +1367,8 @@ function resetFormForNew() {
     if (lastInput.type) document.getElementById('typeSelect').value = lastInput.type;
     if (lastInput.status) document.getElementById('status').value = lastInput.status;
     if (lastInput.currency) document.getElementById('currency').value = lastInput.currency;
+    if (lastInput.pattern) document.getElementById('pattern').value = lastInput.pattern;
+    if (lastInput.note) document.getElementById('note').value = lastInput.note;
     liveExchange();
     updateDateLabel();
     document.getElementById('recent-page-title').innerText = '新增藏品';
@@ -1345,10 +1396,19 @@ function switchTab(id, btn) {
 }
 
 function openPage(id) {
-    document.getElementById('cover-page').classList.add('open');
-    document.getElementById('bottom-nav').style.display = 'flex';
+    console.log('Opening page:', id);
+    const cover = document.getElementById('cover-page');
+    const nav = document.getElementById('bottom-nav');
+    if (cover) cover.classList.add('open');
+    if (nav) nav.style.display = 'flex';
     const index = ['page-gallery', 'page-pending', 'page-wish', 'page-stats', 'page-recent', 'page-settings'].indexOf(id);
-    switchTab(id, document.querySelectorAll('.nav-item')[index]);
+    const navItems = document.querySelectorAll('.nav-item');
+    if (index >= 0 && navItems.length > index) {
+        switchTab(id, navItems[index]);
+    } else {
+        console.error('Invalid page index or nav items missing');
+        switchTab(id, null);
+    }
 }
 
 function handleBack() {
@@ -1393,19 +1453,22 @@ document.getElementById('merchForm').onsubmit = async function (e) {
     const role = getV('roleSelect', 'roleInput', 'roles');
     const type = getV('typeSelect', 'typeInput', 'types');
     const status = document.getElementById('status').value;
+    const pattern = document.getElementById('pattern').value;
+    const note = document.getElementById('note').value;
 
     const done = async (imgBase64) => {
         const finalImg = imgBase64 || pendingCropImage || (editIdx > -1 ? merchList[editIdx].img : null);
+        const validImg = (finalImg && isValidImageBase64(finalImg)) ? finalImg : null;
         const data = {
             work, role, type, status,
-            pattern: document.getElementById('pattern').value,
-            note: document.getElementById('note').value,
+            pattern: pattern,
+            note: note,
             qty: parseInt(document.getElementById('qty').value),
             buyDate: document.getElementById('buyDate').value,
             currency: document.getElementById('currency').value,
             price: parseFloat(document.getElementById('inputPrice').value),
             totalHkd: document.getElementById('exchangePreview').innerText.replace('總額: HKD ', ''),
-            img: finalImg,
+            img: validImg,
             timestamp: (editIdx > -1) ? merchList[editIdx].timestamp : Date.now()
         };
 
@@ -1414,8 +1477,10 @@ document.getElementById('merchForm').onsubmit = async function (e) {
         else newList = [...merchList, data];
 
         try {
-            let maxSize = 300;
-            let quality = 0.5;
+            let maxSize = 700;
+            let quality = 0.9;
+            let firstAttempt = true;
+
             for (let attempt = 0; attempt < 8; attempt++) {
                 try {
                     localStorage.setItem(STORAGE_KEY, JSON.stringify(newList));
@@ -1423,8 +1488,14 @@ document.getElementById('merchForm').onsubmit = async function (e) {
                     break;
                 } catch (e) {
                     if (attempt === 7) throw e;
-                    maxSize = Math.max(20, Math.floor(maxSize / 1.5));
-                    quality = Math.max(0.02, quality * 0.5);
+                    
+                    if (firstAttempt) {
+                        firstAttempt = false;
+                    } else {
+                        maxSize = Math.max(50, Math.floor(maxSize / 1.5));
+                        quality = Math.max(0.1, quality * 0.8);
+                    }
+                    
                     if (data.img) {
                         const compressed = await compressImage(data.img, maxSize, quality);
                         data.img = compressed;
@@ -1438,7 +1509,15 @@ document.getElementById('merchForm').onsubmit = async function (e) {
         }
 
         merchList = newList;
-        const lastInput = { work: data.work, role: data.role, type: data.type, status: data.status, currency: data.currency };
+        const lastInput = { 
+            work: data.work, 
+            role: data.role, 
+            type: data.type, 
+            status: data.status, 
+            currency: data.currency,
+            pattern: data.pattern,
+            note: data.note
+        };
         localStorage.setItem(LAST_INPUT_KEY, JSON.stringify(lastInput));
 
         pendingCropImage = null;
@@ -1449,24 +1528,21 @@ document.getElementById('merchForm').onsubmit = async function (e) {
         resetFormForNew();
 
         if (editIdx > -1) {
-            // 編輯完成後返回原本所在的頁面
             switchTab(lastActivePageBeforeEdit, document.querySelector('.nav-item'));
         } else {
-            // 新增完成後回到館藏頁
             setTimeout(() => { showModal("✨", "已存入庫"); }, 400);
         }
     };
 
     const f = document.getElementById('imgFile').files[0];
     if (f) {
-        if (f.size > 4 * 1024 * 1024) {
-            showModal("❌", "圖片過大，請選擇小於 4MB 的圖片。");
+        if (f.size > 5 * 1024 * 1024) {
+            showModal("❌", "圖片過大，請選擇小於 5MB 的圖片。");
             return;
         }
         const fr = new FileReader();
         fr.onload = async () => {
-            const compressed = await compressImage(fr.result, 300, 0.5);
-            done(compressed);
+            done(fr.result);
         };
         fr.readAsDataURL(f);
     } else {
