@@ -425,7 +425,7 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
         <div class="menu-btn" onclick="triggerQuickUpload()">上載藏品</div>
     </div>
     <!-- 版本號 -->
-    <div class="version-tag">v0.96.0</div>
+    <div class="version-tag">v0.97.0</div>
 </div>
 <input type="file" id="quickUploadInput" style="display:none;" accept="image/*" onchange="handleQuickUploadFile(this)">
 
@@ -771,7 +771,7 @@ function setTheme(themeNum) {
     localStorage.setItem('selected_theme', 'theme-' + themeNum);
 }
 
-function compressImage(base64, maxWidth = 800, quality = 0.8) {
+function compressImage(base64, maxWidth = 600, quality = 0.7) {
     return new Promise((resolve) => {
         const img = new Image();
         img.src = base64;
@@ -1092,7 +1092,8 @@ function handleQuickUploadFile(input) {
     const reader = new FileReader();
     reader.onload = (e) => {
         openCropModal(e.target.result, async (croppedBase64) => {
-            pendingCropImage = await compressImage(croppedBase64, 800, 0.8);
+            // 更積極的初始壓縮
+            pendingCropImage = await compressImage(croppedBase64, 600, 0.7);
             document.getElementById('pendingImageNote').style.display = 'block';
             resetFormForNew();
             openPage('page-recent');
@@ -1108,7 +1109,8 @@ function handleImageFileSelect(input) {
     const reader = new FileReader();
     reader.onload = (e) => {
         openCropModal(e.target.result, async (croppedBase64) => {
-            pendingCropImage = await compressImage(croppedBase64, 800, 0.8);
+            // 更積極的初始壓縮
+            pendingCropImage = await compressImage(croppedBase64, 600, 0.7);
             document.getElementById('pendingImageNote').style.display = 'block';
             input.value = '';
         }, false);
@@ -1366,28 +1368,29 @@ document.getElementById('merchForm').onsubmit = async function (e) {
         if (editIdx > -1) { newList = [...merchList]; newList[editIdx] = data; }
         else newList = [...merchList, data];
 
-        // 嘗試儲存，最多重試5次，逐步降低圖片品質與尺寸
+        // 嘗試儲存，最多重試6次，逐步降低圖片品質與尺寸
         try {
-            let quality = 0.8;
-            for (let attempt = 0; attempt < 5; attempt++) {
+            let maxWidth = 600;
+            let quality = 0.7;
+            for (let attempt = 0; attempt < 6; attempt++) {
                 try {
                     localStorage.setItem(STORAGE_KEY, JSON.stringify(newList));
                     localStorage.setItem(DICT_KEY, JSON.stringify(dict));
                     break; // 成功則跳出
                 } catch (e) {
-                    if (attempt === 4) throw e; // 最後一次失敗則拋出
+                    if (attempt === 5) throw e; // 最後一次失敗則拋出
                     // 逐步降低品質與最大寬度
-                    let newMaxWidth = Math.max(200, 800 - attempt * 150); // 800, 650, 500, 350, 200
-                    let newQuality = Math.max(0.1, 0.8 - attempt * 0.2); // 0.8, 0.6, 0.4, 0.2, 0.1
+                    maxWidth = Math.max(100, 600 - attempt * 100); // 600,500,400,300,200,100
+                    quality = Math.max(0.05, 0.7 - attempt * 0.13); // 0.7,0.57,0.44,0.31,0.18,0.05
                     if (data.img) {
-                        const compressed = await compressImage(data.img, newMaxWidth, newQuality);
+                        const compressed = await compressImage(data.img, maxWidth, quality);
                         data.img = compressed;
                         newList[editIdx > -1 ? editIdx : newList.length - 1] = data;
                     }
                 }
             }
         } catch (e) {
-            showModal("❌", "圖片過大，無法儲存");
+            showModal("❌", "圖片過大，即使壓縮後仍無法儲存，請選擇較小的圖片。");
             return;
         }
 
@@ -1413,7 +1416,7 @@ document.getElementById('merchForm').onsubmit = async function (e) {
     if (f) {
         const fr = new FileReader();
         fr.onload = async () => {
-            const compressed = await compressImage(fr.result, 800, 0.8);
+            const compressed = await compressImage(fr.result, 600, 0.7);
             done(compressed);
         };
         fr.readAsDataURL(f);
