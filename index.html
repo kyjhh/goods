@@ -425,7 +425,7 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
         <div class="menu-btn" onclick="triggerQuickUpload()">上載藏品</div>
     </div>
     <!-- 版本號 -->
-    <div class="version-tag">v0.99.0</div>
+    <div class="version-tag">v0.99.1</div>
 </div>
 <input type="file" id="quickUploadInput" style="display:none;" accept="image/*" onchange="handleQuickUploadFile(this)">
 
@@ -772,7 +772,7 @@ function setTheme(themeNum) {
 }
 
 // 壓縮圖片 (可指定最大邊長與品質)
-function compressImage(base64, maxSize = 400, quality = 0.6) {
+function compressImage(base64, maxSize = 300, quality = 0.5) {
     return new Promise((resolve) => {
         const img = new Image();
         img.src = base64;
@@ -1099,9 +1099,9 @@ function handleQuickUploadFile(input) {
     const file = input.files[0];
     if (!file) return;
     
-    // 預先檢查檔案大小 (超過 5MB 直接拒絕)
-    if (file.size > 5 * 1024 * 1024) {
-        showModal("❌", "圖片過大，請選擇小於 5MB 的圖片。");
+    // 預先檢查檔案大小 (超過 4MB 直接拒絕，降低門檻)
+    if (file.size > 4 * 1024 * 1024) {
+        showModal("❌", "圖片過大，請選擇小於 4MB 的圖片。");
         input.value = '';
         return;
     }
@@ -1110,7 +1110,7 @@ function handleQuickUploadFile(input) {
     reader.onload = (e) => {
         openCropModal(e.target.result, async (croppedBase64) => {
             // 積極壓縮待處理圖片
-            pendingCropImage = await compressImage(croppedBase64, 400, 0.6);
+            pendingCropImage = await compressImage(croppedBase64, 300, 0.5);
             document.getElementById('pendingImageNote').style.display = 'block';
             resetFormForNew();
             openPage('page-recent');
@@ -1124,9 +1124,9 @@ function handleImageFileSelect(input) {
     const file = input.files[0];
     if (!file) return;
     
-    // 預先檢查檔案大小 (超過 5MB 直接拒絕)
-    if (file.size > 5 * 1024 * 1024) {
-        showModal("❌", "圖片過大，請選擇小於 5MB 的圖片。");
+    // 預先檢查檔案大小 (超過 4MB 直接拒絕)
+    if (file.size > 4 * 1024 * 1024) {
+        showModal("❌", "圖片過大，請選擇小於 4MB 的圖片。");
         input.value = '';
         return;
     }
@@ -1134,7 +1134,7 @@ function handleImageFileSelect(input) {
     const reader = new FileReader();
     reader.onload = (e) => {
         openCropModal(e.target.result, async (croppedBase64) => {
-            pendingCropImage = await compressImage(croppedBase64, 400, 0.6);
+            pendingCropImage = await compressImage(croppedBase64, 300, 0.5);
             document.getElementById('pendingImageNote').style.display = 'block';
             input.value = '';
         }, false);
@@ -1181,6 +1181,9 @@ function updateZoomDisplay(index) {
 }
 
 function openCropModal(imageSrc, callback, isZoom = false, item = null) {
+    // 每次開啟模態框時清除暫存的圖片，避免殘留
+    pendingCropImage = null;
+    
     const img = document.getElementById('cropImage');
     img.src = imageSrc;
     cropCallback = callback;
@@ -1228,7 +1231,7 @@ function openCropModal(imageSrc, callback, isZoom = false, item = null) {
 
     document.getElementById('cropConfirmBtn').onclick = function () {
         if (!cropper || isZoomMode) return;
-        const canvas = cropper.getCroppedCanvas({ width: 500, height: 500 }); // 降低裁剪輸出尺寸
+        const canvas = cropper.getCroppedCanvas({ width: 400, height: 400 }); // 降低裁剪輸出尺寸
         const croppedBase64 = canvas.toDataURL('image/jpeg', 0.9);
         if (cropCallback) cropCallback(croppedBase64);
         closeCropModal();
@@ -1254,6 +1257,8 @@ document.getElementById('zoomPrev').addEventListener('click', zoomPrev);
 document.getElementById('zoomNext').addEventListener('click', zoomNext);
 
 function closeCropModal() {
+    // 關閉時也清除 pendingCropImage
+    pendingCropImage = null;
     document.getElementById('cropModal').style.display = 'none';
     document.getElementById('overlay').style.display = 'none';
     if (cropper) { cropper.destroy(); cropper = null; }
@@ -1394,8 +1399,8 @@ document.getElementById('merchForm').onsubmit = async function (e) {
 
         // 嘗試儲存，最多重試8次，逐步降低圖片品質與尺寸
         try {
-            let maxSize = 400;
-            let quality = 0.6;
+            let maxSize = 300;
+            let quality = 0.5;
             for (let attempt = 0; attempt < 8; attempt++) {
                 try {
                     localStorage.setItem(STORAGE_KEY, JSON.stringify(newList));
@@ -1403,9 +1408,9 @@ document.getElementById('merchForm').onsubmit = async function (e) {
                     break; // 成功則跳出
                 } catch (e) {
                     if (attempt === 7) throw e; // 最後一次失敗則拋出
-                    // 逐步降低品質與最大尺寸 (每次約減半)
-                    maxSize = Math.max(25, Math.floor(maxSize / 1.5)); // 400,266,177,118,78,52,34,25
-                    quality = Math.max(0.01, quality * 0.5); // 0.6,0.3,0.15,0.075,0.037,0.018,0.009,0.01
+                    // 逐步降低品質與最大尺寸
+                    maxSize = Math.max(20, Math.floor(maxSize / 1.5)); // 300,200,133,88,58,38,25,20
+                    quality = Math.max(0.02, quality * 0.5); // 0.5,0.25,0.125,0.0625,0.0312,0.0156,0.02,0.02
                     if (data.img) {
                         const compressed = await compressImage(data.img, maxSize, quality);
                         data.img = compressed;
@@ -1438,14 +1443,14 @@ document.getElementById('merchForm').onsubmit = async function (e) {
 
     const f = document.getElementById('imgFile').files[0];
     if (f) {
-        // 再次檢查檔案大小 (避免使用者選取超大檔案後才讀取)
-        if (f.size > 5 * 1024 * 1024) {
-            showModal("❌", "圖片過大，請選擇小於 5MB 的圖片。");
+        // 再次檢查檔案大小
+        if (f.size > 4 * 1024 * 1024) {
+            showModal("❌", "圖片過大，請選擇小於 4MB 的圖片。");
             return;
         }
         const fr = new FileReader();
         fr.onload = async () => {
-            const compressed = await compressImage(fr.result, 400, 0.6);
+            const compressed = await compressImage(fr.result, 300, 0.5);
             done(compressed);
         };
         fr.readAsDataURL(f);
