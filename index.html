@@ -425,7 +425,7 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
         <div class="menu-btn" onclick="triggerQuickUpload()">上載藏品</div>
     </div>
     <!-- 版本號 -->
-    <div class="version-tag">v0.99.2</div>
+    <div class="version-tag">v0.99.3</div>
 </div>
 <input type="file" id="quickUploadInput" style="display:none;" accept="image/*" onchange="handleQuickUploadFile(this)">
 
@@ -732,7 +732,7 @@ const LAST_INPUT_KEY = 'archive_last_input';
 const DEFAULT_WORKS = ['作品1', '作品2'];
 const DEFAULT_TYPES = ['襟','色紙','掛件','立牌', '拍立得'];
 
-const GRID_SIZES = [50, 72, 109, 170, 180]; // 修改為要求的尺寸
+const GRID_SIZES = [50, 72, 109, 170, 180]; // 新的網格尺寸
 const rates = { HKD: 1, RMB: 1.1, JPY: 0.053 };
 
 let merchList = [], dict = { works: [], roles: [], types: [] };
@@ -750,7 +750,7 @@ let currentZoomIndex = -1;
 let longPressedTag = { key: null, value: null };
 let isUpdatingGrid = false;
 
-// 新增：記錄編輯前所在的頁面，以便編輯後返回
+// 記錄編輯前所在的頁面，以便編輯後返回
 let lastActivePageBeforeEdit = 'page-gallery';
 
 Chart.register(ChartDataLabels);
@@ -1175,8 +1175,9 @@ function updateZoomDisplay(index) {
         </div>
         <div class="zoom-info-item" style="flex: 0 0 100%;"><strong>總價</strong><span>$ ${totalInt}</span></div>
     `;
-    document.getElementById('zoomPrev').style.display = (index < merchList.length-1 && merchList[index+1] && merchList[index+1].img) ? 'flex' : 'none';
-    document.getElementById('zoomNext').style.display = (index > 0 && merchList[index-1] && merchList[index-1].img) ? 'flex' : 'none';
+    // 箭頭顯示條件（與排序無關，僅檢查是否存在前後圖片）
+    document.getElementById('zoomPrev').style.display = (index > 0 && merchList[index-1] && merchList[index-1].img) ? 'flex' : 'none';
+    document.getElementById('zoomNext').style.display = (index < merchList.length-1 && merchList[index+1] && merchList[index+1].img) ? 'flex' : 'none';
 }
 
 function openCropModal(imageSrc, callback, isZoom = false, item = null) {
@@ -1236,16 +1237,31 @@ function openCropModal(imageSrc, callback, isZoom = false, item = null) {
     };
 }
 
+// 根據排序順序決定箭頭移動方向
 function zoomPrev() {
-    if (currentZoomIndex < merchList.length-1 && merchList[currentZoomIndex+1] && merchList[currentZoomIndex+1].img) {
-        currentZoomIndex++;
+    // 升序時左箭頭是上一張 (index-1)，降序時左箭頭是下一張 (index+1)
+    let newIndex;
+    if (sortDesc) { // 降序：左箭頭下一張
+        newIndex = currentZoomIndex + 1;
+    } else { // 升序：左箭頭上一張
+        newIndex = currentZoomIndex - 1;
+    }
+    if (newIndex >= 0 && newIndex < merchList.length && merchList[newIndex] && merchList[newIndex].img) {
+        currentZoomIndex = newIndex;
         updateZoomDisplay(currentZoomIndex);
     }
 }
 
 function zoomNext() {
-    if (currentZoomIndex > 0 && merchList[currentZoomIndex-1] && merchList[currentZoomIndex-1].img) {
-        currentZoomIndex--;
+    // 升序時右箭頭是下一張 (index+1)，降序時右箭頭是上一張 (index-1)
+    let newIndex;
+    if (sortDesc) { // 降序：右箭頭上一張
+        newIndex = currentZoomIndex - 1;
+    } else { // 升序：右箭頭下一張
+        newIndex = currentZoomIndex + 1;
+    }
+    if (newIndex >= 0 && newIndex < merchList.length && merchList[newIndex] && merchList[newIndex].img) {
+        currentZoomIndex = newIndex;
         updateZoomDisplay(currentZoomIndex);
     }
 }
