@@ -425,7 +425,7 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
         <div class="menu-btn" onclick="triggerQuickUpload()">上載藏品</div>
     </div>
     <!-- 版本號 -->
-    <div class="version-tag">v0.99.1</div>
+    <div class="version-tag">v0.99.2</div>
 </div>
 <input type="file" id="quickUploadInput" style="display:none;" accept="image/*" onchange="handleQuickUploadFile(this)">
 
@@ -466,7 +466,7 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
             </div>
             <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 10px;">
                 <div id="lib-count" class="count-tag" style="margin:0;"><span>顯示:</span><span class="number">0/0</span></div>
-                <input type="range" class="grid-range-slider" min="50" max="170" value="160" oninput="handleGridSliderInput(this)">
+                <input type="range" class="grid-range-slider" min="50" max="180" value="160" oninput="handleGridSliderInput(this)">
                 <div style="margin-left: auto; display: flex; gap: 10px;">
                     <button class="filter-btn-bottom" onclick="openFilterModal('現貨')">條件檢索</button>
                     <span class="edit-toggle-btn" onclick="setBatchMode(true)">管理</span>
@@ -512,7 +512,7 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
             </div>
             <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 10px;">
                 <div id="wait-count" class="count-tag" style="margin:0;"><span>顯示:</span><span class="number">0/0</span></div>
-                <input type="range" class="grid-range-slider" min="50" max="170" value="160" oninput="handleGridSliderInput(this)">
+                <input type="range" class="grid-range-slider" min="50" max="180" value="160" oninput="handleGridSliderInput(this)">
                 <div style="margin-left: auto; display: flex; gap: 10px;">
                     <button class="filter-btn-bottom" onclick="openFilterModal('非現貨')">條件檢索</button>
                     <span class="edit-toggle-btn" onclick="setBatchMode(true)">管理</span>
@@ -558,7 +558,7 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
             </div>
             <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 10px;">
                 <div id="wish-count" class="count-tag" style="margin:0;"><span>顯示:</span><span class="number">0/0</span></div>
-                <input type="range" class="grid-range-slider" min="50" max="170" value="160" oninput="handleGridSliderInput(this)">
+                <input type="range" class="grid-range-slider" min="50" max="180" value="160" oninput="handleGridSliderInput(this)">
                 <div style="margin-left: auto; display: flex; gap: 10px;">
                     <button class="filter-btn-bottom" onclick="openFilterModal('願望')">條件檢索</button>
                     <span class="edit-toggle-btn" onclick="setBatchMode(true)">管理</span>
@@ -732,7 +732,7 @@ const LAST_INPUT_KEY = 'archive_last_input';
 const DEFAULT_WORKS = ['作品1', '作品2'];
 const DEFAULT_TYPES = ['襟','色紙','掛件','立牌', '拍立得'];
 
-const GRID_SIZES = [50, 72, 103, 109, 170];
+const GRID_SIZES = [50, 72, 109, 170, 180]; // 修改為要求的尺寸
 const rates = { HKD: 1, RMB: 1.1, JPY: 0.053 };
 
 let merchList = [], dict = { works: [], roles: [], types: [] };
@@ -749,6 +749,9 @@ let currentZoomIndex = -1;
 
 let longPressedTag = { key: null, value: null };
 let isUpdatingGrid = false;
+
+// 新增：記錄編輯前所在的頁面，以便編輯後返回
+let lastActivePageBeforeEdit = 'page-gallery';
 
 Chart.register(ChartDataLabels);
 
@@ -1099,7 +1102,7 @@ function handleQuickUploadFile(input) {
     const file = input.files[0];
     if (!file) return;
     
-    // 預先檢查檔案大小 (超過 4MB 直接拒絕，降低門檻)
+    // 預先檢查檔案大小 (超過 4MB 直接拒絕)
     if (file.size > 4 * 1024 * 1024) {
         showModal("❌", "圖片過大，請選擇小於 4MB 的圖片。");
         input.value = '';
@@ -1109,7 +1112,6 @@ function handleQuickUploadFile(input) {
     const reader = new FileReader();
     reader.onload = (e) => {
         openCropModal(e.target.result, async (croppedBase64) => {
-            // 積極壓縮待處理圖片
             pendingCropImage = await compressImage(croppedBase64, 300, 0.5);
             document.getElementById('pendingImageNote').style.display = 'block';
             resetFormForNew();
@@ -1124,7 +1126,6 @@ function handleImageFileSelect(input) {
     const file = input.files[0];
     if (!file) return;
     
-    // 預先檢查檔案大小 (超過 4MB 直接拒絕)
     if (file.size > 4 * 1024 * 1024) {
         showModal("❌", "圖片過大，請選擇小於 4MB 的圖片。");
         input.value = '';
@@ -1163,7 +1164,6 @@ function updateZoomDisplay(index) {
     const totalInt = parseInt(parseFloat(item.totalHkd));
     let unitPriceHKD = (parseFloat(item.price) * rates[item.currency]);
     let unitPriceStr = (unitPriceHKD % 1 === 0) ? unitPriceHKD.toString() : unitPriceHKD.toFixed(2);
-    // 新排版：作品、角色、類別各一行；下一行單價、數量並排；最後一行總價，無間隙
     const infoDiv = document.getElementById('zoomInfo');
     infoDiv.innerHTML = `
         <div class="zoom-info-item"><strong>作品</strong><span>${item.work || '無'}</span></div>
@@ -1175,14 +1175,12 @@ function updateZoomDisplay(index) {
         </div>
         <div class="zoom-info-item" style="flex: 0 0 100%;"><strong>總價</strong><span>$ ${totalInt}</span></div>
     `;
-    // 左右箭頭功能調轉：左箭頭下一張，右箭頭上一張
     document.getElementById('zoomPrev').style.display = (index < merchList.length-1 && merchList[index+1] && merchList[index+1].img) ? 'flex' : 'none';
     document.getElementById('zoomNext').style.display = (index > 0 && merchList[index-1] && merchList[index-1].img) ? 'flex' : 'none';
 }
 
 function openCropModal(imageSrc, callback, isZoom = false, item = null) {
-    // 每次開啟模態框時清除暫存的圖片，避免殘留
-    pendingCropImage = null;
+    pendingCropImage = null; // 每次開啟時清除暫存
     
     const img = document.getElementById('cropImage');
     img.src = imageSrc;
@@ -1231,14 +1229,13 @@ function openCropModal(imageSrc, callback, isZoom = false, item = null) {
 
     document.getElementById('cropConfirmBtn').onclick = function () {
         if (!cropper || isZoomMode) return;
-        const canvas = cropper.getCroppedCanvas({ width: 400, height: 400 }); // 降低裁剪輸出尺寸
+        const canvas = cropper.getCroppedCanvas({ width: 400, height: 400 });
         const croppedBase64 = canvas.toDataURL('image/jpeg', 0.9);
         if (cropCallback) cropCallback(croppedBase64);
         closeCropModal();
     };
 }
 
-// 左箭頭下一張，右箭頭上一張
 function zoomPrev() {
     if (currentZoomIndex < merchList.length-1 && merchList[currentZoomIndex+1] && merchList[currentZoomIndex+1].img) {
         currentZoomIndex++;
@@ -1257,7 +1254,6 @@ document.getElementById('zoomPrev').addEventListener('click', zoomPrev);
 document.getElementById('zoomNext').addEventListener('click', zoomNext);
 
 function closeCropModal() {
-    // 關閉時也清除 pendingCropImage
     pendingCropImage = null;
     document.getElementById('cropModal').style.display = 'none';
     document.getElementById('overlay').style.display = 'none';
@@ -1268,6 +1264,10 @@ function closeCropModal() {
 }
 
 function editItem(idx) {
+    // 記錄當前頁面
+    const activePage = document.querySelector('.page.active')?.id;
+    if (activePage) lastActivePageBeforeEdit = activePage;
+    
     pendingCropImage = null;
     document.getElementById('pendingImageNote').style.display = 'none';
     const i = merchList[idx];
@@ -1397,7 +1397,6 @@ document.getElementById('merchForm').onsubmit = async function (e) {
         if (editIdx > -1) { newList = [...merchList]; newList[editIdx] = data; }
         else newList = [...merchList, data];
 
-        // 嘗試儲存，最多重試8次，逐步降低圖片品質與尺寸
         try {
             let maxSize = 300;
             let quality = 0.5;
@@ -1405,12 +1404,11 @@ document.getElementById('merchForm').onsubmit = async function (e) {
                 try {
                     localStorage.setItem(STORAGE_KEY, JSON.stringify(newList));
                     localStorage.setItem(DICT_KEY, JSON.stringify(dict));
-                    break; // 成功則跳出
+                    break;
                 } catch (e) {
-                    if (attempt === 7) throw e; // 最後一次失敗則拋出
-                    // 逐步降低品質與最大尺寸
-                    maxSize = Math.max(20, Math.floor(maxSize / 1.5)); // 300,200,133,88,58,38,25,20
-                    quality = Math.max(0.02, quality * 0.5); // 0.5,0.25,0.125,0.0625,0.0312,0.0156,0.02,0.02
+                    if (attempt === 7) throw e;
+                    maxSize = Math.max(20, Math.floor(maxSize / 1.5));
+                    quality = Math.max(0.02, quality * 0.5);
                     if (data.img) {
                         const compressed = await compressImage(data.img, maxSize, quality);
                         data.img = compressed;
@@ -1435,15 +1433,16 @@ document.getElementById('merchForm').onsubmit = async function (e) {
         resetFormForNew();
 
         if (editIdx > -1) {
-            switchTab('page-gallery', document.querySelectorAll('.nav-item')[0]);
+            // 編輯完成後返回原本所在的頁面
+            switchTab(lastActivePageBeforeEdit, document.querySelector('.nav-item'));
         } else {
+            // 新增完成後回到館藏頁
             setTimeout(() => { showModal("✨", "已存入庫"); }, 400);
         }
     };
 
     const f = document.getElementById('imgFile').files[0];
     if (f) {
-        // 再次檢查檔案大小
         if (f.size > 4 * 1024 * 1024) {
             showModal("❌", "圖片過大，請選擇小於 4MB 的圖片。");
             return;
@@ -1540,13 +1539,11 @@ function renderStats() {
     const statsList = merchList.filter(i => i.status !== '願望');
     const totalExpense = statsList.reduce((sum, i) => sum + parseFloat(i.totalHkd || 0), 0).toFixed(2);
 
-    // 更新總覽卡片
     document.getElementById('totalCountSpan').innerText = merchList.length;
     document.getElementById('totalExpenseSpan').innerText = `HKD ${totalExpense}`;
 
     const colors = ['#6b7a63', '#acc1ad', '#a68b7c', '#d5cabd', '#e5ddd5', '#c2b2a3'];
 
-    // 每月花費
     const mData = {};
     statsList.forEach(i => {
         const d = new Date(i.timestamp);
@@ -1563,7 +1560,6 @@ function renderStats() {
         }
     });
 
-    // 角色花費排名
     const rData = {};
     statsList.forEach(i => { rData[i.role] = (rData[i.role] || 0) + parseFloat(i.totalHkd); });
     const rSorted = Object.entries(rData).sort((a, b) => b[1] - a[1]).slice(0, 3);
@@ -1574,7 +1570,6 @@ function renderStats() {
         options: { indexAxis: 'y', maintainAspectRatio: false, responsive: true, plugins: { datalabels: { anchor: 'end', align: 'right', offset: 4, color: '#333', font: { weight: 'bold', size: 11 }, formatter: (value) => '$ ' + parseInt(value) } } }
     });
 
-    // 角色數量排名
     const rcData = {};
     statsList.forEach(i => { rcData[i.role] = (rcData[i.role] || 0) + 1; });
     const rcSorted = Object.entries(rcData).sort((a, b) => b[1] - a[1]).slice(0, 3);
@@ -1585,7 +1580,6 @@ function renderStats() {
         options: { indexAxis: 'y', maintainAspectRatio: false, responsive: true, plugins: { datalabels: { anchor: 'end', align: 'right', offset: 4, color: '#333', font: { weight: 'bold', size: 11 }, formatter: (value) => value } } }
     });
 
-    // 類別分佈
     const tData = {};
     statsList.forEach(i => { tData[i.type] = (tData[i.type] || 0) + 1; });
     charts.typeCount = new Chart(document.getElementById('typeCountChart'), {
