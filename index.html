@@ -47,6 +47,10 @@ body.theme-3 {
     --bg: #f5f9ff;
     --text: #2c3e50;
 }
+/* 主題3 滑桿軌道使用第一色 */
+body.theme-3 .grid-range-slider {
+    background: var(--m-deep-green);
+}
 /* 主題4 (取自色卡第四組) */
 body.theme-4 {
     --m-deep-green: #67D5B5;
@@ -66,6 +70,11 @@ body.theme-5 {
     --m-clay: #cb7575;
     --bg: #ecf7f0;
     --text: #1f3a2b;
+}
+/* 主題5 滑桿軌道使用第三色並提亮 */
+body.theme-5 .grid-range-slider {
+    background: var(--m-brown);
+    filter: brightness(1.3);
 }
 
 body, html { margin: 0; padding: 0; height: 100%; font-family: 'PingFang HK', 'Microsoft JhengHei', sans-serif; background: var(--bg); color: var(--text); overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
@@ -416,7 +425,7 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
         <div class="menu-btn" onclick="triggerQuickUpload()">上載藏品</div>
     </div>
     <!-- 版本號 -->
-    <div class="version-tag">v0.95.0</div>
+    <div class="version-tag">v0.96.0</div>
 </div>
 <input type="file" id="quickUploadInput" style="display:none;" accept="image/*" onchange="handleQuickUploadFile(this)">
 
