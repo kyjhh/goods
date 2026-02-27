@@ -27,11 +27,6 @@ body.theme-1 {
     --bg: #f2efeb;
     --text: #4a4a4a;
 }
-/* 主題1 未選中標籤文字顏色：深棕色 */
-body.theme-1 .filter-chip {
-    color: #5D3A1A;
-}
-
 /* 主題2 (取自色卡第七組：粉紅色系) */
 body.theme-2 {
     --m-deep-green: #fe4365;
@@ -42,11 +37,6 @@ body.theme-2 {
     --bg: #faf0e6;
     --text: #4a3b2a;
 }
-/* 主題2 未選中標籤文字顏色：深棕色 */
-body.theme-2 .filter-chip {
-    color: #5D3A1A;
-}
-
 /* 主題3 (取自色卡第三組) */
 body.theme-3 {
     --m-deep-green: #D499B9;
@@ -57,8 +47,6 @@ body.theme-3 {
     --bg: #f5f9ff;
     --text: #2c3e50;
 }
-/* 主題3 維持原灰色（不特別設定）*/
-
 /* 主題4 (取自色卡第四組) */
 body.theme-4 {
     --m-deep-green: #67D5B5;
@@ -69,11 +57,6 @@ body.theme-4 {
     --bg: #fff7f2;
     --text: #5e4b46;
 }
-/* 主題4 未選中標籤文字顏色：深棕色 */
-body.theme-4 .filter-chip {
-    color: #5D3A1A;
-}
-
 /* 主題5 (取自色卡第六組) */
 body.theme-5 {
     --m-deep-green: #a3c9c7;
@@ -83,10 +66,6 @@ body.theme-5 {
     --m-clay: #cb7575;
     --bg: #ecf7f0;
     --text: #1f3a2b;
-}
-/* 主題5 未選中標籤文字顏色：深棕色 */
-body.theme-5 .filter-chip {
-    color: #5D3A1A;
 }
 
 body, html { margin: 0; padding: 0; height: 100%; font-family: 'PingFang HK', 'Microsoft JhengHei', sans-serif; background: var(--bg); color: var(--text); overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
@@ -135,8 +114,22 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: 'PingFang HK', 'M
 .order-toggle { font-size: 11px; font-weight: bold; padding: 4px 10px; border: 1px solid #eee; border-radius: 6px; cursor: pointer; color: var(--m-brown); background: #fafafa; }
 .search-input { margin-bottom: 12px; padding: 10px 12px; font-size: 12px; border: 1px solid #eee; background: #fafafa; border-radius: 6px; width: 100%; box-sizing: border-box; outline: none; }
 .filter-row { display: flex; overflow-x: auto; white-space: nowrap; gap: 8px; margin-bottom: 10px; scrollbar-width: none; }
-.filter-chip { background: var(--m-clay); padding: 6px 14px; border-radius: 15px; font-size: 11px; cursor: pointer; color: #8a8a8a; user-select: none; transition: 0.2s; }
-.filter-chip.active { background: var(--m-sage); color: white; box-shadow: 0 0 0 2px var(--m-deep-green); }
+/* 過濾標籤統一顏色：未選中深棕色，選中白色 */
+.filter-chip {
+    background: var(--m-clay);
+    padding: 6px 14px;
+    border-radius: 15px;
+    font-size: 11px;
+    cursor: pointer;
+    color: #5D3A1A; /* 深棕色，所有主題統一 */
+    user-select: none;
+    transition: 0.2s;
+}
+.filter-chip.active {
+    background: var(--m-sage);
+    color: white;
+    box-shadow: 0 0 0 2px var(--m-deep-green);
+}
 .count-tag { font-size: 10px; color: #aaa; text-align: right; margin-bottom: 5px; }
 .count-tag .number { font-size: 14px; font-weight: bold; color: #aaa; }
 .list-container.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(var(--dynamic-grid), 1fr)); gap: 4px; }
@@ -423,7 +416,7 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
         <div class="menu-btn" onclick="triggerQuickUpload()">上載藏品</div>
     </div>
     <!-- 版本號 -->
-    <div class="version-tag">v0.91.0</div>
+    <div class="version-tag">v0.95.0</div>
 </div>
 <input type="file" id="quickUploadInput" style="display:none;" accept="image/*" onchange="handleQuickUploadFile(this)">
 
@@ -996,7 +989,12 @@ function renderFiltersInModal(status) {
     const buildSection = (title, list, key) => {
         const section = document.createElement('div'); section.className = 'filter-section';
         const titleEl = document.createElement('div'); titleEl.className = 'filter-section-title'; 
-        titleEl.innerHTML = `${title} <span class="tip">長按編輯或刪除標籤</span>`;
+        // 只在 key 為 'work' 時加入提示
+        if (key === 'work') {
+            titleEl.innerHTML = `${title} <span class="tip">長按編輯或刪除標籤</span>`;
+        } else {
+            titleEl.innerText = title;
+        }
         section.appendChild(titleEl);
         const row = document.createElement('div'); row.className = 'filter-row';
 
@@ -1359,25 +1357,28 @@ document.getElementById('merchForm').onsubmit = async function (e) {
         if (editIdx > -1) { newList = [...merchList]; newList[editIdx] = data; }
         else newList = [...merchList, data];
 
+        // 嘗試儲存，最多重試5次，逐步降低圖片品質與尺寸
         try {
             let quality = 0.8;
             for (let attempt = 0; attempt < 5; attempt++) {
                 try {
                     localStorage.setItem(STORAGE_KEY, JSON.stringify(newList));
                     localStorage.setItem(DICT_KEY, JSON.stringify(dict));
-                    break;
+                    break; // 成功則跳出
                 } catch (e) {
-                    if (attempt === 4) throw e;
-                    quality = 0.1;
+                    if (attempt === 4) throw e; // 最後一次失敗則拋出
+                    // 逐步降低品質與最大寬度
+                    let newMaxWidth = Math.max(200, 800 - attempt * 150); // 800, 650, 500, 350, 200
+                    let newQuality = Math.max(0.1, 0.8 - attempt * 0.2); // 0.8, 0.6, 0.4, 0.2, 0.1
                     if (data.img) {
-                        const compressed = await compressImage(data.img, 800, quality);
+                        const compressed = await compressImage(data.img, newMaxWidth, newQuality);
                         data.img = compressed;
                         newList[editIdx > -1 ? editIdx : newList.length - 1] = data;
                     }
                 }
             }
         } catch (e) {
-            showModal("❌", "儲存失敗，圖片過大");
+            showModal("❌", "圖片過大，無法儲存");
             return;
         }
 
