@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Morandi Archive - 最終調整版</title>
+<title>Morandi Archive - v1.1.1</title>
 <!-- Cropper.js 樣式與腳本 -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
@@ -11,7 +11,7 @@
 <!-- Chart.js 數據標籤插件 -->
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0/dist/chartjs-plugin-datalabels.min.js"></script>
 <style>
-/* 樣式與先前版本完全相同，為節省篇幅請直接複製之前版本的樣式 */
+/* ========== 全域樣式 (與之前相同，但移除所有垂直滑塊相關樣式) ========== */
 :root {
     --m-deep-green: #6b7a63; --m-sage: #acc1ad; --m-brown: #a68b7c;
     --m-sand: #d5cabd; --m-clay: #e5ddd5; --bg: #f2efeb;
@@ -26,37 +26,174 @@ body.theme-4 { --m-deep-green: #67D5B5; --m-sage: #EE7785; --m-brown: #C89EC4; -
 body.theme-5 { --m-deep-green: #a3c9c7; --m-sage: #cb7575; --m-brown: #ef9e9f; --m-sand: #353848; --m-clay: #cb7575; --bg: #ecf7f0; --text: #1f3a2b; }
 body.theme-5 .grid-range-slider { background: var(--m-brown); filter: brightness(1.3); }
 body, html { margin: 0; padding: 0; height: 100%; font-family: 'PingFang HK', 'Microsoft JhengHei', sans-serif; background: var(--bg); color: var(--text); overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
+
+/* ========== 固定面板 ========== */
 #batch-panel { display: none; background: var(--m-deep-green); color: white; padding: 15px 20px; position: fixed; top: 0; left: 0; width: 100%; box-sizing: border-box; z-index: 2500; justify-content: space-between; align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.15); transition: 0.3s; }
 .batch-btn { background: #cc9999; border: none; color: white; padding: 6px 15px; border-radius: 4px; font-size: 13px; cursor: pointer; font-weight: bold; }
 .edit-toggle-btn { font-size: 13px; color: var(--m-deep-green); border: 1px solid var(--m-deep-green); padding: 4px 12px; border-radius: 6px; cursor: pointer; margin-left: 10px; font-weight: bold; transition: 0.2s; }
-#cover-page { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: var(--bg); background-size: cover; background-position: center; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 2000; transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
+
+/* ========== 封面頁 ========== */
+#cover-page {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: var(--bg);
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
 #cover-page.open { transform: translateY(-100%); }
 .cover-upload-btn { position: absolute; top: 20px; left: 20px; background: rgba(255, 255, 255, 0.4); backdrop-filter: blur(5px); border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 2100; border: 1px solid rgba(255,255,255,0.3); }
 .cover-menu { width: 160px; display: flex; flex-direction: column; gap: 8px; }
 .menu-btn { background: rgba(255, 255, 255, 0.65); backdrop-filter: blur(12px); padding: 14px; text-align: center; cursor: pointer; border-radius: var(--radius); font-size: 11px; letter-spacing: 2px; border: 1px solid rgba(255,255,255,0.2); }
-.nav-bar { position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%); width: 92%; max-width: 500px; background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); display: flex; justify-content: space-around; padding: 12px 5px; border-radius: 15px; box-shadow: 0 8px 30px rgba(0,0,0,0.08); z-index: 1000; transition: bottom 0.3s; }
+
+/* ========== 底部導航 ========== */
+.nav-bar {
+    position: fixed;
+    bottom: 25px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 92%;
+    max-width: 500px;
+    background: rgba(255,255,255,0.95);
+    backdrop-filter: blur(10px);
+    display: flex;
+    justify-content: space-around;
+    padding: 12px 5px;
+    border-radius: 15px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+    z-index: 1000;
+    transition: bottom 0.3s;
+}
 .nav-item { border: none; background: none; color: #b5b5b5; font-size: 10px; font-weight: 600; cursor: pointer; padding: 10px; flex-grow: 1; text-align: center; }
 .nav-item.active { color: var(--m-deep-green); }
-.main-content { padding: 12px 12px 120px 12px; max-width: 800px; margin: 0 auto; transition: margin-top 0.3s; }
+
+/* ========== 主要內容區 ========== */
+.main-content {
+    padding: 12px 12px 120px 12px; /* 移除右側預留空間 */
+    max-width: 800px;
+    margin: 0 auto;
+    transition: margin-top 0.3s;
+    position: relative;
+}
 .page { display: none; }
 .page.active { display: block; }
-.page-header { display: flex; align-items: center; justify-content: center; margin-bottom: 15px; position: relative; }
+
+/* ========== 頁面標頭 ========== */
+.page-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 15px;
+    position: relative;
+}
 .back-btn-header { font-size: 20px; cursor: pointer; color: var(--m-brown); width: 40px; position: absolute; left: 0; }
 .page-title { font-size: 18px; font-weight: bold; color: var(--m-deep-green); text-align: center; margin: 0 auto; }
-.control-panel { background: #fff; padding: 15px; border-radius: var(--radius); margin-bottom: 10px; border: 1px solid var(--m-clay); box-shadow: 0 2px 10px rgba(0,0,0,0.02); }
-.symbol-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid #f0f0f0; padding-bottom: 12px; }
+
+/* ========== 控制面板 ========== */
+.control-panel {
+    background: #fff;
+    padding: 15px;
+    border-radius: var(--radius);
+    margin-bottom: 10px;
+    border: 1px solid var(--m-clay);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+}
+.symbol-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    border-bottom: 1px solid #f0f0f0;
+    padding-bottom: 12px;
+}
 .symbol-group { display: flex; gap: 12px; color: #ccc; align-items: center; }
-.symbol-btn { cursor: pointer; transition: color 0.3s; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 2px; }
+.symbol-btn {
+    cursor: pointer;
+    transition: color 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 2px;
+}
 .symbol-btn svg { width: 18px; height: 18px; fill: currentColor; }
 .symbol-btn span { font-size: 8px; font-weight: bold; display: block; }
 .symbol-btn.active { color: var(--m-deep-green); }
 .sort-qty span { font-size: 8px; font-weight: bold; }
 .sort-qty svg { display: none; }
 .order-toggle { font-size: 11px; font-weight: bold; padding: 4px 10px; border: 1px solid #eee; border-radius: 6px; cursor: pointer; color: var(--m-brown); background: #fafafa; }
-.search-input { margin-bottom: 12px; padding: 10px 12px; font-size: 12px; border: 1px solid #eee; background: #fafafa; border-radius: 6px; width: 100%; box-sizing: border-box; outline: none; }
-.filter-row { display: flex; overflow-x: auto; white-space: nowrap; gap: 8px; margin-bottom: 10px; scrollbar-width: none; }
-.filter-chip { background: var(--m-clay); padding: 6px 14px; border-radius: 15px; font-size: 11px; cursor: pointer; color: #5D3A1A; user-select: none; transition: 0.2s; }
-.filter-chip.active { background: var(--m-sage); color: white; box-shadow: 0 0 0 2px var(--m-deep-green); }
+.search-input {
+    margin-bottom: 12px;
+    padding: 10px 12px;
+    font-size: 12px;
+    border: 1px solid #eee;
+    background: #fafafa;
+    border-radius: 6px;
+    width: 100%;
+    box-sizing: border-box;
+    outline: none;
+}
+
+/* ========== 篩選面板 ========== */
+.filter-panel {
+    background: #f9f9f9;
+    border-radius: var(--radius);
+    padding: 12px;
+    margin-top: 15px;
+    border: 1px solid var(--m-clay);
+}
+.filter-panel .filter-section { margin-bottom: 12px; }
+.filter-panel .filter-section-title {
+    font-size: 13px;
+    font-weight: bold;
+    color: var(--m-brown);
+    margin-bottom: 6px;
+    border-left: 4px solid var(--m-sage);
+    padding-left: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.filter-panel .filter-section-title .tip {
+    font-size: 11px;
+    font-weight: normal;
+    color: #aaa;
+    background: #f0f0f0;
+    padding: 2px 8px;
+    border-radius: 12px;
+}
+.filter-panel .filter-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+.filter-chip {
+    background: var(--m-clay);
+    padding: 4px 10px;
+    border-radius: 14px;
+    font-size: 11px;
+    cursor: pointer;
+    color: #5D3A1A;
+    user-select: none;
+    transition: 0.2s;
+    display: inline-block;
+    margin: 2px 0;
+}
+.filter-chip.active {
+    background: var(--m-sage);
+    color: white;
+    box-shadow: 0 0 0 2px var(--m-deep-green);
+}
+
+/* ========== 列表容器 ========== */
 .count-tag { font-size: 10px; color: #aaa; text-align: right; margin-bottom: 5px; }
 .count-tag .number { font-size: 14px; font-weight: bold; color: #aaa; }
 .list-container.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(var(--dynamic-grid), 1fr)); gap: 4px; }
@@ -67,54 +204,219 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: 'PingFang HK', 'M
 .list-container.list .note { display: block; font-size: calc(9px * var(--info-scale)); color: #999; margin-top: calc(4px * var(--info-scale)); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .list-container.image { display: grid; grid-template-columns: repeat(auto-fill, minmax(var(--dynamic-grid), 1fr)); gap: 4px; }
 .list-container.image .item-card .info { display: none; }
-.item-card { background: #fff; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--m-clay); user-select: none; display: flex; flex-direction: column; cursor: pointer; position: relative; transition: 0.2s; }
+
+/* ========== 卡片 ========== */
+.item-card {
+    background: #fff;
+    border-radius: var(--radius);
+    overflow: hidden;
+    border: 1px solid var(--m-clay);
+    user-select: none;
+    display: flex;
+    flex-direction: column;
+    cursor: pointer;
+    position: relative;
+    transition: 0.2s;
+}
 .item-card.selected { border: 3px solid var(--m-deep-green); transform: scale(0.96); }
-.item-card.selected::after { content: "✓"; position: absolute; top: 10px; right: 10px; background: var(--m-deep-green); color: white; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; z-index: 10; }
+.item-card.selected::after {
+    content: "✓";
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: var(--m-deep-green);
+    color: white;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: bold;
+    z-index: 10;
+}
 .img-box { width: 100%; aspect-ratio: 1; background: #f5f5f5; pointer-events: none; }
 .img-box img { width: 100%; height: 100%; object-fit: cover; }
-.card-qty { position: absolute; bottom: 8px; right: 10px; font-size: calc(12px * var(--info-scale,1)); color: var(--m-deep-green); font-weight: bold; z-index: 2; }
+.card-qty {
+    position: absolute;
+    bottom: 8px;
+    right: 10px;
+    font-size: calc(12px * var(--info-scale,1));
+    color: var(--m-deep-green);
+    font-weight: bold;
+    z-index: 2;
+}
 .info { padding: 10px; flex-grow: 1; overflow: hidden; pointer-events: none; display: flex; flex-direction: column; }
 .info .note { display: none; }
+
+/* ========== 表單 ========== */
 .input-group { margin-bottom: 5px; }
 .input-label { font-size: 11px; color: var(--m-brown); font-weight: bold; margin-bottom: 5px; display: block; }
 #exchangePreview { margin-bottom: 8px; }
-.btn-main { background: var(--m-deep-green); color: white; border: none; padding: 12px; width: 100%; font-size: 13px; cursor: pointer; border-radius: var(--radius); margin-top: 5px; font-weight: bold; }
-input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius); border: 1px solid var(--m-clay); background: #fafafa; font-size: 14px; box-sizing: border-box; outline: none; }
-#success-modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 35px; border-radius: 15px; text-align: center; z-index: 9999; display: none; width: 240px; box-shadow: 0 10px 50px rgba(0,0,0,0.3); }
-.overlay { position: fixed; top:0; left:0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 9998; display: none; backdrop-filter: blur(3px); }
-.filter-modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 25px; border-radius: var(--radius); z-index: 10000; width: 90%; max-width: 600px; max-height: 80vh; overflow-y: auto; box-shadow: 0 10px 40px rgba(0,0,0,0.2); display: none; }
-.filter-modal .filter-section { margin-bottom: 20px; }
-.filter-modal .filter-section-title { font-size: 13px; font-weight: bold; color: var(--m-brown); margin-bottom: 10px; border-left: 4px solid var(--m-sage); padding-left: 8px; display: flex; justify-content: space-between; align-items: center; }
-.filter-modal .filter-section-title .tip { font-size: 13px; font-weight: normal; color: #aaa; background: #f5f5f5; padding: 4px 8px; border-radius: 12px; pointer-events: none; }
-.filter-modal .filter-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 5px; }
-.filter-modal .filter-chip { margin: 2px; }
-.filter-modal .close-btn { background: var(--m-clay); border: none; padding: 10px; width: 100%; border-radius: var(--radius); font-size: 13px; cursor: pointer; margin-top: 10px; color: white; }
-.crop-modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 25px; border-radius: var(--radius); z-index: 10000; width: 90%; max-width: 600px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); display: none; flex-direction: column; }
+.btn-main {
+    background: var(--m-deep-green);
+    color: white;
+    border: none;
+    padding: 12px;
+    width: 100%;
+    font-size: 13px;
+    cursor: pointer;
+    border-radius: var(--radius);
+    margin-top: 5px;
+    font-weight: bold;
+}
+input, select, textarea {
+    width: 100%;
+    padding: 6px;
+    border-radius: var(--radius);
+    border: 1px solid var(--m-clay);
+    background: #fafafa;
+    font-size: 14px;
+    box-sizing: border-box;
+    outline: none;
+}
+
+/* ========== 模態框 ========== */
+#success-modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    padding: 35px;
+    border-radius: 15px;
+    text-align: center;
+    z-index: 9999;
+    display: none;
+    width: 240px;
+    box-shadow: 0 10px 50px rgba(0,0,0,0.3);
+}
+.overlay {
+    position: fixed;
+    top:0;
+    left:0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.6);
+    z-index: 9998;
+    display: none;
+    backdrop-filter: blur(3px);
+}
+.crop-modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    padding: 25px;
+    border-radius: var(--radius);
+    z-index: 10000;
+    width: 90%;
+    max-width: 600px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    display: none;
+    flex-direction: column;
+}
 .crop-modal .crop-container { max-height: 60vh; overflow: hidden; margin-bottom: 15px; position: relative; }
 .crop-modal .crop-image { max-width: 100%; display: block; }
 .crop-modal .crop-actions { display: flex; gap: 10px; margin-top: 15px; }
 .crop-modal .crop-btn { flex: 1; background: var(--m-deep-green); color: white; border: none; padding: 12px; border-radius: var(--radius); font-size: 13px; cursor: pointer; }
 .crop-modal .cancel-btn { background: var(--m-clay); color: white; }
-.zoom-nav { position: absolute; top: 50%; transform: translateY(-50%); width: 40px; height: 40px; background: rgba(0,0,0,0.5); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: bold; color: white; cursor: pointer; z-index: 10; border: 1px solid rgba(255,255,255,0.2); backdrop-filter: blur(2px); }
+
+/* ========== 放大模式導航 ========== */
+.zoom-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 40px;
+    height: 40px;
+    background: rgba(0,0,0,0.5);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    font-weight: bold;
+    color: white;
+    cursor: pointer;
+    z-index: 10;
+    border: 1px solid rgba(255,255,255,0.2);
+    backdrop-filter: blur(2px);
+}
 .zoom-nav.left { left: 10px; }
 .zoom-nav.right { right: 10px; }
 .zoom-nav:hover { background: rgba(0,0,0,0.7); }
-.zoom-info { padding: 15px; background: #fafafa; border-top: 1px solid var(--m-clay); font-size: 12px; color: var(--text); display: flex; flex-wrap: wrap; gap: 0; margin-top: 10px; }
-.zoom-info-item { border: 1px solid var(--m-clay); border-radius: 6px; padding: 6px 10px; flex: 1 1 auto; min-width: 0; background: transparent; margin: 0; }
+.zoom-info {
+    padding: 15px;
+    background: #fafafa;
+    border-top: 1px solid var(--m-clay);
+    font-size: 12px;
+    color: var(--text);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0;
+    margin-top: 10px;
+}
+.zoom-info-item {
+    border: 1px solid var(--m-clay);
+    border-radius: 6px;
+    padding: 6px 10px;
+    flex: 1 1 auto;
+    min-width: 0;
+    background: transparent;
+    margin: 0;
+}
 .zoom-info-item strong { color: var(--m-brown); font-size: 11px; display: block; margin-bottom: 2px; }
 .zoom-info-item span { font-weight: bold; color: var(--m-deep-green); }
 .zoom-info-row { display: flex; gap: 0; width: 100%; flex-wrap: nowrap; }
 .zoom-info-row .zoom-info-item { flex: 1; }
-.tag-context-menu { position: fixed; background: white; border: 1px solid #ddd; border-radius: 8px; padding: 5px 0; z-index: 10001; box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: none; }
+
+/* ========== 標籤長按選單 ========== */
+.tag-context-menu {
+    position: fixed;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 5px 0;
+    z-index: 10001;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    display: none;
+}
 .tag-context-menu div { padding: 10px 20px; cursor: pointer; font-size: 13px; color: var(--text); }
 .tag-context-menu div:hover { background: var(--m-clay); }
-.stat-card { background:#fff; padding:20px; border-radius:var(--radius); border:1px solid var(--m-clay); margin-bottom: 20px; position: relative; }
-.stat-title { font-size: 13px; font-weight: bold; color: var(--m-brown); margin-bottom: 15px; border-left: 4px solid var(--m-sage); padding-left: 10px; }
+
+/* ========== 統計卡片 ========== */
+.stat-card {
+    background:#fff;
+    padding:20px;
+    border-radius:var(--radius);
+    border:1px solid var(--m-clay);
+    margin-bottom: 20px;
+    position: relative;
+}
+.stat-title {
+    font-size: 13px;
+    font-weight: bold;
+    color: var(--m-brown);
+    margin-bottom: 15px;
+    border-left: 4px solid var(--m-sage);
+    padding-left: 10px;
+}
 .overview-row { display: flex; gap: 20px; font-size: 20px; }
-.overview-item { flex: 1; text-align: center; background: #ffffff; border-radius: var(--radius); padding: 15px 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+.overview-item {
+    flex: 1;
+    text-align: center;
+    background: #ffffff;
+    border-radius: var(--radius);
+    padding: 15px 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
 .overview-item strong { display: block; color: var(--m-brown); font-size: 14px; margin-bottom: 8px; }
 .overview-item span { font-size: 28px; font-weight: bold; color: var(--m-deep-green); }
 #monthlyChart, #roleChart, #roleCountChart, #typeCountChart { height: 250px !important; width: 100%; }
+
+/* ========== 排名表格 ========== */
 .rank-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
 .rank-table th { text-align: left; font-size: 11px; color: var(--m-brown); padding-bottom: 5px; border-bottom: 1px solid var(--m-clay); }
 .rank-table td { padding: 8px 0; font-size: 12px; border-bottom: 1px solid #f0f0f0; }
@@ -122,22 +424,91 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
 .rank-table .rank-1 { color: var(--m-deep-green); font-weight: bold; }
 .rank-table .rank-2 { color: var(--m-sage); font-weight: bold; }
 .rank-table .rank-3 { color: var(--m-brown); font-weight: bold; }
+
+/* ========== 其他元件 ========== */
 .image-pending-note { font-size: 11px; color: var(--m-deep-green); margin-top: 5px; font-weight: bold; }
-.filter-btn-bottom { background: transparent; border: 1px solid var(--m-deep-green); border-radius: 6px; padding: 4px 12px; font-size: 13px; color: var(--m-deep-green); cursor: pointer; white-space: nowrap; font-weight: bold; }
-.edit-toggle-btn { font-size: 13px; color: var(--m-deep-green); border: 1px solid var(--m-deep-green); padding: 4px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.2s; }
-.grid-range-slider { -webkit-appearance: none; width: 80px; height: 4px; background: var(--m-clay); border-radius: 2px; outline: none; }
-.grid-range-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; background: var(--m-deep-green); border-radius: 50%; cursor: pointer; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
-.grid-range-slider::-moz-range-thumb { width: 16px; height: 16px; background: var(--m-deep-green); border-radius: 50%; cursor: pointer; border: none; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+.filter-btn-bottom {
+    background: transparent;
+    border: 1px solid var(--m-deep-green);
+    border-radius: 6px;
+    padding: 4px 12px;
+    font-size: 13px;
+    color: var(--m-deep-green);
+    cursor: pointer;
+    white-space: nowrap;
+    font-weight: bold;
+    transition: 0.2s;
+}
+.filter-btn-bottom.active {
+    background: var(--m-deep-green);
+    color: white;
+}
+.edit-toggle-btn {
+    font-size: 13px;
+    color: var(--m-deep-green);
+    border: 1px solid var(--m-deep-green);
+    padding: 4px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: 0.2s;
+}
+.grid-range-slider {
+    -webkit-appearance: none;
+    width: 80px;
+    height: 4px;
+    background: var(--m-clay);
+    border-radius: 2px;
+    outline: none;
+}
+.grid-range-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    background: var(--m-deep-green);
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+.grid-range-slider::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    background: var(--m-deep-green);
+    border-radius: 50%;
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
 .grid-range-slider::-moz-range-track { height: 4px; background: var(--m-clay); border-radius: 2px; }
-.version-tag { position: absolute; bottom: 10px; left: 10px; font-size: 10px; color: rgba(0,0,0,0.3); background: rgba(255,255,255,0.3); padding: 2px 6px; border-radius: 4px; backdrop-filter: blur(2px); }
-.theme-strip { width: 120px; height: 40px; display: flex; border-radius: 8px; overflow: hidden; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.1); transition: transform 0.2s; }
+
+.version-tag {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    font-size: 10px;
+    color: rgba(0,0,0,0.3);
+    background: rgba(255,255,255,0.3);
+    padding: 2px 6px;
+    border-radius: 4px;
+    backdrop-filter: blur(2px);
+}
+.theme-strip {
+    width: 120px;
+    height: 40px;
+    display: flex;
+    border-radius: 8px;
+    overflow: hidden;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    transition: transform 0.2s;
+}
 .theme-strip:hover { transform: scale(1.05); }
 .theme-strip div { flex: 1; height: 100%; }
 .theme-row { display: flex; gap: 15px; justify-content: center; margin: 20px 0; flex-wrap: wrap; }
 </style>
 </head>
 <body class="theme-1">
-<!-- 固定面板 (與先前相同) -->
+<!-- ========== 固定面板 ========== -->
 <div id="batch-panel">
     <span id="batch-count" style="font-weight: bold;">已選擇0項</span>
     <div>
@@ -152,11 +523,7 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
     <button class="btn-main" onclick="closeModal()" style="margin-top: 25px;">確定</button>
 </div>
 
-<div class="filter-modal" id="filterModal">
-    <div id="filterModalContent"></div>
-    <button class="close-btn" onclick="closeFilterModal()">關閉</button>
-</div>
-
+<!-- 裁剪模態框 -->
 <div class="crop-modal" id="cropModal">
     <div class="crop-container">
         <img id="cropImage" class="crop-image" src="">
@@ -170,11 +537,13 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
     </div>
 </div>
 
+<!-- 標籤長按選單 -->
 <div class="tag-context-menu" id="tagContextMenu">
     <div onclick="editTagFromMenu()">編輯標籤</div>
     <div onclick="deleteTagFromMenu()">刪除標籤</div>
 </div>
 
+<!-- 封面頁 -->
 <div id="cover-page">
     <div class="cover-upload-btn" onclick="document.getElementById('coverInput').click()">
         <svg viewBox="0 0 24 24" width="20" height="20" fill="var(--m-deep-green)"><path d="M4 4h3l2-2h6l2 2h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zm8 3a5 5 0 1 0 0 10 5 5 0 0 0 0-10zm0 2a3 3 0 1 1 0 6 3 3 0 0 1 0-6z"/></svg>
@@ -185,10 +554,11 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
         <div class="menu-btn" onclick="openPage('page-gallery')">進入藏品庫</div>
         <div class="menu-btn" onclick="triggerQuickUpload()">上載藏品</div>
     </div>
-    <div class="version-tag">v1.0.4-最終調整</div>
+    <div class="version-tag">v1.1.1</div>
 </div>
 <input type="file" id="quickUploadInput" style="display:none;" accept="image/*" onchange="handleQuickUploadFile(this)">
 
+<!-- 主要內容區塊 -->
 <div class="main-content" id="main-content">
     <!-- 館藏頁 -->
     <div id="page-gallery" class="page">
@@ -216,12 +586,18 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
                 <div id="lib-count" class="count-tag" style="margin:0;"><span>顯示:</span><span class="number">0/0</span></div>
                 <input type="range" class="grid-range-slider" min="50" max="180" value="160" oninput="handleGridSliderInput(this)">
                 <div style="margin-left: auto; display: flex; gap: 10px;">
-                    <button class="filter-btn-bottom" onclick="openFilterModal('現貨')">條件檢索</button>
+                    <button class="filter-btn-bottom" id="filter-btn-gallery" onclick="toggleFilterPanel('現貨')">條件檢索</button>
                     <span class="edit-toggle-btn" onclick="setBatchMode(true)">管理</span>
                 </div>
             </div>
+            <div class="filter-panel" id="filter-panel-gallery" style="display: none;">
+                <div class="filter-section" data-section="work"></div>
+                <div class="filter-section" data-section="role"></div>
+                <div class="filter-section" data-section="type"></div>
+            </div>
         </div>
         <div id="readyList" class="list-container grid"></div>
+        <!-- 移除垂直滑塊 -->
     </div>
 
     <!-- 等候區頁 -->
@@ -250,12 +626,18 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
                 <div id="wait-count" class="count-tag" style="margin:0;"><span>顯示:</span><span class="number">0/0</span></div>
                 <input type="range" class="grid-range-slider" min="50" max="180" value="160" oninput="handleGridSliderInput(this)">
                 <div style="margin-left: auto; display: flex; gap: 10px;">
-                    <button class="filter-btn-bottom" onclick="openFilterModal('非現貨')">條件檢索</button>
+                    <button class="filter-btn-bottom" id="filter-btn-pending" onclick="toggleFilterPanel('非現貨')">條件檢索</button>
                     <span class="edit-toggle-btn" onclick="setBatchMode(true)">管理</span>
                 </div>
             </div>
+            <div class="filter-panel" id="filter-panel-pending" style="display: none;">
+                <div class="filter-section" data-section="work"></div>
+                <div class="filter-section" data-section="role"></div>
+                <div class="filter-section" data-section="type"></div>
+            </div>
         </div>
         <div id="waitList" class="list-container grid"></div>
+        <!-- 移除垂直滑塊 -->
     </div>
 
     <!-- 願望清單頁 -->
@@ -284,12 +666,18 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
                 <div id="wish-count" class="count-tag" style="margin:0;"><span>顯示:</span><span class="number">0/0</span></div>
                 <input type="range" class="grid-range-slider" min="50" max="180" value="160" oninput="handleGridSliderInput(this)">
                 <div style="margin-left: auto; display: flex; gap: 10px;">
-                    <button class="filter-btn-bottom" onclick="openFilterModal('願望')">條件檢索</button>
+                    <button class="filter-btn-bottom" id="filter-btn-wish" onclick="toggleFilterPanel('願望')">條件檢索</button>
                     <span class="edit-toggle-btn" onclick="setBatchMode(true)">管理</span>
                 </div>
             </div>
+            <div class="filter-panel" id="filter-panel-wish" style="display: none;">
+                <div class="filter-section" data-section="work"></div>
+                <div class="filter-section" data-section="role"></div>
+                <div class="filter-section" data-section="type"></div>
+            </div>
         </div>
         <div id="wishList" class="list-container grid"></div>
+        <!-- 移除垂直滑塊 -->
     </div>
 
     <!-- 新增/編輯頁 -->
@@ -299,7 +687,7 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
             <div class="page-title" id="recent-page-title">新增藏品</div>
         </div>
         <div style="background:#fff; padding:15px; border-radius: var(--radius); border:1px solid var(--m-clay);">
-            <form id="merchForm">
+            <form id="merchForm" autocomplete="on">
                 <input type="hidden" id="editIndex" value="-1">
                 <div class="input-group"><label class="input-label">作品名稱</label><select id="workSelect" onchange="toggleInput('workSelect', 'workInput')"></select><input type="text" id="workInput" style="display:none;" placeholder="輸入新作品名稱"></div>
                 
@@ -316,8 +704,8 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
                     </div>
                 </div>
 
-                <div class="input-group"><label class="input-label">款式名稱</label><input type="text" id="pattern" required> </div>
-                <div class="input-group"><label class="input-label">備註</label><textarea id="note"></textarea></div>
+                <div class="input-group"><label class="input-label">款式名稱</label><input type="text" id="pattern" name="pattern" autocomplete="on" required> </div>
+                <div class="input-group"><label class="input-label">備註</label><input type="text" id="note" name="note" autocomplete="on"></div>
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; margin-bottom: 15px;">
                     <div><label class="input-label">狀態</label><select id="status" onchange="updateDateLabel()"><option value="現貨">現貨</option><option value="非現貨">非現貨</option><option value="願望">願望</option></select></div>
                     <div><label class="input-label">數量</label><input type="number" id="qty" value="1" min="1"></div>
@@ -377,7 +765,7 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
         </div>
     </div>
 
-    <!-- 系統設定頁 - 主題色條 -->
+    <!-- 系統設定頁 -->
     <div id="page-settings" class="page">
         <div class="page-header">
             <div class="back-btn-header" onclick="handleBack()">←</div>
@@ -478,7 +866,6 @@ const LAST_INPUT_KEY = 'archive_last_input';
 const DEFAULT_WORKS = ['作品1', '作品2'];
 const DEFAULT_TYPES = ['襟','色紙','掛件','立牌', '拍立得'];
 
-// 修改網格大小為使用者指定值
 const GRID_SIZES = [50, 72, 109, 170, 180];
 const rates = { HKD: 1, RMB: 1.1, JPY: 0.053 };
 
@@ -486,25 +873,29 @@ let merchList = [], dict = { works: [], roles: [], types: [] };
 let filters = { work: [], role: [], type: [] };
 let sortMode = 'date', sortDesc = true, viewMode = 'grid', charts = {};
 let isBatchMode = false, selectedIndices = [];
-let currentFilterModalStatus = null;
 
 let cropper = null;
 let pendingCropImage = null;
 let cropCallback = null;
 let isZoomMode = false;
 let currentZoomIndex = -1;
-let currentZoomList = [];          // 當前放大的過濾後列表（僅包含當前狀態的藏品）
-let currentZoomStatus = '';        // 當前放大的狀態（現貨/非現貨/願望）
+let currentZoomList = [];
+let currentZoomStatus = '';
 
 let longPressedTag = { key: null, value: null };
 let isUpdatingGrid = false;
 let lastActivePageBeforeEdit = 'page-gallery';
+// 儲存每個頁面的滾動位置
+let scrollPositions = {
+    gallery: 0,
+    pending: 0,
+    wish: 0
+};
 
 Chart.register(ChartDataLabels);
 
 document.getElementById('overlay').addEventListener('click', function() {
     if (document.getElementById('success-modal').style.display === 'block') closeModal();
-    if (document.getElementById('filterModal').style.display === 'block') closeFilterModal();
     if (document.getElementById('cropModal').style.display === 'flex') closeCropModal();
 });
 
@@ -670,56 +1061,88 @@ function updateToolUI() {
     document.querySelectorAll('.order-toggle').forEach(b => b.innerText = sortDesc ? "↓" : "↑");
 }
 
-function renderFiltersInModal(status) {
-    const container = document.getElementById('filterModalContent');
-    if (!container) return;
-    container.innerHTML = '';
+// ========== 內聯篩選面板函數 ==========
+function toggleFilterPanel(status) {
+    const panelId = getFilterPanelId(status);
+    const panel = document.getElementById(panelId);
+    const btnId = 'filter-btn-' + (status === '現貨' ? 'gallery' : (status === '非現貨' ? 'pending' : 'wish'));
+    const btn = document.getElementById(btnId);
+    if (!panel || !btn) return;
+    if (panel.style.display === 'none') {
+        renderFiltersInline(status, panel);
+        panel.style.display = 'block';
+        btn.innerText = '關閉';
+        btn.classList.add('active');
+    } else {
+        panel.style.display = 'none';
+        btn.innerText = '條件檢索';
+        btn.classList.remove('active');
+    }
+}
 
-    const buildSection = (title, list, key) => {
-        const section = document.createElement('div'); section.className = 'filter-section';
-        const titleEl = document.createElement('div'); titleEl.className = 'filter-section-title'; 
-        if (key === 'work') {
-            titleEl.innerHTML = `${title} <span class="tip">長按編輯或刪除標籤</span>`;
-        } else {
-            titleEl.innerText = title;
-        }
-        section.appendChild(titleEl);
-        const row = document.createElement('div'); row.className = 'filter-row';
+function getFilterPanelId(status) {
+    if (status === '現貨') return 'filter-panel-gallery';
+    if (status === '非現貨') return 'filter-panel-pending';
+    if (status === '願望') return 'filter-panel-wish';
+    return '';
+}
 
-        const allChip = document.createElement('div');
-        allChip.className = `filter-chip ${filters[key].length === 0 ? 'active' : ''}`;
+function renderFiltersInline(status, panel) {
+    const sections = panel.querySelectorAll('.filter-section');
+    const keys = ['work', 'role', 'type'];
+    keys.forEach((key, idx) => {
+        const section = sections[idx];
+        if (!section) return;
+        const list = dict[key + 's'] || [];
+        const title = key === 'work' ? '作品' : (key === 'role' ? '角色' : '類別');
+        const tip = key === 'work' ? '長按編輯或刪除標籤' : '';
+        let titleHtml = `<div class="filter-section-title">${title}`;
+        if (tip) titleHtml += ` <span class="tip">${tip}</span>`;
+        titleHtml += '</div>';
+        
+        let rowHtml = '<div class="filter-row">';
         const totalCount = status ? merchList.filter(i => i.status === status).length : 0;
-        allChip.innerText = `全部 (${totalCount})`;
-        allChip.onclick = () => { filters[key] = []; renderAll(); renderFiltersInModal(status); };
-        row.appendChild(allChip);
-
+        const allActive = filters[key].length === 0 ? 'active' : '';
+        rowHtml += `<div class="filter-chip ${allActive}" data-key="${key}" data-value="all">全部 (${totalCount})</div>`;
+        
         list.forEach(item => {
             const count = status ? merchList.filter(i => i.status === status && i[key] === item).length : 0;
-            const chip = document.createElement('div');
-            chip.className = `filter-chip ${filters[key].includes(item) ? 'active' : ''}`;
-            chip.innerText = `${item} (${count})`;
-            chip.onclick = () => {
-                if (filters[key].includes(item)) filters[key] = filters[key].filter(v => v !== item);
-                else filters[key] = [...filters[key], item];
-                renderAll(); renderFiltersInModal(status);
-            };
+            const active = filters[key].includes(item) ? 'active' : '';
+            rowHtml += `<div class="filter-chip ${active}" data-key="${key}" data-value="${item}">${item} (${count})</div>`;
+        });
+        rowHtml += '</div>';
+        
+        section.innerHTML = titleHtml + rowHtml;
+    });
+    
+    panel.querySelectorAll('.filter-chip').forEach(chip => {
+        chip.addEventListener('click', (e) => {
+            const key = chip.dataset.key;
+            const value = chip.dataset.value;
+            if (value === 'all') {
+                filters[key] = [];
+            } else {
+                if (filters[key].includes(value)) {
+                    filters[key] = filters[key].filter(v => v !== value);
+                } else {
+                    filters[key] = [...filters[key], value];
+                }
+            }
+            renderAll();
+            renderFiltersInline(status, panel);
+        });
+        
+        if (chip.dataset.value !== 'all') {
             handleLongPress(chip, () => {
-                longPressedTag = { key, value: item };
+                longPressedTag = { key: chip.dataset.key, value: chip.dataset.value };
                 const rect = chip.getBoundingClientRect();
                 const menu = document.getElementById('tagContextMenu');
                 menu.style.left = rect.left + 'px';
                 menu.style.top = rect.bottom + 'px';
                 menu.style.display = 'block';
             });
-            row.appendChild(chip);
-        });
-        section.appendChild(row);
-        return section;
-    };
-
-    container.appendChild(buildSection('作品', dict.works, 'work'));
-    container.appendChild(buildSection('角色', dict.roles, 'role'));
-    container.appendChild(buildSection('類別', dict.types, 'type'));
+        }
+    });
 }
 
 async function editTagFromMenu() {
@@ -739,6 +1162,12 @@ async function editTagFromMenu() {
         showModal("❌", "儲存失敗");
     }
     renderSelects(); renderAll();
+    ['現貨', '非現貨', '願望'].forEach(status => {
+        const panel = document.getElementById(getFilterPanelId(status));
+        if (panel && panel.style.display === 'block') {
+            renderFiltersInline(status, panel);
+        }
+    });
     document.getElementById('tagContextMenu').style.display = 'none'; longPressedTag = { key: null, value: null };
 }
 
@@ -755,20 +1184,13 @@ async function deleteTagFromMenu() {
         showModal("⚠️", "儲存失敗");
     }
     renderSelects(); renderAll();
+    ['現貨', '非現貨', '願望'].forEach(status => {
+        const panel = document.getElementById(getFilterPanelId(status));
+        if (panel && panel.style.display === 'block') {
+            renderFiltersInline(status, panel);
+        }
+    });
     document.getElementById('tagContextMenu').style.display = 'none'; longPressedTag = { key: null, value: null };
-}
-
-function openFilterModal(status) {
-    currentFilterModalStatus = status;
-    renderFiltersInModal(status);
-    document.getElementById('filterModal').style.display = 'block';
-    document.getElementById('overlay').style.display = 'block';
-}
-
-function closeFilterModal() {
-    document.getElementById('filterModal').style.display = 'none';
-    document.getElementById('overlay').style.display = 'none';
-    currentFilterModalStatus = null;
 }
 
 function handleLongPress(element, callback) {
@@ -781,18 +1203,42 @@ function handleLongPress(element, callback) {
     element.addEventListener('mouseup', cancel);
 }
 
+// ========== 頁面切換與滾動位置記憶 (強化恢復機制) ==========
 function switchTab(id, btn) {
-    // 切換頁面時關閉放大視窗（避免干擾）
+    // 儲存當前頁面的滾動位置
+    const activePage = document.querySelector('.page.active')?.id;
+    if (activePage) {
+        if (activePage === 'page-gallery') scrollPositions.gallery = window.scrollY;
+        else if (activePage === 'page-pending') scrollPositions.pending = window.scrollY;
+        else if (activePage === 'page-wish') scrollPositions.wish = window.scrollY;
+    }
+
     closeCropModal();
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     document.getElementById(id).classList.add('active');
     if (btn) { document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); btn.classList.add('active'); }
-    if (id === 'page-stats') renderStats();
-    // 切換到任何藏品頁時都重新渲染（確保資料最新）
-    if (id === 'page-gallery' || id === 'page-pending' || id === 'page-wish') {
-        renderAll();
+    
+    // 如果切換到編輯頁，不恢復滾動；否則在渲染後恢復目標頁面的滾動位置
+    if (id !== 'page-recent') {
+        // 先渲染
+        if (id === 'page-stats') renderStats();
+        if (id === 'page-gallery' || id === 'page-pending' || id === 'page-wish') {
+            renderAll();
+        }
+        // 使用 requestAnimationFrame 等待下一幀，然後恢復滾動
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                if (id === 'page-gallery') window.scrollTo(0, scrollPositions.gallery);
+                else if (id === 'page-pending') window.scrollTo(0, scrollPositions.pending);
+                else if (id === 'page-wish') window.scrollTo(0, scrollPositions.wish);
+                else window.scrollTo(0, 0);
+            });
+        });
+    } else {
+        // 編輯頁直接顯示
+        window.scrollTo(0, 0);
     }
-    closeFilterModal();
+    
     if (isBatchMode) setBatchMode(false);
 }
 
@@ -805,13 +1251,16 @@ function openPage(id) {
 
 function handleBack() {
     const activePage = document.querySelector('.page.active')?.id;
-    if (activePage === 'page-recent') switchTab('page-gallery', document.querySelector('.nav-item'));
-    else {
+    if (activePage === 'page-recent') {
+        // 從編輯頁返回時，回到之前保存的頁面
+        switchTab(lastActivePageBeforeEdit, document.querySelector('.nav-item'));
+    } else {
         document.getElementById('cover-page').classList.remove('open');
         document.getElementById('bottom-nav').style.display = 'none';
     }
 }
 
+// ========== 其他輔助函數 ==========
 function toggleInput(sid, iid) {
     const s = document.getElementById(sid);
     const i = document.getElementById(iid);
@@ -1016,7 +1465,6 @@ function handleImageFileSelect(input) {
     reader.readAsDataURL(file);
 }
 
-// 放大圖片：傳入當前過濾後的列表和索引
 function zoomImage(item, list, status, filteredIndex) {
     currentZoomList = list;
     currentZoomStatus = status;
@@ -1111,18 +1559,15 @@ function openCropModal(imageSrc, callback, isZoom = false, item = null) {
     };
 }
 
-// 根據排序方向決定箭頭行為
+// ========== 放大頁箭頭循環 (固定方向) ==========
 function zoomPrev() {
     if (!currentZoomList || currentZoomList.length === 0) return;
-    let newIndex;
-    if (sortDesc) { // 降序：左箭頭上一張 (索引-1)
-        newIndex = currentZoomIndex - 1;
-        if (newIndex < 0) newIndex = currentZoomList.length - 1;
-    } else { // 升序：左箭頭下一張 (索引+1)
-        newIndex = currentZoomIndex + 1;
-        if (newIndex >= currentZoomList.length) newIndex = 0;
+    let newIndex = currentZoomIndex - 1;
+    if (newIndex < 0) newIndex = currentZoomList.length - 1;
+    // 確保該索引有圖片，若無則繼續往前找
+    while (newIndex !== currentZoomIndex && (!currentZoomList[newIndex] || !currentZoomList[newIndex].img)) {
+        newIndex = (newIndex - 1 + currentZoomList.length) % currentZoomList.length;
     }
-    // 確保該索引有圖片，若無則繼續往前/往後找（但此處列表已有圖片）
     if (currentZoomList[newIndex] && currentZoomList[newIndex].img) {
         currentZoomIndex = newIndex;
         updateZoomDisplay(currentZoomIndex);
@@ -1131,13 +1576,9 @@ function zoomPrev() {
 
 function zoomNext() {
     if (!currentZoomList || currentZoomList.length === 0) return;
-    let newIndex;
-    if (sortDesc) { // 降序：右箭頭下一張 (索引+1)
-        newIndex = currentZoomIndex + 1;
-        if (newIndex >= currentZoomList.length) newIndex = 0;
-    } else { // 升序：右箭頭上一張 (索引-1)
-        newIndex = currentZoomIndex - 1;
-        if (newIndex < 0) newIndex = currentZoomList.length - 1;
+    let newIndex = (currentZoomIndex + 1) % currentZoomList.length;
+    while (newIndex !== currentZoomIndex && (!currentZoomList[newIndex] || !currentZoomList[newIndex].img)) {
+        newIndex = (newIndex + 1) % currentZoomList.length;
     }
     if (currentZoomList[newIndex] && currentZoomList[newIndex].img) {
         currentZoomIndex = newIndex;
@@ -1191,19 +1632,24 @@ function resetFormForNew() {
     document.getElementById('submitBtn').innerText = "儲存至資料庫";
     document.getElementById('delBtn').style.display = 'none';
     document.getElementById('exchangePreview').innerText = "總額: HKD 0.00";
+    
     const lastInput = JSON.parse(localStorage.getItem(LAST_INPUT_KEY) || '{}');
     if (lastInput.work) document.getElementById('workSelect').value = lastInput.work;
     if (lastInput.role) document.getElementById('roleSelect').value = lastInput.role;
     if (lastInput.type) document.getElementById('typeSelect').value = lastInput.type;
     if (lastInput.status) document.getElementById('status').value = lastInput.status;
     if (lastInput.currency) document.getElementById('currency').value = lastInput.currency;
-    if (lastInput.pattern) document.getElementById('pattern').value = lastInput.pattern;
-    if (lastInput.note) document.getElementById('note').value = lastInput.note;
+    // pattern 和 note 故意不填
+    
     liveExchange();
     updateDateLabel();
     document.getElementById('recent-page-title').innerText = '新增藏品';
-    if (pendingCropImage) document.getElementById('pendingImageNote').style.display = 'block';
-    else document.getElementById('pendingImageNote').style.display = 'none';
+    
+    if (pendingCropImage) {
+        document.getElementById('pendingImageNote').style.display = 'block';
+    } else {
+        document.getElementById('pendingImageNote').style.display = 'none';
+    }
 }
 
 document.getElementById('merchForm').onsubmit = async function (e) {
@@ -1373,7 +1819,6 @@ function renderAll() {
 
             card.innerHTML = imgHtml + infoHtml;
             card.onclick = () => isBatchMode ? toggleSelectItem(i.originalIndex) : editItem(i.originalIndex);
-            // 長按放大：傳入該狀態的過濾列表、狀態和過濾後索引
             handleLongPress(card, () => {
                 if (!isBatchMode && i.img) {
                     zoomImage(i, filtered, status, idx);
@@ -1388,7 +1833,12 @@ function renderAll() {
             countLabel.innerHTML = `<span>顯示:</span><span class="number">${filtered.length}/${total}</span>`;
         }
     });
-    if (currentFilterModalStatus) renderFiltersInModal(currentFilterModalStatus);
+    ['現貨', '非現貨', '願望'].forEach(status => {
+        const panel = document.getElementById(getFilterPanelId(status));
+        if (panel && panel.style.display === 'block') {
+            renderFiltersInline(status, panel);
+        }
+    });
 }
 
 // 啟動
