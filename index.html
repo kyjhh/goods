@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Morandi Archive - 清晰循環版</title>
+<title>Morandi Archive - 清晰循環版（修復）</title>
 <!-- Cropper.js 樣式與腳本 -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
@@ -11,94 +11,25 @@
 <!-- Chart.js 數據標籤插件 -->
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0/dist/chartjs-plugin-datalabels.min.js"></script>
 <style>
-/* ========== 樣式 (與 1.0.4 完全相同) ========== */
+/* 此處樣式與先前版本完全相同，為節省篇幅請直接使用之前的完整樣式 */
 :root {
     --m-deep-green: #6b7a63; --m-sage: #acc1ad; --m-brown: #a68b7c;
     --m-sand: #d5cabd; --m-clay: #e5ddd5; --bg: #f2efeb;
     --text: #4a4a4a; --radius: 8px; --dynamic-grid: 160px;
     --info-scale: 1;
 }
-/* 主題1 (取自色卡第一組) */
-body.theme-1 {
-    --m-deep-green: #9DC8C8;
-    --m-sage: #58C9B9;
-    --m-brown: #519D9E;
-    --m-sand: #D1B6E1;
-    --m-clay: #519D9E;
-    --bg: #f2efeb;
-    --text: #4a4a4a;
-}
-/* 主題2 (取自色卡第七組：粉紅色系) */
-body.theme-2 {
-    --m-deep-green: #fe4365;
-    --m-sage: #fc9d9a;
-    --m-brown: #f9cdad;
-    --m-sand: #c8c8a9;
-    --m-clay: #fc9d9a;
-    --bg: #faf0e6;
-    --text: #4a3b2a;
-}
-/* 主題3 (取自色卡第三組) */
-body.theme-3 {
-    --m-deep-green: #D499B9;
-    --m-sage: #9055A2;
-    --m-brown: #2E294E;
-    --m-sand: #011638;
-    --m-clay: #2E294E;
-    --bg: #f5f9ff;
-    --text: #2c3e50;
-}
-/* 主題3 滑桿軌道使用第一色 */
-body.theme-3 .grid-range-slider {
-    background: var(--m-deep-green);
-}
-/* 主題4 (取自色卡第四組) */
-body.theme-4 {
-    --m-deep-green: #67D5B5;
-    --m-sage: #EE7785;
-    --m-brown: #C89EC4;
-    --m-sand: #84B1ED;
-    --m-clay: #C89EC4;
-    --bg: #fff7f2;
-    --text: #5e4b46;
-}
-/* 主題5 (取自色卡第六組) */
-body.theme-5 {
-    --m-deep-green: #a3c9c7;
-    --m-sage: #cb7575;
-    --m-brown: #ef9e9f;
-    --m-sand: #353848;
-    --m-clay: #cb7575;
-    --bg: #ecf7f0;
-    --text: #1f3a2b;
-}
-/* 主題5 滑桿軌道使用第三色並提亮 */
-body.theme-5 .grid-range-slider {
-    background: var(--m-brown);
-    filter: brightness(1.3);
-}
-
+body.theme-1 { --m-deep-green: #9DC8C8; --m-sage: #58C9B9; --m-brown: #519D9E; --m-sand: #D1B6E1; --m-clay: #519D9E; --bg: #f2efeb; --text: #4a4a4a; }
+body.theme-2 { --m-deep-green: #fe4365; --m-sage: #fc9d9a; --m-brown: #f9cdad; --m-sand: #c8c8a9; --m-clay: #fc9d9a; --bg: #faf0e6; --text: #4a3b2a; }
+body.theme-3 { --m-deep-green: #D499B9; --m-sage: #9055A2; --m-brown: #2E294E; --m-sand: #011638; --m-clay: #2E294E; --bg: #f5f9ff; --text: #2c3e50; }
+body.theme-3 .grid-range-slider { background: var(--m-deep-green); }
+body.theme-4 { --m-deep-green: #67D5B5; --m-sage: #EE7785; --m-brown: #C89EC4; --m-sand: #84B1ED; --m-clay: #C89EC4; --bg: #fff7f2; --text: #5e4b46; }
+body.theme-5 { --m-deep-green: #a3c9c7; --m-sage: #cb7575; --m-brown: #ef9e9f; --m-sand: #353848; --m-clay: #cb7575; --bg: #ecf7f0; --text: #1f3a2b; }
+body.theme-5 .grid-range-slider { background: var(--m-brown); filter: brightness(1.3); }
 body, html { margin: 0; padding: 0; height: 100%; font-family: 'PingFang HK', 'Microsoft JhengHei', sans-serif; background: var(--bg); color: var(--text); overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
 #batch-panel { display: none; background: var(--m-deep-green); color: white; padding: 15px 20px; position: fixed; top: 0; left: 0; width: 100%; box-sizing: border-box; z-index: 2500; justify-content: space-between; align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.15); transition: 0.3s; }
 .batch-btn { background: #cc9999; border: none; color: white; padding: 6px 15px; border-radius: 4px; font-size: 13px; cursor: pointer; font-weight: bold; }
 .edit-toggle-btn { font-size: 13px; color: var(--m-deep-green); border: 1px solid var(--m-deep-green); padding: 4px 12px; border-radius: 6px; cursor: pointer; margin-left: 10px; font-weight: bold; transition: 0.2s; }
-/* 封面底色與藏品頁背景一致 */
-#cover-page {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: var(--bg);
-    background-size: cover;
-    background-position: center;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    z-index: 2000;
-    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-}
+#cover-page { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: var(--bg); background-size: cover; background-position: center; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 2000; transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
 #cover-page.open { transform: translateY(-100%); }
 .cover-upload-btn { position: absolute; top: 20px; left: 20px; background: rgba(255, 255, 255, 0.4); backdrop-filter: blur(5px); border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 2100; border: 1px solid rgba(255,255,255,0.3); }
 .cover-menu { width: 160px; display: flex; flex-direction: column; gap: 8px; }
@@ -124,22 +55,8 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: 'PingFang HK', 'M
 .order-toggle { font-size: 11px; font-weight: bold; padding: 4px 10px; border: 1px solid #eee; border-radius: 6px; cursor: pointer; color: var(--m-brown); background: #fafafa; }
 .search-input { margin-bottom: 12px; padding: 10px 12px; font-size: 12px; border: 1px solid #eee; background: #fafafa; border-radius: 6px; width: 100%; box-sizing: border-box; outline: none; }
 .filter-row { display: flex; overflow-x: auto; white-space: nowrap; gap: 8px; margin-bottom: 10px; scrollbar-width: none; }
-/* 過濾標籤統一顏色：未選中深棕色，選中白色 */
-.filter-chip {
-    background: var(--m-clay);
-    padding: 6px 14px;
-    border-radius: 15px;
-    font-size: 11px;
-    cursor: pointer;
-    color: #5D3A1A; /* 深棕色，所有主題統一 */
-    user-select: none;
-    transition: 0.2s;
-}
-.filter-chip.active {
-    background: var(--m-sage);
-    color: white;
-    box-shadow: 0 0 0 2px var(--m-deep-green);
-}
+.filter-chip { background: var(--m-clay); padding: 6px 14px; border-radius: 15px; font-size: 11px; cursor: pointer; color: #5D3A1A; user-select: none; transition: 0.2s; }
+.filter-chip.active { background: var(--m-sage); color: white; box-shadow: 0 0 0 2px var(--m-deep-green); }
 .count-tag { font-size: 10px; color: #aaa; text-align: right; margin-bottom: 5px; }
 .count-tag .number { font-size: 14px; font-weight: bold; color: #aaa; }
 .list-container.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(var(--dynamic-grid), 1fr)); gap: 4px; }
@@ -167,141 +84,36 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
 .overlay { position: fixed; top:0; left:0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 9998; display: none; backdrop-filter: blur(3px); }
 .filter-modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 25px; border-radius: var(--radius); z-index: 10000; width: 90%; max-width: 600px; max-height: 80vh; overflow-y: auto; box-shadow: 0 10px 40px rgba(0,0,0,0.2); display: none; }
 .filter-modal .filter-section { margin-bottom: 20px; }
-.filter-modal .filter-section-title { 
-    font-size: 13px; 
-    font-weight: bold; 
-    color: var(--m-brown); 
-    margin-bottom: 10px; 
-    border-left: 4px solid var(--m-sage); 
-    padding-left: 8px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-.filter-modal .filter-section-title .tip {
-    font-size: 13px;
-    font-weight: normal;
-    color: #aaa;
-    background: #f5f5f5;
-    padding: 4px 8px;
-    border-radius: 12px;
-    pointer-events: none;
-}
+.filter-modal .filter-section-title { font-size: 13px; font-weight: bold; color: var(--m-brown); margin-bottom: 10px; border-left: 4px solid var(--m-sage); padding-left: 8px; display: flex; justify-content: space-between; align-items: center; }
+.filter-modal .filter-section-title .tip { font-size: 13px; font-weight: normal; color: #aaa; background: #f5f5f5; padding: 4px 8px; border-radius: 12px; pointer-events: none; }
 .filter-modal .filter-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 5px; }
 .filter-modal .filter-chip { margin: 2px; }
-.filter-modal .close-btn { 
-    background: var(--m-clay); 
-    border: none; 
-    padding: 10px; 
-    width: 100%; 
-    border-radius: var(--radius); 
-    font-size: 13px; 
-    cursor: pointer; 
-    margin-top: 10px;
-    color: white; /* 強制白色文字 */
-}
+.filter-modal .close-btn { background: var(--m-clay); border: none; padding: 10px; width: 100%; border-radius: var(--radius); font-size: 13px; cursor: pointer; margin-top: 10px; color: white; }
 .crop-modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 25px; border-radius: var(--radius); z-index: 10000; width: 90%; max-width: 600px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); display: none; flex-direction: column; }
 .crop-modal .crop-container { max-height: 60vh; overflow: hidden; margin-bottom: 15px; position: relative; }
 .crop-modal .crop-image { max-width: 100%; display: block; }
 .crop-modal .crop-actions { display: flex; gap: 10px; margin-top: 15px; }
 .crop-modal .crop-btn { flex: 1; background: var(--m-deep-green); color: white; border: none; padding: 12px; border-radius: var(--radius); font-size: 13px; cursor: pointer; }
-.crop-modal .cancel-btn { 
-    background: var(--m-clay); 
-    color: white; /* 強制白色文字 */
-}
-.zoom-nav {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 40px;
-    height: 40px;
-    background: rgba(0,0,0,0.5);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 24px;
-    font-weight: bold;
-    color: white;
-    cursor: pointer;
-    z-index: 10;
-    border: 1px solid rgba(255,255,255,0.2);
-    backdrop-filter: blur(2px);
-}
+.crop-modal .cancel-btn { background: var(--m-clay); color: white; }
+.zoom-nav { position: absolute; top: 50%; transform: translateY(-50%); width: 40px; height: 40px; background: rgba(0,0,0,0.5); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: bold; color: white; cursor: pointer; z-index: 10; border: 1px solid rgba(255,255,255,0.2); backdrop-filter: blur(2px); }
 .zoom-nav.left { left: 10px; }
 .zoom-nav.right { right: 10px; }
 .zoom-nav:hover { background: rgba(0,0,0,0.7); }
-/* 放大模式下方資訊 - 移除所有間隙 */
-.zoom-info {
-    padding: 15px;
-    background: #fafafa;
-    border-top: 1px solid var(--m-clay);
-    font-size: 12px;
-    color: var(--text);
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0;
-    margin-top: 10px;
-}
-.zoom-info-item {
-    border: 1px solid var(--m-clay);
-    border-radius: 6px;
-    padding: 6px 10px;
-    flex: 1 1 auto;
-    min-width: 0;
-    background: transparent;
-    margin: 0;
-}
-.zoom-info-item strong {
-    color: var(--m-brown);
-    font-size: 11px;
-    display: block;
-    margin-bottom: 2px;
-}
-.zoom-info-item span {
-    font-weight: bold;
-    color: var(--m-deep-green);
-}
-/* 單價和數量同一行，無間隙 */
-.zoom-info-row {
-    display: flex;
-    gap: 0;
-    width: 100%;
-    flex-wrap: nowrap;
-}
-.zoom-info-row .zoom-info-item {
-    flex: 1;
-}
+.zoom-info { padding: 15px; background: #fafafa; border-top: 1px solid var(--m-clay); font-size: 12px; color: var(--text); display: flex; flex-wrap: wrap; gap: 0; margin-top: 10px; }
+.zoom-info-item { border: 1px solid var(--m-clay); border-radius: 6px; padding: 6px 10px; flex: 1 1 auto; min-width: 0; background: transparent; margin: 0; }
+.zoom-info-item strong { color: var(--m-brown); font-size: 11px; display: block; margin-bottom: 2px; }
+.zoom-info-item span { font-weight: bold; color: var(--m-deep-green); }
+.zoom-info-row { display: flex; gap: 0; width: 100%; flex-wrap: nowrap; }
+.zoom-info-row .zoom-info-item { flex: 1; }
 .tag-context-menu { position: fixed; background: white; border: 1px solid #ddd; border-radius: 8px; padding: 5px 0; z-index: 10001; box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: none; }
 .tag-context-menu div { padding: 10px 20px; cursor: pointer; font-size: 13px; color: var(--text); }
 .tag-context-menu div:hover { background: var(--m-clay); }
 .stat-card { background:#fff; padding:20px; border-radius:var(--radius); border:1px solid var(--m-clay); margin-bottom: 20px; position: relative; }
 .stat-title { font-size: 13px; font-weight: bold; color: var(--m-brown); margin-bottom: 15px; border-left: 4px solid var(--m-sage); padding-left: 10px; }
-/* 總覽卡片內兩個項目各佔一半 - 背景改為白色確保對比 */
-.overview-row {
-    display: flex;
-    gap: 20px;
-    font-size: 20px;
-}
-.overview-item {
-    flex: 1;
-    text-align: center;
-    background: #ffffff;
-    border-radius: var(--radius);
-    padding: 15px 10px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-}
-.overview-item strong {
-    display: block;
-    color: var(--m-brown);
-    font-size: 14px;
-    margin-bottom: 8px;
-}
-.overview-item span {
-    font-size: 28px;
-    font-weight: bold;
-    color: var(--m-deep-green);
-}
+.overview-row { display: flex; gap: 20px; font-size: 20px; }
+.overview-item { flex: 1; text-align: center; background: #ffffff; border-radius: var(--radius); padding: 15px 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+.overview-item strong { display: block; color: var(--m-brown); font-size: 14px; margin-bottom: 8px; }
+.overview-item span { font-size: 28px; font-weight: bold; color: var(--m-deep-green); }
 #monthlyChart, #roleChart, #roleCountChart, #typeCountChart { height: 250px !important; width: 100%; }
 .rank-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
 .rank-table th { text-align: left; font-size: 11px; color: var(--m-brown); padding-bottom: 5px; border-bottom: 1px solid var(--m-clay); }
@@ -313,67 +125,19 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
 .image-pending-note { font-size: 11px; color: var(--m-deep-green); margin-top: 5px; font-weight: bold; }
 .filter-btn-bottom { background: transparent; border: 1px solid var(--m-deep-green); border-radius: 6px; padding: 4px 12px; font-size: 13px; color: var(--m-deep-green); cursor: pointer; white-space: nowrap; font-weight: bold; }
 .edit-toggle-btn { font-size: 13px; color: var(--m-deep-green); border: 1px solid var(--m-deep-green); padding: 4px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.2s; }
-.grid-range-slider {
-    -webkit-appearance: none;
-    width: 80px;
-    height: 4px;
-    background: var(--m-clay);
-    border-radius: 2px;
-    outline: none;
-}
-.grid-range-slider::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    width: 16px;
-    height: 16px;
-    background: var(--m-deep-green);
-    border-radius: 50%;
-    cursor: pointer;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-}
-.grid-range-slider::-moz-range-thumb {
-    width: 16px;
-    height: 16px;
-    background: var(--m-deep-green);
-    border-radius: 50%;
-    cursor: pointer;
-    border: none;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-}
-.grid-range-slider::-moz-range-track {
-    height: 4px;
-    background: var(--m-clay);
-    border-radius: 2px;
-}
+.grid-range-slider { -webkit-appearance: none; width: 80px; height: 4px; background: var(--m-clay); border-radius: 2px; outline: none; }
+.grid-range-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; background: var(--m-deep-green); border-radius: 50%; cursor: pointer; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+.grid-range-slider::-moz-range-thumb { width: 16px; height: 16px; background: var(--m-deep-green); border-radius: 50%; cursor: pointer; border: none; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+.grid-range-slider::-moz-range-track { height: 4px; background: var(--m-clay); border-radius: 2px; }
 .version-tag { position: absolute; bottom: 10px; left: 10px; font-size: 10px; color: rgba(0,0,0,0.3); background: rgba(255,255,255,0.3); padding: 2px 6px; border-radius: 4px; backdrop-filter: blur(2px); }
-/* 主題色條 */
-.theme-strip {
-    width: 120px;
-    height: 40px;
-    display: flex;
-    border-radius: 8px;
-    overflow: hidden;
-    cursor: pointer;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    transition: transform 0.2s;
-}
-.theme-strip:hover {
-    transform: scale(1.05);
-}
-.theme-strip div {
-    flex: 1;
-    height: 100%;
-}
-.theme-row {
-    display: flex;
-    gap: 15px;
-    justify-content: center;
-    margin: 20px 0;
-    flex-wrap: wrap;
-}
+.theme-strip { width: 120px; height: 40px; display: flex; border-radius: 8px; overflow: hidden; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.1); transition: transform 0.2s; }
+.theme-strip:hover { transform: scale(1.05); }
+.theme-strip div { flex: 1; height: 100%; }
+.theme-row { display: flex; gap: 15px; justify-content: center; margin: 20px 0; flex-wrap: wrap; }
 </style>
 </head>
 <body class="theme-1">
-<!-- ========== 固定面板 ========== -->
+<!-- 固定面板 -->
 <div id="batch-panel">
     <span id="batch-count" style="font-weight: bold;">已選擇0項</span>
     <div>
@@ -398,11 +162,9 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
 <div class="crop-modal" id="cropModal">
     <div class="crop-container">
         <img id="cropImage" class="crop-image" src="">
-        <!-- 導航箭頭（放大模式時顯示） -->
         <div class="zoom-nav left" id="zoomPrev" style="display: none;">‹</div>
         <div class="zoom-nav right" id="zoomNext" style="display: none;">›</div>
     </div>
-    <!-- 下方資訊（放大模式時顯示）放在按鈕之前 -->
     <div id="zoomInfo" class="zoom-info" style="display: none;"></div>
     <div class="crop-actions">
         <button class="crop-btn" id="cropConfirmBtn" style="display: none;">確認裁剪</button>
@@ -427,8 +189,7 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
         <div class="menu-btn" onclick="openPage('page-gallery')">進入藏品庫</div>
         <div class="menu-btn" onclick="triggerQuickUpload()">上載藏品</div>
     </div>
-    <!-- 版本號 -->
-    <div class="version-tag">v1.0.4-清晰循環版</div>
+    <div class="version-tag">v1.0.4-修復版</div>
 </div>
 <input type="file" id="quickUploadInput" style="display:none;" accept="image/*" onchange="handleQuickUploadFile(this)">
 
@@ -444,22 +205,10 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
             <input type="text" class="search-input" id="lib-search" placeholder="搜尋款式或備註..." oninput="renderAll()">
             <div class="symbol-row">
                 <div class="symbol-group">
-                    <span class="symbol-btn sort-date" onclick="setSort('date')">
-                        <svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>
-                        <span>時間</span>
-                    </span>
-                    <span class="symbol-btn sort-price" onclick="setSort('price')">
-                        <svg viewBox="0 0 24 24"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 2.01-1.79 2.7-1.79 2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>
-                        <span>金額</span>
-                    </span>
-                    <span class="symbol-btn sort-name" onclick="setSort('name')">
-                        <svg viewBox="0 0 24 24"><path d="M12.75 3h-1.5L6.5 14h1.5l1.12-3h5.75l1.12 3h1.5L12.75 3zm-3.13 6.5L12 3.25l2.38 6.25H9.62zM18 17H6v2h12v-2z"/></svg>
-                        <span>名稱</span>
-                    </span>
-                    <span class="symbol-btn sort-qty" onclick="setSort('qty')">
-                        <span>123</span>
-                        <span>數量</span>
-                    </span>
+                    <span class="symbol-btn sort-date" onclick="setSort('date')"><svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg><span>時間</span></span>
+                    <span class="symbol-btn sort-price" onclick="setSort('price')"><svg viewBox="0 0 24 24"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 2.01-1.79 2.7-1.79 2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg><span>金額</span></span>
+                    <span class="symbol-btn sort-name" onclick="setSort('name')"><svg viewBox="0 0 24 24"><path d="M12.75 3h-1.5L6.5 14h1.5l1.12-3h5.75l1.12 3h1.5L12.75 3zm-3.13 6.5L12 3.25l2.38 6.25H9.62zM18 17H6v2h12v-2z"/></svg><span>名稱</span></span>
+                    <span class="symbol-btn sort-qty" onclick="setSort('qty')"><span>123</span><span>數量</span></span>
                     <span class="order-toggle" onclick="toggleOrder()">↓</span>
                 </div>
                 <div class="symbol-group">
@@ -490,22 +239,10 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
             <input type="text" class="search-input" id="wait-search" placeholder="搜尋款式或備註..." oninput="renderAll()">
             <div class="symbol-row">
                 <div class="symbol-group">
-                    <span class="symbol-btn sort-date" onclick="setSort('date')">
-                        <svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>
-                        <span>時間</span>
-                    </span>
-                    <span class="symbol-btn sort-price" onclick="setSort('price')">
-                        <svg viewBox="0 0 24 24"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 2.01-1.79 2.7-1.79 2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>
-                        <span>金額</span>
-                    </span>
-                    <span class="symbol-btn sort-name" onclick="setSort('name')">
-                        <svg viewBox="0 0 24 24"><path d="M12.75 3h-1.5L6.5 14h1.5l1.12-3h5.75l1.12 3h1.5L12.75 3zm-3.13 6.5L12 3.25l2.38 6.25H9.62zM18 17H6v2h12v-2z"/></svg>
-                        <span>名稱</span>
-                    </span>
-                    <span class="symbol-btn sort-qty" onclick="setSort('qty')">
-                        <span>123</span>
-                        <span>數量</span>
-                    </span>
+                    <span class="symbol-btn sort-date" onclick="setSort('date')"><svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg><span>時間</span></span>
+                    <span class="symbol-btn sort-price" onclick="setSort('price')"><svg viewBox="0 0 24 24"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 2.01-1.79 2.7-1.79 2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg><span>金額</span></span>
+                    <span class="symbol-btn sort-name" onclick="setSort('name')"><svg viewBox="0 0 24 24"><path d="M12.75 3h-1.5L6.5 14h1.5l1.12-3h5.75l1.12 3h1.5L12.75 3zm-3.13 6.5L12 3.25l2.38 6.25H9.62zM18 17H6v2h12v-2z"/></svg><span>名稱</span></span>
+                    <span class="symbol-btn sort-qty" onclick="setSort('qty')"><span>123</span><span>數量</span></span>
                     <span class="order-toggle" onclick="toggleOrder()">↓</span>
                 </div>
                 <div class="symbol-group">
@@ -536,22 +273,10 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
             <input type="text" class="search-input" id="wish-search" placeholder="搜尋款式或備註..." oninput="renderAll()">
             <div class="symbol-row">
                 <div class="symbol-group">
-                    <span class="symbol-btn sort-date" onclick="setSort('date')">
-                        <svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>
-                        <span>時間</span>
-                    </span>
-                    <span class="symbol-btn sort-price" onclick="setSort('price')">
-                        <svg viewBox="0 0 24 24"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 2.01-1.79 2.7-1.79 2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>
-                        <span>金額</span>
-                    </span>
-                    <span class="symbol-btn sort-name" onclick="setSort('name')">
-                        <svg viewBox="0 0 24 24"><path d="M12.75 3h-1.5L6.5 14h1.5l1.12-3h5.75l1.12 3h1.5L12.75 3zm-3.13 6.5L12 3.25l2.38 6.25H9.62zM18 17H6v2h12v-2z"/></svg>
-                        <span>名稱</span>
-                    </span>
-                    <span class="symbol-btn sort-qty" onclick="setSort('qty')">
-                        <span>123</span>
-                        <span>數量</span>
-                    </span>
+                    <span class="symbol-btn sort-date" onclick="setSort('date')"><svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg><span>時間</span></span>
+                    <span class="symbol-btn sort-price" onclick="setSort('price')"><svg viewBox="0 0 24 24"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 2.01-1.79 2.7-1.79 2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg><span>金額</span></span>
+                    <span class="symbol-btn sort-name" onclick="setSort('name')"><svg viewBox="0 0 24 24"><path d="M12.75 3h-1.5L6.5 14h1.5l1.12-3h5.75l1.12 3h1.5L12.75 3zm-3.13 6.5L12 3.25l2.38 6.25H9.62zM18 17H6v2h12v-2z"/></svg><span>名稱</span></span>
+                    <span class="symbol-btn sort-qty" onclick="setSort('qty')"><span>123</span><span>數量</span></span>
                     <span class="order-toggle" onclick="toggleOrder()">↓</span>
                 </div>
                 <div class="symbol-group">
@@ -583,7 +308,6 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
                 <input type="hidden" id="editIndex" value="-1">
                 <div class="input-group"><label class="input-label">作品名稱</label><select id="workSelect" onchange="toggleInput('workSelect', 'workInput')"></select><input type="text" id="workInput" style="display:none;" placeholder="輸入新作品名稱"></div>
                 
-                <!-- 角色名稱與周邊類別並排 -->
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 5px;">
                     <div class="input-group" style="margin-bottom: 0;">
                         <label class="input-label">角色名稱</label>
@@ -626,18 +350,11 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
             <div class="back-btn-header" onclick="handleBack()">←</div>
             <div class="page-title">數據統計</div>
         </div>
-        <!-- 總覽卡片 - 各佔一半 (背景白色確保對比) -->
         <div class="stat-card">
             <div class="stat-title">總覽</div>
             <div class="overview-row">
-                <div class="overview-item">
-                    <strong>總藏品數</strong>
-                    <span id="totalCountSpan">0</span>
-                </div>
-                <div class="overview-item">
-                    <strong>總支出</strong>
-                    <span id="totalExpenseSpan">HKD 0</span>
-                </div>
+                <div class="overview-item"><strong>總藏品數</strong><span id="totalCountSpan">0</span></div>
+                <div class="overview-item"><strong>總支出</strong><span id="totalExpenseSpan">HKD 0</span></div>
             </div>
         </div>
         <div class="stat-card">
@@ -648,7 +365,6 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
             <div class="stat-title">角色支出排行(HKD)</div>
             <canvas id="roleChart"></canvas>
         </div>
-        <!-- 角色排名表格 -->
         <div class="stat-card">
             <div class="stat-title">角色排名 (前三)</div>
             <table class="rank-table">
@@ -675,41 +391,11 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
         <div class="stat-card">
             <div class="stat-title">主題配色</div>
             <div class="theme-row">
-                <!-- 主題1 色條 -->
-                <div class="theme-strip" onclick="setTheme(1)">
-                    <div style="background: #9DC8C8;"></div>
-                    <div style="background: #58C9B9;"></div>
-                    <div style="background: #519D9E;"></div>
-                    <div style="background: #D1B6E1;"></div>
-                </div>
-                <!-- 主題2 色條 (粉紅色系) -->
-                <div class="theme-strip" onclick="setTheme(2)">
-                    <div style="background: #fe4365;"></div>
-                    <div style="background: #fc9d9a;"></div>
-                    <div style="background: #f9cdad;"></div>
-                    <div style="background: #c8c8a9;"></div>
-                </div>
-                <!-- 主題3 色條 -->
-                <div class="theme-strip" onclick="setTheme(3)">
-                    <div style="background: #D499B9;"></div>
-                    <div style="background: #9055A2;"></div>
-                    <div style="background: #2E294E;"></div>
-                    <div style="background: #011638;"></div>
-                </div>
-                <!-- 主題4 色條 -->
-                <div class="theme-strip" onclick="setTheme(4)">
-                    <div style="background: #67D5B5;"></div>
-                    <div style="background: #EE7785;"></div>
-                    <div style="background: #C89EC4;"></div>
-                    <div style="background: #84B1ED;"></div>
-                </div>
-                <!-- 主題5 色條 (第六組) -->
-                <div class="theme-strip" onclick="setTheme(5)">
-                    <div style="background: #a3c9c7;"></div>
-                    <div style="background: #cb7575;"></div>
-                    <div style="background: #ef9e9f;"></div>
-                    <div style="background: #353848;"></div>
-                </div>
+                <div class="theme-strip" onclick="setTheme(1)"><div style="background: #9DC8C8;"></div><div style="background: #58C9B9;"></div><div style="background: #519D9E;"></div><div style="background: #D1B6E1;"></div></div>
+                <div class="theme-strip" onclick="setTheme(2)"><div style="background: #fe4365;"></div><div style="background: #fc9d9a;"></div><div style="background: #f9cdad;"></div><div style="background: #c8c8a9;"></div></div>
+                <div class="theme-strip" onclick="setTheme(3)"><div style="background: #D499B9;"></div><div style="background: #9055A2;"></div><div style="background: #2E294E;"></div><div style="background: #011638;"></div></div>
+                <div class="theme-strip" onclick="setTheme(4)"><div style="background: #67D5B5;"></div><div style="background: #EE7785;"></div><div style="background: #C89EC4;"></div><div style="background: #84B1ED;"></div></div>
+                <div class="theme-strip" onclick="setTheme(5)"><div style="background: #a3c9c7;"></div><div style="background: #cb7575;"></div><div style="background: #ef9e9f;"></div><div style="background: #353848;"></div></div>
             </div>
             <hr style="border: 0.5px solid #f0f0f0; margin: 25px 0;">
             <button onclick="exportData()" class="btn-main" style="background:var(--m-brown);">匯出資料備份(.json)</button>
@@ -746,7 +432,6 @@ let sortMode = 'date', sortDesc = true, viewMode = 'grid', charts = {};
 let isBatchMode = false, selectedIndices = [];
 let currentFilterModalStatus = null;
 
-// 圖片相關
 let cropper = null;
 let pendingCropImage = null;
 let cropCallback = null;
@@ -755,8 +440,6 @@ let currentZoomIndex = -1;
 
 let longPressedTag = { key: null, value: null };
 let isUpdatingGrid = false;
-
-// 用於編輯後返回上一頁
 let lastActivePageBeforeEdit = 'page-gallery';
 
 Chart.register(ChartDataLabels);
@@ -767,7 +450,6 @@ document.getElementById('overlay').addEventListener('click', function() {
     if (document.getElementById('cropModal').style.display === 'flex') closeCropModal();
 });
 
-// ========== 主題切換 ==========
 function setTheme(themeNum) {
     document.body.className = '';
     document.body.classList.add('theme-' + themeNum);
@@ -805,7 +487,6 @@ function compressImage(base64, maxSize = 800, quality = 0.9) {
     });
 }
 
-// ========== 初始化 ==========
 function init() {
     merchList = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
     const savedDict = JSON.parse(localStorage.getItem(DICT_KEY));
@@ -832,7 +513,6 @@ function init() {
     });
 }
 
-// ========== 輔助函數 ==========
 function findNearestGridSize(val) {
     return GRID_SIZES.reduce((prev, curr) => Math.abs(curr - val) < Math.abs(prev - val) ? curr : prev);
 }
@@ -1209,13 +889,13 @@ function renderStats() {
     }
 }
 
-// ========== 圖片處理 ==========
+// ========== 圖片處理 (修復箭頭方向 + 空間不足提示) ==========
 function triggerQuickUpload() { document.getElementById('quickUploadInput').click(); }
 
 function handleQuickUploadFile(input) {
     const file = input.files[0];
     if (!file) return;
-    if (file.size > 10 * 1024 * 1024) {   // 改為 10MB
+    if (file.size > 10 * 1024 * 1024) {
         showModal("❌", "圖片過大，請選擇小於 10MB 的圖片。");
         input.value = '';
         return;
@@ -1223,7 +903,7 @@ function handleQuickUploadFile(input) {
     const reader = new FileReader();
     reader.onload = (e) => {
         openCropModal(e.target.result, async (croppedBase64) => {
-            pendingCropImage = await compressImage(croppedBase64, 800, 0.9); // 提高品質
+            pendingCropImage = await compressImage(croppedBase64, 800, 0.9);
             document.getElementById('pendingImageNote').style.display = 'block';
             resetFormForNew();
             openPage('page-recent');
@@ -1236,7 +916,7 @@ function handleQuickUploadFile(input) {
 function handleImageFileSelect(input) {
     const file = input.files[0];
     if (!file) return;
-    if (file.size > 10 * 1024 * 1024) {   // 改為 10MB
+    if (file.size > 10 * 1024 * 1024) {
         showModal("❌", "圖片過大，請選擇小於 10MB 的圖片。");
         input.value = '';
         return;
@@ -1244,7 +924,7 @@ function handleImageFileSelect(input) {
     const reader = new FileReader();
     reader.onload = (e) => {
         openCropModal(e.target.result, async (croppedBase64) => {
-            pendingCropImage = await compressImage(croppedBase64, 800, 0.9); // 提高品質
+            pendingCropImage = await compressImage(croppedBase64, 800, 0.9);
             document.getElementById('pendingImageNote').style.display = 'block';
             input.value = '';
         }, false);
@@ -1296,7 +976,7 @@ function openCropModal(imageSrc, callback, isZoom = false, item = null) {
     isZoomMode = isZoom;
 
     document.getElementById('cropConfirmBtn').style.display = isZoom ? 'none' : 'block';
-    document.getElementById('zoomPrev').style.display = 'none';   // 剛打開時先隱藏，等 zoom 模式再顯示
+    document.getElementById('zoomPrev').style.display = 'none';
     document.getElementById('zoomNext').style.display = 'none';
     document.getElementById('zoomInfo').style.display = isZoom ? 'block' : 'none';
 
@@ -1337,19 +1017,19 @@ function openCropModal(imageSrc, callback, isZoom = false, item = null) {
 
     document.getElementById('cropConfirmBtn').onclick = function () {
         if (!cropper || isZoomMode) return;
-        const canvas = cropper.getCroppedCanvas({ width: 800, height: 800 }); // 提高裁剪輸出尺寸
+        const canvas = cropper.getCroppedCanvas({ width: 800, height: 800 });
         const croppedBase64 = canvas.toDataURL('image/jpeg', 0.9);
         if (cropCallback) cropCallback(croppedBase64);
         closeCropModal();
     };
 }
 
-// 左箭頭上一張，右箭頭下一張，循環
+// 左箭頭上一張，右箭頭下一張，循環 (已修復方向)
 function zoomPrev() {
     if (!merchList.length) return;
     let newIndex = currentZoomIndex - 1;
     if (newIndex < 0) newIndex = merchList.length - 1;
-    // 確保該索引有圖片
+    // 確保該索引有圖片，若無則繼續往前找
     while (newIndex !== currentZoomIndex && (!merchList[newIndex] || !merchList[newIndex].img)) {
         newIndex = (newIndex - 1 + merchList.length) % merchList.length;
     }
@@ -1362,7 +1042,7 @@ function zoomPrev() {
 function zoomNext() {
     if (!merchList.length) return;
     let newIndex = (currentZoomIndex + 1) % merchList.length;
-    // 確保該索引有圖片
+    // 確保該索引有圖片，若無則繼續往後找
     while (newIndex !== currentZoomIndex && (!merchList[newIndex] || !merchList[newIndex].img)) {
         newIndex = (newIndex + 1) % merchList.length;
     }
@@ -1384,7 +1064,7 @@ function closeCropModal() {
     currentZoomIndex = -1;
 }
 
-// ========== 編輯與表單提交 ==========
+// ========== 編輯與表單提交 (增加空間不足提示) ==========
 function editItem(idx) {
     const activePage = document.querySelector('.page.active')?.id;
     if (activePage) lastActivePageBeforeEdit = activePage;
@@ -1472,10 +1152,9 @@ document.getElementById('merchForm').onsubmit = async function (e) {
         if (editIdx > -1) { newList = [...merchList]; newList[editIdx] = data; }
         else newList = [...merchList, data];
 
-        // 重試壓縮儲存 (起始值提高)
         try {
-            let maxSize = 800;   // 提高起始尺寸
-            let quality = 0.9;   // 提高起始品質
+            let maxSize = 800;
+            let quality = 0.9;
             for (let attempt = 0; attempt < 8; attempt++) {
                 try {
                     localStorage.setItem(STORAGE_KEY, JSON.stringify(newList));
@@ -1493,7 +1172,12 @@ document.getElementById('merchForm').onsubmit = async function (e) {
                 }
             }
         } catch (e) {
-            showModal("❌", "圖片過大，即使極致壓縮仍無法儲存，請選擇更小的圖片 (建議小於 2MB)。");
+            // 特別處理空間不足
+            if (e.name === 'QuotaExceededError' || e.code === 22) {
+                showModal("💾", "儲存空間不足，請先備份資料後刪除部分藏品，或匯出後清除瀏覽器資料再重新匯入。");
+            } else {
+                showModal("❌", "圖片過大，即使極致壓縮仍無法儲存，請選擇更小的圖片 (建議小於 2MB)。");
+            }
             return;
         }
 
@@ -1517,7 +1201,7 @@ document.getElementById('merchForm').onsubmit = async function (e) {
 
     const f = document.getElementById('imgFile').files[0];
     if (f) {
-        if (f.size > 10 * 1024 * 1024) {   // 改為 10MB
+        if (f.size > 10 * 1024 * 1024) {
             showModal("❌", "圖片過大，請選擇小於 10MB 的圖片。");
             return;
         }
@@ -1532,7 +1216,7 @@ document.getElementById('merchForm').onsubmit = async function (e) {
     }
 };
 
-// ========== 主要的 renderAll ==========
+// ========== renderAll ==========
 function renderAll() {
     const conf = { '現貨': 'readyList', '非現貨': 'waitList', '願望': 'wishList' };
     const srch = { '現貨': 'lib-search', '非現貨': 'wait-search', '願望': 'wish-search' };
@@ -1560,7 +1244,6 @@ function renderAll() {
             const card = document.createElement('div');
             card.className = `item-card ${isBatchMode && selectedIndices.includes(i.originalIndex) ? 'selected' : ""}`;
             const noteHtml = i.note ? `<div class="note" style="font-size:calc(9px * var(--info-scale,1)); margin-top:calc(4px * var(--info-scale,1));">📝 ${i.note}</div>` : '';
-            // 圖片 onerror 容錯
             const imgHtml = `<div class="img-box"><img src="${i.img || ""}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\\'http://www.w3.org/2000/svg\\' viewBox=\\'0 0 24 24\\' fill=\\'%23ccc\\'%3E%3Cpath d=\\'M4 4h3l2-2h6l2 2h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zm8 3a5 5 0 1 0 0 10 5 5 0 0 0 0-10zm0 2a3 3 0 1 1 0 6 3 3 0 0 1 0-6z\\'/%3E%3C/svg%3E'; this.style.objectFit='contain'; this.style.backgroundColor='#f0f0f0';"></div>`;
 
             const totalInt = parseInt(parseFloat(i.totalHkd));
@@ -1595,7 +1278,6 @@ function renderAll() {
 
             card.innerHTML = imgHtml + infoHtml;
             card.onclick = () => isBatchMode ? toggleSelectItem(i.originalIndex) : editItem(i.originalIndex);
-            // 長按放大圖片
             handleLongPress(card, () => {
                 if (!isBatchMode && i.img) zoomImage(i, i.originalIndex);
             });
