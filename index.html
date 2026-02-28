@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Morandi Archive - IndexedDB 修復版</title>
+<title>Morandi Archive - 最終調整版</title>
 <!-- Cropper.js 樣式與腳本 -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
@@ -11,7 +11,7 @@
 <!-- Chart.js 數據標籤插件 -->
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0/dist/chartjs-plugin-datalabels.min.js"></script>
 <style>
-/* 樣式與先前完全相同，為節省篇幅請直接複製之前版本的樣式 */
+/* 樣式與先前版本完全相同，為節省篇幅請直接複製之前版本的樣式 */
 :root {
     --m-deep-green: #6b7a63; --m-sage: #acc1ad; --m-brown: #a68b7c;
     --m-sand: #d5cabd; --m-clay: #e5ddd5; --bg: #f2efeb;
@@ -185,7 +185,7 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
         <div class="menu-btn" onclick="openPage('page-gallery')">進入藏品庫</div>
         <div class="menu-btn" onclick="triggerQuickUpload()">上載藏品</div>
     </div>
-    <div class="version-tag">v1.0.4-IndexedDB-修復</div>
+    <div class="version-tag">v1.0.4-最終調整</div>
 </div>
 <input type="file" id="quickUploadInput" style="display:none;" accept="image/*" onchange="handleQuickUploadFile(this)">
 
@@ -448,7 +448,6 @@ async function loadFromDB() {
                 if (result && result.merchList && result.dict) {
                     resolve(result);
                 } else {
-                    // 若資料不存在或格式錯誤，回傳預設值
                     resolve({ merchList: [], dict: { works: [], roles: [], types: [] } });
                 }
             };
@@ -472,14 +471,15 @@ async function saveToDB(data) {
 }
 
 // ========== 全域變數 ==========
-const STORAGE_KEY = 'archive_master'; // 不再使用
+const STORAGE_KEY = 'archive_master';
 const DICT_KEY = 'archive_dict_master';
 const COVER_KEY = 'archive_cover_bg';
 const LAST_INPUT_KEY = 'archive_last_input';
 const DEFAULT_WORKS = ['作品1', '作品2'];
 const DEFAULT_TYPES = ['襟','色紙','掛件','立牌', '拍立得'];
 
-const GRID_SIZES = [50, 72, 103, 109, 170];
+// 修改網格大小為使用者指定值
+const GRID_SIZES = [50, 72, 109, 170, 180];
 const rates = { HKD: 1, RMB: 1.1, JPY: 0.053 };
 
 let merchList = [], dict = { works: [], roles: [], types: [] };
@@ -493,6 +493,8 @@ let pendingCropImage = null;
 let cropCallback = null;
 let isZoomMode = false;
 let currentZoomIndex = -1;
+let currentZoomList = [];          // 當前放大的過濾後列表（僅包含當前狀態的藏品）
+let currentZoomStatus = '';        // 當前放大的狀態（現貨/非現貨/願望）
 
 let longPressedTag = { key: null, value: null };
 let isUpdatingGrid = false;
@@ -554,7 +556,6 @@ async function init() {
         dict = { works: [...DEFAULT_WORKS], roles: [], types: [...DEFAULT_TYPES] };
     }
 
-    // 確保 dict 有預設值
     if (!dict.works || dict.works.length === 0) dict.works = [...DEFAULT_WORKS];
     if (!dict.types || dict.types.length === 0) dict.types = [...DEFAULT_TYPES];
     if (!dict.roles) dict.roles = [];
@@ -781,6 +782,8 @@ function handleLongPress(element, callback) {
 }
 
 function switchTab(id, btn) {
+    // 切換頁面時關閉放大視窗（避免干擾）
+    closeCropModal();
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     document.getElementById(id).classList.add('active');
     if (btn) { document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); btn.classList.add('active'); }
@@ -1013,13 +1016,17 @@ function handleImageFileSelect(input) {
     reader.readAsDataURL(file);
 }
 
-function zoomImage(item, index) {
-    currentZoomIndex = index;
+// 放大圖片：傳入當前過濾後的列表和索引
+function zoomImage(item, list, status, filteredIndex) {
+    currentZoomList = list;
+    currentZoomStatus = status;
+    currentZoomIndex = filteredIndex;
     openCropModal(item.img, null, true, item);
 }
 
 function updateZoomDisplay(index) {
-    const item = merchList[index];
+    if (!currentZoomList || index < 0 || index >= currentZoomList.length) return;
+    const item = currentZoomList[index];
     if (!item || !item.img) {
         document.getElementById('zoomInfo').style.display = 'none';
         return;
@@ -1104,26 +1111,35 @@ function openCropModal(imageSrc, callback, isZoom = false, item = null) {
     };
 }
 
+// 根據排序方向決定箭頭行為
 function zoomPrev() {
-    if (!merchList.length) return;
-    let newIndex = currentZoomIndex - 1;
-    if (newIndex < 0) newIndex = merchList.length - 1;
-    while (newIndex !== currentZoomIndex && (!merchList[newIndex] || !merchList[newIndex].img)) {
-        newIndex = (newIndex - 1 + merchList.length) % merchList.length;
+    if (!currentZoomList || currentZoomList.length === 0) return;
+    let newIndex;
+    if (sortDesc) { // 降序：左箭頭上一張 (索引-1)
+        newIndex = currentZoomIndex - 1;
+        if (newIndex < 0) newIndex = currentZoomList.length - 1;
+    } else { // 升序：左箭頭下一張 (索引+1)
+        newIndex = currentZoomIndex + 1;
+        if (newIndex >= currentZoomList.length) newIndex = 0;
     }
-    if (merchList[newIndex] && merchList[newIndex].img) {
+    // 確保該索引有圖片，若無則繼續往前/往後找（但此處列表已有圖片）
+    if (currentZoomList[newIndex] && currentZoomList[newIndex].img) {
         currentZoomIndex = newIndex;
         updateZoomDisplay(currentZoomIndex);
     }
 }
 
 function zoomNext() {
-    if (!merchList.length) return;
-    let newIndex = (currentZoomIndex + 1) % merchList.length;
-    while (newIndex !== currentZoomIndex && (!merchList[newIndex] || !merchList[newIndex].img)) {
-        newIndex = (newIndex + 1) % merchList.length;
+    if (!currentZoomList || currentZoomList.length === 0) return;
+    let newIndex;
+    if (sortDesc) { // 降序：右箭頭下一張 (索引+1)
+        newIndex = currentZoomIndex + 1;
+        if (newIndex >= currentZoomList.length) newIndex = 0;
+    } else { // 升序：右箭頭上一張 (索引-1)
+        newIndex = currentZoomIndex - 1;
+        if (newIndex < 0) newIndex = currentZoomList.length - 1;
     }
-    if (merchList[newIndex] && merchList[newIndex].img) {
+    if (currentZoomList[newIndex] && currentZoomList[newIndex].img) {
         currentZoomIndex = newIndex;
         updateZoomDisplay(currentZoomIndex);
     }
@@ -1139,6 +1155,8 @@ function closeCropModal() {
     cropCallback = null;
     isZoomMode = false;
     currentZoomIndex = -1;
+    currentZoomList = [];
+    currentZoomStatus = '';
 }
 
 // ========== 編輯與表單提交 ==========
@@ -1317,7 +1335,7 @@ function renderAll() {
         });
 
         container.innerHTML = ""; container.className = `list-container ${viewMode}`;
-        filtered.forEach(i => {
+        filtered.forEach((i, idx) => {
             const card = document.createElement('div');
             card.className = `item-card ${isBatchMode && selectedIndices.includes(i.originalIndex) ? 'selected' : ""}`;
             const noteHtml = i.note ? `<div class="note" style="font-size:calc(9px * var(--info-scale,1)); margin-top:calc(4px * var(--info-scale,1));">📝 ${i.note}</div>` : '';
@@ -1355,8 +1373,11 @@ function renderAll() {
 
             card.innerHTML = imgHtml + infoHtml;
             card.onclick = () => isBatchMode ? toggleSelectItem(i.originalIndex) : editItem(i.originalIndex);
+            // 長按放大：傳入該狀態的過濾列表、狀態和過濾後索引
             handleLongPress(card, () => {
-                if (!isBatchMode && i.img) zoomImage(i, i.originalIndex);
+                if (!isBatchMode && i.img) {
+                    zoomImage(i, filtered, status, idx);
+                }
             });
             container.appendChild(card);
         });
