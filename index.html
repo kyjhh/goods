@@ -253,7 +253,7 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: 'PingFang HK', 'M
 .list-container.list { display: flex; flex-direction: column; gap: 4px; }
 .list-container.list .item-card { min-height: 95px; height: auto; flex-direction: row; }
 .list-container.list .img-box { width: calc(var(--dynamic-grid) * 0.6); height: auto; aspect-ratio: 1; flex-shrink: 0; }
-.list-container.list .info { padding: 10px; overflow: hidden; }
+.list-container.list .info { padding: calc(8px * var(--info-scale)) calc(6px * var(--info-scale)); overflow: hidden; }
 .list-container.list .note { display: block; font-size: calc(9px * var(--info-scale)); color: #999; margin-top: calc(4px * var(--info-scale)); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .list-container.image { display: grid; grid-template-columns: repeat(auto-fill, minmax(var(--dynamic-grid), 1fr)); gap: 4px; }
 .list-container.image .item-card .info { display: none; }
@@ -452,7 +452,7 @@ input, select, textarea {
 .zoom-nav.right { right: 10px; }
 .zoom-nav:hover { background: rgba(0,0,0,0.7); }
 
-/* 放大頁資訊區塊 - 更緊湊 */
+/* 放大頁資訊區塊 - 新結構 */
 .zoom-info {
     padding: 8px;
     background: #fafafa;
@@ -461,52 +461,54 @@ input, select, textarea {
     color: var(--text);
     display: flex;
     flex-wrap: wrap;
-    gap: 4px;
+    gap: 6px;
     margin-top: 10px;
 }
 .zoom-info-item {
-    border: 1px solid var(--m-clay);
-    border-radius: 6px;
-    padding: 4px 6px;
     flex: 1 1 auto;
     min-width: 0;
-    background: transparent;
-    margin: 0;
-}
-.zoom-info-item strong {
-    color: var(--m-brown);
-    font-size: 10px;
-    display: block;
-    margin-bottom: 2px;
-    font-weight: 600;
-}
-.zoom-info-item span {
-    font-weight: bold;
-    color: var(--m-deep-green);
-}
-/* 柄圖名稱特殊樣式：大字、佔滿整行 */
-.zoom-pattern-name {
-    flex: 0 0 100%;
-}
-.zoom-pattern-name strong {
-    font-size: 11px;
-}
-.zoom-pattern-name span {
-    font-size: 18px;
-    font-weight: bold;
-    color: var(--m-deep-green);
-    display: block;
-    margin-top: 2px;
-    line-height: 1.2;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
 }
 .zoom-info-row {
     display: flex;
-    gap: 4px;
+    gap: 6px;
     width: 100%;
     flex-wrap: nowrap;
 }
 .zoom-info-row .zoom-info-item {
     flex: 1;
+}
+.zoom-label {
+    font-size: 9px;
+    color: var(--m-brown);
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+    margin-left: 2px;
+}
+.zoom-value {
+    border: 1px solid var(--m-clay);
+    border-radius: 6px;
+    padding: 4px 6px;
+    background: transparent;
+    font-weight: bold;
+    color: var(--m-deep-green);
+    font-size: 12px;
+    line-height: 1.2;
+    width: 100%;
+    box-sizing: border-box;
+}
+.zoom-pattern-name .zoom-value {
+    font-size: 18px;
+    padding: 6px 8px;
+}
+.original-currency {
+    font-size: 10px;
+    color: #999;
+    font-weight: normal;
+    margin-left: 4px;
 }
 
 /* ========== 標籤長按選單 ========== */
@@ -1718,7 +1720,7 @@ function updateZoomDisplay(index) {
     let unitPriceHKD = (parseFloat(item.price) * rates[item.currency]);
     let unitPriceStr = (unitPriceHKD % 1 === 0) ? unitPriceHKD.toString() : unitPriceHKD.toFixed(2);
 
-    // 計算原始總價顯示（括號與數字皆為灰色小字）
+    // 原始總價顯示（括號與數字皆灰色小字）
     let originalDisplay = '';
     if (item.currency !== 'HKD') {
         let originalTotal = item.price * item.qty;
@@ -1729,18 +1731,39 @@ function updateZoomDisplay(index) {
     const infoDiv = document.getElementById('zoomInfo');
     infoDiv.innerHTML = `
         <div class="zoom-info-item zoom-pattern-name">
-            <strong>柄圖名稱</strong>
-            <span>${item.pattern || '無'}</span>
+            <div class="zoom-label">柄圖名稱</div>
+            <div class="zoom-value">${item.pattern || '無'}</div>
         </div>
-        <div class="zoom-info-item"><strong>作品</strong><span>${item.work || '無'}</span></div>
-        <div class="zoom-info-item"><strong>角色</strong><span>${item.role || '無'}</span></div>
-        <div class="zoom-info-item"><strong>類別</strong><span>${item.type || '無'}</span></div>
+        <div class="zoom-info-item">
+            <div class="zoom-label">作品</div>
+            <div class="zoom-value">${item.work || '無'}</div>
+        </div>
+        <div class="zoom-info-item">
+            <div class="zoom-label">角色</div>
+            <div class="zoom-value">${item.role || '無'}</div>
+        </div>
+        <div class="zoom-info-item">
+            <div class="zoom-label">類別</div>
+            <div class="zoom-value">${item.type || '無'}</div>
+        </div>
         <div class="zoom-info-row">
-            <div class="zoom-info-item"><strong>單價</strong><span>$ ${unitPriceStr}</span></div>
-            <div class="zoom-info-item"><strong>數量</strong><span>${item.qty}</span></div>
+            <div class="zoom-info-item">
+                <div class="zoom-label">單價</div>
+                <div class="zoom-value">$ ${unitPriceStr}</div>
+            </div>
+            <div class="zoom-info-item">
+                <div class="zoom-label">數量</div>
+                <div class="zoom-value">${item.qty}</div>
+            </div>
         </div>
-        <div class="zoom-info-item" style="flex: 0 0 100%;"><strong>總價</strong><span>$ ${totalInt} ${originalDisplay}</span></div>
-        <div class="zoom-info-item" style="flex: 0 0 100%;"><strong>備註</strong><span>${item.note || '無'}</span></div>
+        <div class="zoom-info-item">
+            <div class="zoom-label">總價</div>
+            <div class="zoom-value">$ ${totalInt} ${originalDisplay}</div>
+        </div>
+        <div class="zoom-info-item">
+            <div class="zoom-label">備註</div>
+            <div class="zoom-value">${item.note || '無'}</div>
+        </div>
     `;
     document.getElementById('zoomPrev').style.display = 'flex';
     document.getElementById('zoomNext').style.display = 'flex';
