@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Morandi Archive - v1.3.8</title>
+<title>Morandi Archive - v1.3.9</title>
 <!-- Cropper.js 樣式與腳本 -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
@@ -11,7 +11,7 @@
 <!-- Chart.js 數據標籤插件 -->
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0/dist/chartjs-plugin-datalabels.min.js"></script>
 <style>
-/* ========== 全域樣式 (與 v1.3.7 相同) ========== */
+/* ========== 全域樣式 ========== */
 :root {
     --m-deep-green: #6b7a63; --m-sage: #acc1ad; --m-brown: #a68b7c;
     --m-sand: #d5cabd; --m-clay: #e5ddd5; --bg: #f2efeb;
@@ -320,7 +320,7 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: 'PingFang HK', 'M
     font-weight: normal;
     margin-left: 4px;
 }
-/* 新增：原始幣種樣式（小字、灰色、非粗體） */
+/* 原始幣種樣式（小字、灰色、非粗體） */
 .original-currency {
     font-size: calc(9px * var(--info-scale,1));
     color: #999;
@@ -451,30 +451,63 @@ input, select, textarea {
 .zoom-nav.left { left: 10px; }
 .zoom-nav.right { right: 10px; }
 .zoom-nav:hover { background: rgba(0,0,0,0.7); }
+
+/* 放大頁資訊區塊 - 更緊湊 */
 .zoom-info {
-    padding: 15px;
+    padding: 8px;
     background: #fafafa;
     border-top: 1px solid var(--m-clay);
-    font-size: 12px;
+    font-size: 11px;
     color: var(--text);
     display: flex;
     flex-wrap: wrap;
-    gap: 0;
+    gap: 4px;
     margin-top: 10px;
 }
 .zoom-info-item {
     border: 1px solid var(--m-clay);
     border-radius: 6px;
-    padding: 6px 10px;
+    padding: 4px 6px;
     flex: 1 1 auto;
     min-width: 0;
     background: transparent;
     margin: 0;
 }
-.zoom-info-item strong { color: var(--m-brown); font-size: 11px; display: block; margin-bottom: 2px; }
-.zoom-info-item span { font-weight: bold; color: var(--m-deep-green); }
-.zoom-info-row { display: flex; gap: 0; width: 100%; flex-wrap: nowrap; }
-.zoom-info-row .zoom-info-item { flex: 1; }
+.zoom-info-item strong {
+    color: var(--m-brown);
+    font-size: 10px;
+    display: block;
+    margin-bottom: 2px;
+    font-weight: 600;
+}
+.zoom-info-item span {
+    font-weight: bold;
+    color: var(--m-deep-green);
+}
+/* 柄圖名稱特殊樣式：大字、佔滿整行 */
+.zoom-pattern-name {
+    flex: 0 0 100%;
+}
+.zoom-pattern-name strong {
+    font-size: 11px;
+}
+.zoom-pattern-name span {
+    font-size: 18px;
+    font-weight: bold;
+    color: var(--m-deep-green);
+    display: block;
+    margin-top: 2px;
+    line-height: 1.2;
+}
+.zoom-info-row {
+    display: flex;
+    gap: 4px;
+    width: 100%;
+    flex-wrap: nowrap;
+}
+.zoom-info-row .zoom-info-item {
+    flex: 1;
+}
 
 /* ========== 標籤長按選單 ========== */
 .tag-context-menu {
@@ -659,7 +692,7 @@ input, select, textarea {
         <div class="menu-btn" onclick="openPage('page-gallery')">進入藏品庫</div>
         <div class="menu-btn" onclick="triggerQuickUpload()">上載藏品</div>
     </div>
-    <div class="version-tag">v1.3.8</div>
+    <div class="version-tag">v1.3.9</div>
 </div>
 <input type="file" id="quickUploadInput" style="display:none;" accept="image/*" onchange="handleQuickUploadFile(this)">
 
@@ -1502,7 +1535,7 @@ function handleLongPress(element, callback) {
     element.addEventListener('mouseleave', cancel);
 }
 
-// ========== 頁面切換與滾動位置記憶（2000ms 備用） ==========
+// ========== 頁面切換與滾動位置記憶 ==========
 function switchTab(id, btn) {
     const activePage = document.querySelector('.page.active')?.id;
     if (activePage) {
@@ -1685,17 +1718,20 @@ function updateZoomDisplay(index) {
     let unitPriceHKD = (parseFloat(item.price) * rates[item.currency]);
     let unitPriceStr = (unitPriceHKD % 1 === 0) ? unitPriceHKD.toString() : unitPriceHKD.toFixed(2);
 
-    // 計算原始總價顯示（小字、灰色、非粗體）
+    // 計算原始總價顯示（括號與數字皆為灰色小字）
     let originalDisplay = '';
     if (item.currency !== 'HKD') {
         let originalTotal = item.price * item.qty;
         let originalStr = (originalTotal % 1 === 0) ? originalTotal.toString() : originalTotal.toFixed(2);
-        originalDisplay = ` (<span class="original-currency">${item.currency}${originalStr}</span>)`;
+        originalDisplay = `<span class="original-currency">(${item.currency}${originalStr})</span>`;
     }
 
     const infoDiv = document.getElementById('zoomInfo');
     infoDiv.innerHTML = `
-        <div class="zoom-info-item" style="flex: 0 0 100%;"><strong>柄圖名稱</strong><span>${item.pattern || '無'}</span></div>
+        <div class="zoom-info-item zoom-pattern-name">
+            <strong>柄圖名稱</strong>
+            <span>${item.pattern || '無'}</span>
+        </div>
         <div class="zoom-info-item"><strong>作品</strong><span>${item.work || '無'}</span></div>
         <div class="zoom-info-item"><strong>角色</strong><span>${item.role || '無'}</span></div>
         <div class="zoom-info-item"><strong>類別</strong><span>${item.type || '無'}</span></div>
@@ -1703,7 +1739,7 @@ function updateZoomDisplay(index) {
             <div class="zoom-info-item"><strong>單價</strong><span>$ ${unitPriceStr}</span></div>
             <div class="zoom-info-item"><strong>數量</strong><span>${item.qty}</span></div>
         </div>
-        <div class="zoom-info-item" style="flex: 0 0 100%;"><strong>總價</strong><span>$ ${totalInt}${originalDisplay}</span></div>
+        <div class="zoom-info-item" style="flex: 0 0 100%;"><strong>總價</strong><span>$ ${totalInt} ${originalDisplay}</span></div>
         <div class="zoom-info-item" style="flex: 0 0 100%;"><strong>備註</strong><span>${item.note || '無'}</span></div>
     `;
     document.getElementById('zoomPrev').style.display = 'flex';
@@ -1988,22 +2024,12 @@ document.getElementById('merchForm').onsubmit = async function (e) {
     }
 };
 
-// ========== 長按刪除藏品功能 ==========
+// ========== 長按刪除藏品功能（改為進入批量模式） ==========
 async function deleteItemByIndex(idx) {
-    if (!confirm("確定刪除此藏品？")) return;
-    let newList = [...merchList]; newList.splice(idx, 1);
-    merchList = newList;
-    try {
-        await commitToDB();
-    } catch (e) {
-        showModal("❌", "刪除失敗，無法儲存");
-        return;
-    }
-    renderSelects();
-    renderAll();
+    // 此函數不再使用，保留僅供參考
 }
 
-// ========== renderAll（恢復長按刪除） ==========
+// ========== renderAll（長按卡片進入批量模式） ==========
 function renderAll() {
     const conf = { '現貨': 'readyList', '非現貨': 'waitList', '願望': 'wishList' };
     const srch = { '現貨': 'lib-search', '非現貨': 'wait-search', '願望': 'wish-search' };
@@ -2051,12 +2077,12 @@ function renderAll() {
 
             const roleWithWork = i.work ? `${i.work} - ${i.role}` : i.role;
 
-            // 計算原始總價顯示（小字、灰色、非粗體）
+            // 原始總價顯示（括號與數字皆灰色小字）
             let originalDisplay = '';
             if (i.currency !== 'HKD') {
                 let originalTotal = i.price * i.qty;
                 let originalStr = (originalTotal % 1 === 0) ? originalTotal.toString() : originalTotal.toFixed(2);
-                originalDisplay = ` (<span class="original-currency">${i.currency}${originalStr}</span>)`;
+                originalDisplay = `<span class="original-currency">(${i.currency}${originalStr})</span>`;
             }
 
             let infoHtml;
@@ -2066,7 +2092,7 @@ function renderAll() {
                         <div style="font-size:calc(9px * var(--info-scale,1)); color:var(--m-brown);">${roleWithWork} ${i.type ? '| ' + i.type : ""}</div>
                         <div class="pattern-name">${i.pattern || '無名'}</div>
                         <div style="color:#999; font-size: calc(9px * var(--info-scale,1));">單價 $ ${unitPriceStr}</div>
-                        <div class="total-price">$ ${totalInt}${originalDisplay}</div>
+                        <div class="total-price">$ ${totalInt} ${originalDisplay}</div>
                         ${i.note ? `<div class="note" style="font-size:calc(9px * var(--info-scale,1)); margin-top:calc(4px * var(--info-scale,1));">📝 ${i.note}</div>` : ''}
                     </div>
                     <div class="card-qty">x${i.qty}</div>
@@ -2077,7 +2103,7 @@ function renderAll() {
                         <div style="font-size:calc(9px * var(--info-scale,1)); color:var(--m-brown);">${roleWithWork} ${i.type ? '| ' + i.type : ""}</div>
                         <div class="pattern-name">${i.pattern || '無名'}</div>
                         <div style="color:#999; font-size: calc(9px * var(--info-scale,1)); margin-bottom: 2px;">單價 $ ${unitPriceStr}</div>
-                        <div class="total-price">$ ${totalInt}${originalDisplay} <span style="color:#aaa;font-weight:normal;font-size:calc(9px * var(--info-scale,1));">x${i.qty}</span></div>
+                        <div class="total-price">$ ${totalInt} ${originalDisplay} <span style="color:#aaa;font-weight:normal;font-size:calc(9px * var(--info-scale,1));">x${i.qty}</span></div>
                         ${i.note ? `<div class="note" style="font-size:calc(9px * var(--info-scale,1)); margin-top:calc(4px * var(--info-scale,1));">📝 ${i.note}</div>` : ''}
                     </div>
                 `;
@@ -2100,11 +2126,15 @@ function renderAll() {
                 }
             };
             
-            // 長按事件：刪除藏品（非批量模式）
+            // 長按事件：進入批量模式並選中當前卡片（如果不在批量模式）
             handleLongPress(card, () => {
                 if (!isBatchMode) {
-                    deleteItemByIndex(i.originalIndex);
+                    setBatchMode(true);
+                    // 需要確保 setBatchMode 完成後再選中該卡片
+                    // setBatchMode 會同步執行 renderAll，所以之後調用 toggleSelectItem 是安全的
+                    toggleSelectItem(i.originalIndex);
                 }
+                // 如果已在批量模式，長按不做任何事（保留點擊切換選擇）
             });
             
             container.appendChild(card);
