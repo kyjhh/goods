@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Morandi Archive - v1.1.1</title>
+<title>Morandi Archive - v1.1.2</title>
 <!-- Cropper.js 樣式與腳本 -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
@@ -11,7 +11,7 @@
 <!-- Chart.js 數據標籤插件 -->
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0/dist/chartjs-plugin-datalabels.min.js"></script>
 <style>
-/* ========== 全域樣式 (與之前相同，但移除所有垂直滑塊相關樣式) ========== */
+/* ========== 全域樣式 (與先前相同) ========== */
 :root {
     --m-deep-green: #6b7a63; --m-sage: #acc1ad; --m-brown: #a68b7c;
     --m-sand: #d5cabd; --m-clay: #e5ddd5; --bg: #f2efeb;
@@ -77,7 +77,7 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: 'PingFang HK', 'M
 
 /* ========== 主要內容區 ========== */
 .main-content {
-    padding: 12px 12px 120px 12px; /* 移除右側預留空間 */
+    padding: 12px 12px 120px 12px;
     max-width: 800px;
     margin: 0 auto;
     transition: margin-top 0.3s;
@@ -554,7 +554,7 @@ input, select, textarea {
         <div class="menu-btn" onclick="openPage('page-gallery')">進入藏品庫</div>
         <div class="menu-btn" onclick="triggerQuickUpload()">上載藏品</div>
     </div>
-    <div class="version-tag">v1.1.1</div>
+    <div class="version-tag">v1.1.2</div>
 </div>
 <input type="file" id="quickUploadInput" style="display:none;" accept="image/*" onchange="handleQuickUploadFile(this)">
 
@@ -597,7 +597,6 @@ input, select, textarea {
             </div>
         </div>
         <div id="readyList" class="list-container grid"></div>
-        <!-- 移除垂直滑塊 -->
     </div>
 
     <!-- 等候區頁 -->
@@ -637,7 +636,6 @@ input, select, textarea {
             </div>
         </div>
         <div id="waitList" class="list-container grid"></div>
-        <!-- 移除垂直滑塊 -->
     </div>
 
     <!-- 願望清單頁 -->
@@ -677,7 +675,6 @@ input, select, textarea {
             </div>
         </div>
         <div id="wishList" class="list-container grid"></div>
-        <!-- 移除垂直滑塊 -->
     </div>
 
     <!-- 新增/編輯頁 -->
@@ -885,7 +882,6 @@ let currentZoomStatus = '';
 let longPressedTag = { key: null, value: null };
 let isUpdatingGrid = false;
 let lastActivePageBeforeEdit = 'page-gallery';
-// 儲存每個頁面的滾動位置
 let scrollPositions = {
     gallery: 0,
     pending: 0,
@@ -1203,9 +1199,8 @@ function handleLongPress(element, callback) {
     element.addEventListener('mouseup', cancel);
 }
 
-// ========== 頁面切換與滾動位置記憶 (強化恢復機制) ==========
+// ========== 頁面切換與滾動位置記憶 ==========
 function switchTab(id, btn) {
-    // 儲存當前頁面的滾動位置
     const activePage = document.querySelector('.page.active')?.id;
     if (activePage) {
         if (activePage === 'page-gallery') scrollPositions.gallery = window.scrollY;
@@ -1218,14 +1213,11 @@ function switchTab(id, btn) {
     document.getElementById(id).classList.add('active');
     if (btn) { document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); btn.classList.add('active'); }
     
-    // 如果切換到編輯頁，不恢復滾動；否則在渲染後恢復目標頁面的滾動位置
     if (id !== 'page-recent') {
-        // 先渲染
         if (id === 'page-stats') renderStats();
         if (id === 'page-gallery' || id === 'page-pending' || id === 'page-wish') {
             renderAll();
         }
-        // 使用 requestAnimationFrame 等待下一幀，然後恢復滾動
         requestAnimationFrame(() => {
             requestAnimationFrame(() => {
                 if (id === 'page-gallery') window.scrollTo(0, scrollPositions.gallery);
@@ -1235,7 +1227,6 @@ function switchTab(id, btn) {
             });
         });
     } else {
-        // 編輯頁直接顯示
         window.scrollTo(0, 0);
     }
     
@@ -1252,7 +1243,6 @@ function openPage(id) {
 function handleBack() {
     const activePage = document.querySelector('.page.active')?.id;
     if (activePage === 'page-recent') {
-        // 從編輯頁返回時，回到之前保存的頁面
         switchTab(lastActivePageBeforeEdit, document.querySelector('.nav-item'));
     } else {
         document.getElementById('cover-page').classList.remove('open');
@@ -1559,12 +1549,11 @@ function openCropModal(imageSrc, callback, isZoom = false, item = null) {
     };
 }
 
-// ========== 放大頁箭頭循環 (固定方向) ==========
+// ========== 放大頁箭頭循環 ==========
 function zoomPrev() {
     if (!currentZoomList || currentZoomList.length === 0) return;
     let newIndex = currentZoomIndex - 1;
     if (newIndex < 0) newIndex = currentZoomList.length - 1;
-    // 確保該索引有圖片，若無則繼續往前找
     while (newIndex !== currentZoomIndex && (!currentZoomList[newIndex] || !currentZoomList[newIndex].img)) {
         newIndex = (newIndex - 1 + currentZoomList.length) % currentZoomList.length;
     }
@@ -1639,7 +1628,6 @@ function resetFormForNew() {
     if (lastInput.type) document.getElementById('typeSelect').value = lastInput.type;
     if (lastInput.status) document.getElementById('status').value = lastInput.status;
     if (lastInput.currency) document.getElementById('currency').value = lastInput.currency;
-    // pattern 和 note 故意不填
     
     liveExchange();
     updateDateLabel();
@@ -1775,7 +1763,16 @@ function renderAll() {
         filtered.sort((a, b) => {
             if (sortMode === 'date') return (b.timestamp - a.timestamp) * multi;
             if (sortMode === 'price') return (parseFloat(b.totalHkd) - parseFloat(a.totalHkd)) * multi;
-            if (sortMode === 'name') return (a.pattern.localeCompare(b.pattern, 'zh-TW')) * multi;
+            if (sortMode === 'name') {
+                // 先按角色排序，再按款式名稱排序
+                const roleA = a.role || '';
+                const roleB = b.role || '';
+                if (roleA !== roleB) {
+                    return roleA.localeCompare(roleB, 'zh-TW') * multi;
+                } else {
+                    return a.pattern.localeCompare(b.pattern, 'zh-TW') * multi;
+                }
+            }
             if (sortMode === 'qty') return (b.qty - a.qty) * multi;
             return 0;
         });
