@@ -1678,8 +1678,21 @@ function updateZoomDisplay(index) {
     const totalInt = parseInt(parseFloat(item.totalHkd));
     let unitPriceHKD = (parseFloat(item.price) * rates[item.currency]);
     let unitPriceStr = (unitPriceHKD % 1 === 0) ? unitPriceHKD.toString() : unitPriceHKD.toFixed(2);
+
+    // 計算原始總價顯示
+    let originalDisplay = '';
+    if (item.currency !== 'HKD') {
+        let originalTotal = item.price * item.qty;
+        let originalStr = (originalTotal % 1 === 0) ? originalTotal.toString() : originalTotal.toFixed(2);
+        let symbol = '';
+        if (item.currency === 'JPY') symbol = '¥';
+        else if (item.currency === 'RMB') symbol = 'RMB¥';
+        originalDisplay = ` (${symbol}${originalStr})`;
+    }
+
     const infoDiv = document.getElementById('zoomInfo');
     infoDiv.innerHTML = `
+        <div class="zoom-info-item" style="flex: 0 0 100%;"><strong>柄圖名稱</strong><span>${item.pattern || '無'}</span></div>
         <div class="zoom-info-item"><strong>作品</strong><span>${item.work || '無'}</span></div>
         <div class="zoom-info-item"><strong>角色</strong><span>${item.role || '無'}</span></div>
         <div class="zoom-info-item"><strong>類別</strong><span>${item.type || '無'}</span></div>
@@ -1687,7 +1700,8 @@ function updateZoomDisplay(index) {
             <div class="zoom-info-item"><strong>單價</strong><span>$ ${unitPriceStr}</span></div>
             <div class="zoom-info-item"><strong>數量</strong><span>${item.qty}</span></div>
         </div>
-        <div class="zoom-info-item" style="flex: 0 0 100%;"><strong>總價</strong><span>$ ${totalInt}</span></div>
+        <div class="zoom-info-item" style="flex: 0 0 100%;"><strong>總價</strong><span>$ ${totalInt}${originalDisplay}</span></div>
+        <div class="zoom-info-item" style="flex: 0 0 100%;"><strong>備註</strong><span>${item.note || '無'}</span></div>
     `;
     document.getElementById('zoomPrev').style.display = 'flex';
     document.getElementById('zoomNext').style.display = 'flex';
@@ -1839,9 +1853,9 @@ function resetFormForNew() {
     if (lastInput.status) document.getElementById('status').value = lastInput.status;
     if (lastInput.currency) document.getElementById('currency').value = lastInput.currency;
     
-    // 保留 pattern 和 note，讓瀏覽器自動完成顯示歷史
-    if (lastInput.pattern) document.getElementById('pattern').value = lastInput.pattern;
-    if (lastInput.note) document.getElementById('note').value = lastInput.note;
+    // 不再自動填入 pattern 和 note，讓瀏覽器自動完成提供歷史建議
+    // if (lastInput.pattern) document.getElementById('pattern').value = lastInput.pattern;
+    // if (lastInput.note) document.getElementById('note').value = lastInput.note;
     
     liveExchange();
     updateDateLabel();
@@ -2033,8 +2047,17 @@ function renderAll() {
             let unitPriceStr = (unitPriceHKD % 1 === 0) ? unitPriceHKD.toString() : unitPriceHKD.toFixed(2);
 
             const roleWithWork = i.work ? `${i.work} - ${i.role}` : i.role;
-            // 幣種標籤：若為 HKD 則不顯示，否則顯示 (幣種: XXX)
-            const currencyTag = i.currency !== 'HKD' ? `<span class="currency-tag">(${i.currency})</span>` : '';
+
+            // 計算原始總價顯示
+            let originalDisplay = '';
+            if (i.currency !== 'HKD') {
+                let originalTotal = i.price * i.qty;
+                let originalStr = (originalTotal % 1 === 0) ? originalTotal.toString() : originalTotal.toFixed(2);
+                let symbol = '';
+                if (i.currency === 'JPY') symbol = '¥';
+                else if (i.currency === 'RMB') symbol = 'RMB¥';
+                originalDisplay = ` (${symbol}${originalStr})`;
+            }
 
             let infoHtml;
             if (viewMode === 'grid') {
@@ -2043,7 +2066,7 @@ function renderAll() {
                         <div style="font-size:calc(9px * var(--info-scale,1)); color:var(--m-brown);">${roleWithWork} ${i.type ? '| ' + i.type : ""}</div>
                         <div class="pattern-name">${i.pattern || '無名'}</div>
                         <div style="color:#999; font-size: calc(9px * var(--info-scale,1));">單價 $ ${unitPriceStr}</div>
-                        <div class="total-price">$ ${totalInt} ${currencyTag}</div>
+                        <div class="total-price">$ ${totalInt}${originalDisplay}</div>
                         ${i.note ? `<div class="note" style="font-size:calc(9px * var(--info-scale,1)); margin-top:calc(4px * var(--info-scale,1));">📝 ${i.note}</div>` : ''}
                     </div>
                     <div class="card-qty">x${i.qty}</div>
@@ -2054,7 +2077,7 @@ function renderAll() {
                         <div style="font-size:calc(9px * var(--info-scale,1)); color:var(--m-brown);">${roleWithWork} ${i.type ? '| ' + i.type : ""}</div>
                         <div class="pattern-name">${i.pattern || '無名'}</div>
                         <div style="color:#999; font-size: calc(9px * var(--info-scale,1)); margin-bottom: 2px;">單價 $ ${unitPriceStr}</div>
-                        <div class="total-price">$ ${totalInt} ${currencyTag} <span style="color:#aaa;font-weight:normal;font-size:calc(9px * var(--info-scale,1));">x${i.qty}</span></div>
+                        <div class="total-price">$ ${totalInt}${originalDisplay} <span style="color:#aaa;font-weight:normal;font-size:calc(9px * var(--info-scale,1));">x${i.qty}</span></div>
                         ${i.note ? `<div class="note" style="font-size:calc(9px * var(--info-scale,1)); margin-top:calc(4px * var(--info-scale,1));">📝 ${i.note}</div>` : ''}
                     </div>
                 `;
