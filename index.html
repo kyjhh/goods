@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Morandi Archive - v1.2.2</title>
+<title>Morandi Archive - v1.2.5</title>
 <!-- Cropper.js 樣式與腳本 -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
@@ -200,11 +200,11 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: 'PingFang HK', 'M
     min-height: 30px;
     position: relative;
 }
-/* 標籤樣式：縮小內邊距和圓角 */
+/* 標籤樣式：更緊湊 */
 .filter-chip {
     background: var(--m-clay);
-    padding: 4px 8px;          /* 減小內邊距 */
-    border-radius: 12px;        /* 圓角縮小 */
+    padding: 2px 6px;
+    border-radius: 8px;
     font-size: 12px;
     cursor: pointer;
     color: white;
@@ -214,6 +214,7 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: 'PingFang HK', 'M
     margin: 2px;
     border: 2px solid transparent;
     box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    line-height: 1.4;
 }
 .filter-chip.active {
     background: var(--m-sage);
@@ -233,18 +234,18 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: 'PingFang HK', 'M
 .filter-row.sorting .filter-chip:active {
     cursor: grabbing;
 }
-/* 插入指示線 - 調整高度和樣式 */
+/* 插入指示線 - 高度70%，寬度3px */
 .insert-indicator {
     position: absolute;
-    width: 4px;
-    height: 70%;               /* 相對行高 */
+    width: 3px;
+    height: 70%;
     background: var(--m-deep-green);
     border-radius: 2px;
-    top: 15%;                  /* 垂直置中 */
+    top: 15%;
     pointer-events: none;
     z-index: 10;
     transition: left 0.05s;
-    box-shadow: 0 0 4px var(--m-deep-green);
+    box-shadow: 0 0 3px var(--m-deep-green);
 }
 
 /* ========== 列表容器 ========== */
@@ -608,7 +609,7 @@ input, select, textarea {
         <div class="menu-btn" onclick="openPage('page-gallery')">進入藏品庫</div>
         <div class="menu-btn" onclick="triggerQuickUpload()">上載藏品</div>
     </div>
-    <div class="version-tag">v1.2.2</div>
+    <div class="version-tag">v1.2.5</div>
 </div>
 <input type="file" id="quickUploadInput" style="display:none;" accept="image/*" onchange="handleQuickUploadFile(this)">
 
@@ -1275,7 +1276,7 @@ function handleDragOver(e) {
     const row = e.target.closest('.filter-row');
     if (!row) return;
     
-    // 顯示插入指示線
+    // 顯示插入指示線（每次移動都更新）
     showInsertIndicator(e, row);
 }
 
@@ -1369,17 +1370,17 @@ function showInsertIndicator(e, row) {
     if (insertIndex === 0) {
         const firstChip = chips[0];
         const rect = firstChip.getBoundingClientRect();
-        indicator.style.left = (rect.left - 2) + 'px';
+        indicator.style.left = (rect.left - 1.5) + 'px';
     } else if (insertIndex === chips.length) {
         const lastChip = chips[chips.length - 1];
         const rect = lastChip.getBoundingClientRect();
-        indicator.style.left = (rect.right - 2) + 'px';
+        indicator.style.left = (rect.right - 1.5) + 'px';
     } else {
         const prevChip = chips[insertIndex - 1];
         const nextChip = chips[insertIndex];
         const prevRect = prevChip.getBoundingClientRect();
         const nextRect = nextChip.getBoundingClientRect();
-        indicator.style.left = ((prevRect.right + nextRect.left) / 2 - 2) + 'px';
+        indicator.style.left = ((prevRect.right + nextRect.left) / 2 - 1.5) + 'px';
     }
     
     indicator.style.top = (row.getBoundingClientRect().top + 5) + 'px';
@@ -1447,7 +1448,7 @@ function handleLongPress(element, callback) {
     element.addEventListener('mouseleave', cancel);
 }
 
-// ========== 頁面切換與滾動位置記憶 ==========
+// ========== 頁面切換與滾動位置記憶（強化版） ==========
 function switchTab(id, btn) {
     const activePage = document.querySelector('.page.active')?.id;
     if (activePage) {
@@ -1466,14 +1467,20 @@ function switchTab(id, btn) {
         if (id === 'page-gallery' || id === 'page-pending' || id === 'page-wish') {
             renderAll();
         }
+        // 使用雙層 requestAnimationFrame 確保在渲染後恢復
         requestAnimationFrame(() => {
             requestAnimationFrame(() => {
                 if (id === 'page-gallery') window.scrollTo(0, scrollPositions.gallery);
                 else if (id === 'page-pending') window.scrollTo(0, scrollPositions.pending);
                 else if (id === 'page-wish') window.scrollTo(0, scrollPositions.wish);
-                else window.scrollTo(0, 0);
             });
         });
+        // 額外使用 setTimeout 作為備用，確保圖片載入後再次嘗試
+        setTimeout(() => {
+            if (id === 'page-gallery') window.scrollTo(0, scrollPositions.gallery);
+            else if (id === 'page-pending') window.scrollTo(0, scrollPositions.pending);
+            else if (id === 'page-wish') window.scrollTo(0, scrollPositions.wish);
+        }, 200);
     } else {
         window.scrollTo(0, 0);
     }
@@ -1491,6 +1498,7 @@ function openPage(id) {
 function handleBack() {
     const activePage = document.querySelector('.page.active')?.id;
     if (activePage === 'page-recent') {
+        // 從編輯頁返回時，回到之前保存的頁面
         switchTab(lastActivePageBeforeEdit, document.querySelector('.nav-item'));
     } else {
         document.getElementById('cover-page').classList.remove('open');
