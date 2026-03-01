@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Morandi Archive - v1.3.7</title>
+<title>Morandi Archive - v1.3.8</title>
 <!-- Cropper.js 樣式與腳本 -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
@@ -11,7 +11,7 @@
 <!-- Chart.js 數據標籤插件 -->
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0/dist/chartjs-plugin-datalabels.min.js"></script>
 <style>
-/* ========== 全域樣式 (與 v1.3.6 相同) ========== */
+/* ========== 全域樣式 (與 v1.3.7 相同) ========== */
 :root {
     --m-deep-green: #6b7a63; --m-sage: #acc1ad; --m-brown: #a68b7c;
     --m-sand: #d5cabd; --m-clay: #e5ddd5; --bg: #f2efeb;
@@ -314,6 +314,12 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: 'PingFang HK', 'M
     font-weight: bold;
     margin-top: auto;
 }
+.currency-tag {
+    font-size: calc(9px * var(--info-scale));
+    color: #999;
+    font-weight: normal;
+    margin-left: 4px;
+}
 
 /* ========== 表單 ========== */
 .input-group { margin-bottom: 5px; }
@@ -341,7 +347,6 @@ input, select, textarea {
     box-sizing: border-box;
     outline: none;
 }
-/* 照片欄位與刪除按鈕 */
 .photo-wrapper {
     display: flex;
     align-items: center;
@@ -648,7 +653,7 @@ input, select, textarea {
         <div class="menu-btn" onclick="openPage('page-gallery')">進入藏品庫</div>
         <div class="menu-btn" onclick="triggerQuickUpload()">上載藏品</div>
     </div>
-    <div class="version-tag">v1.3.7</div>
+    <div class="version-tag">v1.3.8</div>
 </div>
 <input type="file" id="quickUploadInput" style="display:none;" accept="image/*" onchange="handleQuickUploadFile(this)">
 
@@ -1046,7 +1051,7 @@ function compressImage(base64, maxSize = 800, quality = 0.9) {
                 resolve(compressed);
             } catch (e) {
                 console.warn('壓縮失敗', e);
-                resolve(base64); // 返回原圖
+                resolve(base64);
             }
         };
         img.onerror = () => {
@@ -1063,7 +1068,7 @@ async function init() {
         merchList = data.merchList || [];
         dict = data.dict || { works: [], roles: [], types: [] };
     } catch (e) {
-        console.warn('讀取資料庫失敗，使用預設值', e);
+        console.warn('讀取資料庫失敗', e);
         merchList = [];
         dict = { works: [...DEFAULT_WORKS], roles: [], types: [...DEFAULT_TYPES] };
     }
@@ -1622,6 +1627,7 @@ function handleImageFileSelect(input) {
     const reader = new FileReader();
     reader.onload = (e) => {
         isProcessingFile = false;
+        // 無論是否已有圖片，直接開啟裁剪，覆蓋舊的 pendingCropImage
         openCropModal(e.target.result, async (croppedBase64) => {
             if (!isValidImageBase64(croppedBase64)) {
                 showModal("❌", "裁剪後的圖片無效，請重試");
@@ -1629,7 +1635,7 @@ function handleImageFileSelect(input) {
             }
             pendingCropImage = await compressImage(croppedBase64, 800, 0.9);
             document.getElementById('pendingImageNote').style.display = 'block';
-            input.value = '';
+            input.value = ''; // 清空 input 以便再次選擇同一檔案
         }, false);
     };
     reader.onerror = () => {
@@ -1643,7 +1649,7 @@ function handleImageFileSelect(input) {
 function clearSelectedImage() {
     pendingCropImage = null;
     document.getElementById('pendingImageNote').style.display = 'none';
-    document.getElementById('imgFile').value = ''; // 清空 input 值
+    document.getElementById('imgFile').value = '';
 }
 
 function zoomImage(item, list, status, filteredIndex) {
@@ -1833,8 +1839,7 @@ function resetFormForNew() {
     if (lastInput.status) document.getElementById('status').value = lastInput.status;
     if (lastInput.currency) document.getElementById('currency').value = lastInput.currency;
     
-    // 保留 pattern 和 note 不重置，讓瀏覽器自動完成填入
-    // 注意：reset() 會清空，所以需要手動保留
+    // 保留 pattern 和 note，讓瀏覽器自動完成顯示歷史
     if (lastInput.pattern) document.getElementById('pattern').value = lastInput.pattern;
     if (lastInput.note) document.getElementById('note').value = lastInput.note;
     
@@ -1966,7 +1971,22 @@ document.getElementById('merchForm').onsubmit = async function (e) {
     }
 };
 
-// ========== renderAll ==========
+// ========== 長按刪除藏品功能 ==========
+async function deleteItemByIndex(idx) {
+    if (!confirm("確定刪除此藏品？")) return;
+    let newList = [...merchList]; newList.splice(idx, 1);
+    merchList = newList;
+    try {
+        await commitToDB();
+    } catch (e) {
+        showModal("❌", "刪除失敗，無法儲存");
+        return;
+    }
+    renderSelects();
+    renderAll();
+}
+
+// ========== renderAll（恢復長按刪除） ==========
 function renderAll() {
     const conf = { '現貨': 'readyList', '非現貨': 'waitList', '願望': 'wishList' };
     const srch = { '現貨': 'lib-search', '非現貨': 'wait-search', '願望': 'wish-search' };
@@ -2013,6 +2033,8 @@ function renderAll() {
             let unitPriceStr = (unitPriceHKD % 1 === 0) ? unitPriceHKD.toString() : unitPriceHKD.toFixed(2);
 
             const roleWithWork = i.work ? `${i.work} - ${i.role}` : i.role;
+            // 幣種標籤：若為 HKD 則不顯示，否則顯示 (幣種: XXX)
+            const currencyTag = i.currency !== 'HKD' ? `<span class="currency-tag">(${i.currency})</span>` : '';
 
             let infoHtml;
             if (viewMode === 'grid') {
@@ -2021,7 +2043,7 @@ function renderAll() {
                         <div style="font-size:calc(9px * var(--info-scale,1)); color:var(--m-brown);">${roleWithWork} ${i.type ? '| ' + i.type : ""}</div>
                         <div class="pattern-name">${i.pattern || '無名'}</div>
                         <div style="color:#999; font-size: calc(9px * var(--info-scale,1));">單價 $ ${unitPriceStr}</div>
-                        <div class="total-price">$ ${totalInt}</div>
+                        <div class="total-price">$ ${totalInt} ${currencyTag}</div>
                         ${i.note ? `<div class="note" style="font-size:calc(9px * var(--info-scale,1)); margin-top:calc(4px * var(--info-scale,1));">📝 ${i.note}</div>` : ''}
                     </div>
                     <div class="card-qty">x${i.qty}</div>
@@ -2032,7 +2054,7 @@ function renderAll() {
                         <div style="font-size:calc(9px * var(--info-scale,1)); color:var(--m-brown);">${roleWithWork} ${i.type ? '| ' + i.type : ""}</div>
                         <div class="pattern-name">${i.pattern || '無名'}</div>
                         <div style="color:#999; font-size: calc(9px * var(--info-scale,1)); margin-bottom: 2px;">單價 $ ${unitPriceStr}</div>
-                        <div class="total-price">$ ${totalInt} <span style="color:#aaa;font-weight:normal;font-size:calc(9px * var(--info-scale,1));">x${i.qty}</span></div>
+                        <div class="total-price">$ ${totalInt} ${currencyTag} <span style="color:#aaa;font-weight:normal;font-size:calc(9px * var(--info-scale,1));">x${i.qty}</span></div>
                         ${i.note ? `<div class="note" style="font-size:calc(9px * var(--info-scale,1)); margin-top:calc(4px * var(--info-scale,1));">📝 ${i.note}</div>` : ''}
                     </div>
                 `;
@@ -2042,6 +2064,7 @@ function renderAll() {
 
             card.innerHTML = imgHtml + infoHtml;
             
+            // 單擊事件
             card.onclick = () => {
                 if (isBatchMode) {
                     toggleSelectItem(i.originalIndex);
@@ -2053,6 +2076,13 @@ function renderAll() {
                     }
                 }
             };
+            
+            // 長按事件：刪除藏品（非批量模式）
+            handleLongPress(card, () => {
+                if (!isBatchMode) {
+                    deleteItemByIndex(i.originalIndex);
+                }
+            });
             
             container.appendChild(card);
         });
