@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Morandi Archive - v1.2.5</title>
+<title>Morandi Archive - v1.3.5</title>
 <!-- Cropper.js 樣式與腳本 -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
@@ -11,12 +11,13 @@
 <!-- Chart.js 數據標籤插件 -->
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0/dist/chartjs-plugin-datalabels.min.js"></script>
 <style>
-/* ========== 全域樣式 ========== */
+/* ========== 全域樣式 (與 v1.3.4 完全相同) ========== */
 :root {
     --m-deep-green: #6b7a63; --m-sage: #acc1ad; --m-brown: #a68b7c;
     --m-sand: #d5cabd; --m-clay: #e5ddd5; --bg: #f2efeb;
     --text: #4a4a4a; --radius: 8px; --dynamic-grid: 160px;
     --info-scale: 1;
+    --pattern-size: 12px;
 }
 body.theme-1 { --m-deep-green: #9DC8C8; --m-sage: #58C9B9; --m-brown: #519D9E; --m-sand: #D1B6E1; --m-clay: #519D9E; --bg: #f2efeb; --text: #4a4a4a; }
 body.theme-2 { --m-deep-green: #fe4365; --m-sage: #fc9d9a; --m-brown: #f9cdad; --m-sand: #c8c8a9; --m-clay: #fc9d9a; --bg: #faf0e6; --text: #4a3b2a; }
@@ -146,7 +147,7 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: 'PingFang HK', 'M
 .filter-panel {
     background: #f9f9f9;
     border-radius: var(--radius);
-    padding: 12px;
+    padding: 10px;
     margin-top: 15px;
     border: 1px solid var(--m-clay);
 }
@@ -154,10 +155,10 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: 'PingFang HK', 'M
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 10px;
+    margin-bottom: 8px;
 }
 .filter-panel-header .filter-title {
-    font-size: 14px;
+    font-size: 13px;
     font-weight: bold;
     color: var(--m-brown);
 }
@@ -165,7 +166,7 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: 'PingFang HK', 'M
     background: var(--m-deep-green);
     color: white;
     border: none;
-    padding: 4px 10px;
+    padding: 4px 8px;
     border-radius: 6px;
     font-size: 11px;
     cursor: pointer;
@@ -173,48 +174,47 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: 'PingFang HK', 'M
 .filter-panel-header .edit-order-btn.active {
     background: var(--m-sage);
 }
-.filter-panel .filter-section { margin-bottom: 12px; }
+.filter-panel .filter-section { margin-bottom: 10px; }
 .filter-panel .filter-section-title {
-    font-size: 13px;
+    font-size: 12px;
     font-weight: bold;
     color: var(--m-brown);
-    margin-bottom: 6px;
+    margin-bottom: 5px;
     border-left: 4px solid var(--m-sage);
-    padding-left: 8px;
+    padding-left: 6px;
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
 .filter-panel .filter-section-title .tip {
-    font-size: 11px;
+    font-size: 10px;
     font-weight: normal;
     color: #aaa;
     background: #f0f0f0;
-    padding: 2px 8px;
+    padding: 2px 6px;
     border-radius: 12px;
 }
 .filter-panel .filter-row {
     display: flex;
     flex-wrap: wrap;
-    gap: 4px;
-    min-height: 30px;
+    gap: 2px;
+    min-height: 28px;
     position: relative;
 }
-/* 標籤樣式：更緊湊 */
 .filter-chip {
     background: var(--m-clay);
     padding: 2px 6px;
-    border-radius: 8px;
-    font-size: 12px;
+    border-radius: 12px;
+    font-size: 11px;
     cursor: pointer;
     color: white;
     user-select: none;
     transition: 0.2s;
     display: inline-block;
-    margin: 2px;
+    margin: 1px 2px;
     border: 2px solid transparent;
     box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    line-height: 1.4;
+    line-height: 1.3;
 }
 .filter-chip.active {
     background: var(--m-sage);
@@ -222,7 +222,6 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: 'PingFang HK', 'M
     border: 2px solid var(--m-deep-green);
     box-shadow: 0 0 0 2px var(--m-deep-green);
 }
-/* 拖拽時的樣式 */
 .filter-chip.dragging {
     opacity: 0.5;
     transform: scale(0.95);
@@ -234,7 +233,6 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: 'PingFang HK', 'M
 .filter-row.sorting .filter-chip:active {
     cursor: grabbing;
 }
-/* 插入指示線 - 高度70%，寬度3px */
 .insert-indicator {
     position: absolute;
     width: 3px;
@@ -304,6 +302,18 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: 'PingFang HK', 'M
 }
 .info { padding: 10px; flex-grow: 1; overflow: hidden; pointer-events: none; display: flex; flex-direction: column; }
 .info .note { display: none; }
+.pattern-name {
+    font-weight: bold;
+    font-size: var(--pattern-size);
+    line-height: 1.3;
+    margin: 4px 0;
+}
+.total-price {
+    color: var(--m-deep-green);
+    font-size: calc(16px * var(--info-scale));
+    font-weight: bold;
+    margin-top: auto;
+}
 
 /* ========== 表單 ========== */
 .input-group { margin-bottom: 5px; }
@@ -375,9 +385,10 @@ input, select, textarea {
 }
 .crop-modal .crop-container { max-height: 60vh; overflow: hidden; margin-bottom: 15px; position: relative; }
 .crop-modal .crop-image { max-width: 100%; display: block; }
-.crop-modal .crop-actions { display: flex; gap: 10px; margin-top: 15px; }
-.crop-modal .crop-btn { flex: 1; background: var(--m-deep-green); color: white; border: none; padding: 12px; border-radius: var(--radius); font-size: 13px; cursor: pointer; }
+.crop-modal .crop-actions { display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap; }
+.crop-modal .crop-btn { flex: 1; background: var(--m-deep-green); color: white; border: none; padding: 12px; border-radius: var(--radius); font-size: 13px; cursor: pointer; min-width: 100px; }
 .crop-modal .cancel-btn { background: var(--m-clay); color: white; }
+.crop-modal .edit-btn { background: var(--m-sage); }
 
 /* ========== 放大模式導航 ========== */
 .zoom-nav {
@@ -588,6 +599,7 @@ input, select, textarea {
     <div id="zoomInfo" class="zoom-info" style="display: none;"></div>
     <div class="crop-actions">
         <button class="crop-btn" id="cropConfirmBtn" style="display: none;">確認裁剪</button>
+        <button class="crop-btn edit-btn" id="zoomEditBtn" style="display: none;" onclick="editFromZoom()">編輯藏品</button>
         <button class="crop-btn cancel-btn" onclick="closeCropModal()">關閉</button>
     </div>
 </div>
@@ -609,7 +621,7 @@ input, select, textarea {
         <div class="menu-btn" onclick="openPage('page-gallery')">進入藏品庫</div>
         <div class="menu-btn" onclick="triggerQuickUpload()">上載藏品</div>
     </div>
-    <div class="version-tag">v1.2.5</div>
+    <div class="version-tag">v1.3.5</div>
 </div>
 <input type="file" id="quickUploadInput" style="display:none;" accept="image/*" onchange="handleQuickUploadFile(this)">
 
@@ -639,7 +651,7 @@ input, select, textarea {
             </div>
             <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 10px;">
                 <div id="lib-count" class="count-tag" style="margin:0;"><span>顯示:</span><span class="number">0/0</span></div>
-                <input type="range" class="grid-range-slider" min="50" max="180" value="160" oninput="handleGridSliderInput(this)">
+                <input type="range" class="grid-range-slider" id="grid-size-slider" min="50" max="180" value="160" oninput="handleGridSliderInput(this)">
                 <div style="margin-left: auto; display: flex; gap: 10px;">
                     <button class="filter-btn-bottom" id="filter-btn-gallery" onclick="toggleFilterPanel('現貨')">條件檢索</button>
                     <span class="edit-toggle-btn" onclick="setBatchMode(true)">管理</span>
@@ -752,16 +764,21 @@ input, select, textarea {
 
                 <div class="input-group"><label class="input-label">款式名稱</label><input type="text" id="pattern" name="pattern" autocomplete="on" required> </div>
                 <div class="input-group"><label class="input-label">備註</label><input type="text" id="note" name="note" autocomplete="on"></div>
+                
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; margin-bottom: 15px;">
                     <div><label class="input-label">狀態</label><select id="status" onchange="updateDateLabel()"><option value="現貨">現貨</option><option value="非現貨">非現貨</option><option value="願望">願望</option></select></div>
                     <div><label class="input-label">數量</label><input type="number" id="qty" value="1" min="1"></div>
                 </div>
-                <div class="input-group"><label class="input-label" id="dateLabel">購買日期(選填)</label><input type="date" id="buyDate"></div>
-                <div style="display:grid; grid-template-columns: 1fr 2fr; gap:15px; margin-bottom: 8px;">
+                
+                <div style="display:grid; grid-template-columns: 1fr 2fr; gap:15px; margin-bottom: 15px;">
                     <div><label class="input-label">幣種</label><select id="currency" onchange="liveExchange()"><option value="HKD">HKD</option><option value="RMB">RMB</option><option value="JPY">JPY</option></select></div>
                     <div><label class="input-label">單價</label><input type="number" id="inputPrice" step="0.01" value="0" oninput="liveExchange()"></div>
                 </div>
+                
                 <div id="exchangePreview" style="margin-bottom: 8px; font-size:12px; color:var(--m-deep-green); font-weight:bold;">總額: HKD 0.00</div>
+                
+                <div class="input-group"><label class="input-label" id="dateLabel">購買日期(選填)</label><input type="date" id="buyDate"></div>
+                
                 <div class="input-group">
                     <label class="input-label">藏品照片</label>
                     <input type="file" id="imgFile" accept="image/*" onchange="handleImageFileSelect(this)">
@@ -1000,7 +1017,7 @@ async function init() {
         merchList = data.merchList || [];
         dict = data.dict || { works: [], roles: [], types: [] };
     } catch (e) {
-        console.warn('讀取資料庫失敗，使用預設值', e);
+        console.warn('讀取資料庫失敗', e);
         merchList = [];
         dict = { works: [...DEFAULT_WORKS], roles: [], types: [...DEFAULT_TYPES] };
     }
@@ -1132,7 +1149,6 @@ function toggleFilterPanel(status) {
         btn.innerText = '關閉';
         btn.classList.add('active');
     } else {
-        // 關閉時退出排序模式
         const pageKey = status === '現貨' ? 'gallery' : (status === '非現貨' ? 'pending' : 'wish');
         sortModeActive[pageKey] = false;
         panel.style.display = 'none';
@@ -1152,14 +1168,13 @@ function toggleSortMode(status) {
     const pageKey = status === '現貨' ? 'gallery' : (status === '非現貨' ? 'pending' : 'wish');
     sortModeActive[pageKey] = !sortModeActive[pageKey];
     const panel = document.getElementById(getFilterPanelId(status));
-    renderFiltersInline(status, panel); // 重新渲染以更新按鈕和標籤行為
+    renderFiltersInline(status, panel);
 }
 
 function renderFiltersInline(status, panel) {
     const pageKey = status === '現貨' ? 'gallery' : (status === '非現貨' ? 'pending' : 'wish');
     const isSorting = sortModeActive[pageKey];
     
-    // 構建面板頭部
     let headerHtml = `
         <div class="filter-panel-header">
             <span class="filter-title">篩選條件</span>
@@ -1194,13 +1209,11 @@ function renderFiltersInline(status, panel) {
     
     panel.innerHTML = headerHtml + sectionsHtml;
     
-    // 為所有 filter-chip 綁定事件
     panel.querySelectorAll('.filter-chip').forEach(chip => {
         const key = chip.dataset.key;
         const value = chip.dataset.value;
         
         if (isSorting && value !== 'all') {
-            // 排序模式下，標籤可拖曳
             chip.setAttribute('draggable', 'true');
             chip.addEventListener('dragstart', handleDragStart);
             chip.addEventListener('dragend', handleDragEnd);
@@ -1217,7 +1230,6 @@ function renderFiltersInline(status, panel) {
             chip.removeEventListener('dragleave', handleDragLeave);
             chip.removeEventListener('drop', handleDrop);
             
-            // 點擊事件：篩選
             chip.addEventListener('click', (e) => {
                 if (value === 'all') {
                     filters[key] = [];
@@ -1229,11 +1241,9 @@ function renderFiltersInline(status, panel) {
                     }
                 }
                 renderAll();
-                // 重新渲染面板以更新選中狀態
                 renderFiltersInline(status, panel);
             });
             
-            // 長按事件：編輯/刪除（僅非「全部」標籤）
             if (value !== 'all') {
                 handleLongPress(chip, () => {
                     longPressedTag = { key, value };
@@ -1248,7 +1258,6 @@ function renderFiltersInline(status, panel) {
     });
 }
 
-// 拖拽事件處理函數
 function handleDragStart(e) {
     const chip = e.target;
     dragSource = chip;
@@ -1264,7 +1273,6 @@ function handleDragStart(e) {
 function handleDragEnd(e) {
     const chip = e.target;
     chip.classList.remove('dragging');
-    // 移除所有插入指示線
     document.querySelectorAll('.insert-indicator').forEach(el => el.remove());
     dragSource = null;
 }
@@ -1276,7 +1284,6 @@ function handleDragOver(e) {
     const row = e.target.closest('.filter-row');
     if (!row) return;
     
-    // 顯示插入指示線（每次移動都更新）
     showInsertIndicator(e, row);
 }
 
@@ -1284,9 +1291,7 @@ function handleDragEnter(e) {
     e.preventDefault();
 }
 
-function handleDragLeave(e) {
-    // 不在此處移除指示線，避免閃爍
-}
+function handleDragLeave(e) {}
 
 function handleDrop(e) {
     e.preventDefault();
@@ -1296,7 +1301,6 @@ function handleDrop(e) {
     const row = target.closest('.filter-row');
     if (!row) return;
     
-    // 獲取拖拽的數據
     const dataStr = e.dataTransfer.getData('text/plain');
     if (!dataStr) return;
     const sourceData = JSON.parse(dataStr);
@@ -1306,7 +1310,6 @@ function handleDrop(e) {
     const targetKey = target.dataset.key;
     const targetValue = target.dataset.value;
     
-    // 確保在同一類別內
     if (sourceKey !== targetKey) return;
     
     const dictKey = sourceKey + 's';
@@ -1315,12 +1318,10 @@ function handleDrop(e) {
     
     if (sourceIndex === -1 || targetIndex === -1) return;
     
-    // 根據滑鼠位置決定插入到目標之前還是之後
     const rect = target.getBoundingClientRect();
     const mouseX = e.clientX;
     const insertBefore = mouseX < rect.left + rect.width / 2;
     
-    // 重新排序數組
     const newArray = [...dict[dictKey]];
     newArray.splice(sourceIndex, 1);
     const newTargetIndex = newArray.indexOf(targetValue);
@@ -1329,10 +1330,8 @@ function handleDrop(e) {
     
     dict[dictKey] = newArray;
     
-    // 保存到資料庫
     commitToDB();
     
-    // 重新渲染所有開啟的面板和藏品列表
     ['現貨', '非現貨', '願望'].forEach(s => {
         const p = document.getElementById(getFilterPanelId(s));
         if (p && p.style.display === 'block') {
@@ -1341,12 +1340,10 @@ function handleDrop(e) {
     });
     renderAll();
     
-    // 移除插入指示線
     document.querySelectorAll('.insert-indicator').forEach(el => el.remove());
 }
 
 function showInsertIndicator(e, row) {
-    // 移除舊指示線
     document.querySelectorAll('.insert-indicator').forEach(el => el.remove());
     
     const chips = Array.from(row.querySelectorAll('.filter-chip:not([data-value="all"])'));
@@ -1448,7 +1445,7 @@ function handleLongPress(element, callback) {
     element.addEventListener('mouseleave', cancel);
 }
 
-// ========== 頁面切換與滾動位置記憶（強化版） ==========
+// ========== 頁面切換與滾動位置記憶（強化版，增加 2000ms 備用） ==========
 function switchTab(id, btn) {
     const activePage = document.querySelector('.page.active')?.id;
     if (activePage) {
@@ -1467,7 +1464,7 @@ function switchTab(id, btn) {
         if (id === 'page-gallery' || id === 'page-pending' || id === 'page-wish') {
             renderAll();
         }
-        // 使用雙層 requestAnimationFrame 確保在渲染後恢復
+        // 雙重 rAF 確保 DOM 更新後恢復
         requestAnimationFrame(() => {
             requestAnimationFrame(() => {
                 if (id === 'page-gallery') window.scrollTo(0, scrollPositions.gallery);
@@ -1475,12 +1472,18 @@ function switchTab(id, btn) {
                 else if (id === 'page-wish') window.scrollTo(0, scrollPositions.wish);
             });
         });
-        // 額外使用 setTimeout 作為備用，確保圖片載入後再次嘗試
+        // 200ms 備用（圖片可能尚未載入）
         setTimeout(() => {
             if (id === 'page-gallery') window.scrollTo(0, scrollPositions.gallery);
             else if (id === 'page-pending') window.scrollTo(0, scrollPositions.pending);
             else if (id === 'page-wish') window.scrollTo(0, scrollPositions.wish);
         }, 200);
+        // 增加 2000ms 備用，確保圖片完全載入後也能恢復
+        setTimeout(() => {
+            if (id === 'page-gallery') window.scrollTo(0, scrollPositions.gallery);
+            else if (id === 'page-pending') window.scrollTo(0, scrollPositions.pending);
+            else if (id === 'page-wish') window.scrollTo(0, scrollPositions.wish);
+        }, 2000);
     } else {
         window.scrollTo(0, 0);
     }
@@ -1498,7 +1501,6 @@ function openPage(id) {
 function handleBack() {
     const activePage = document.querySelector('.page.active')?.id;
     if (activePage === 'page-recent') {
-        // 從編輯頁返回時，回到之前保存的頁面
         switchTab(lastActivePageBeforeEdit, document.querySelector('.nav-item'));
     } else {
         document.getElementById('cover-page').classList.remove('open');
@@ -1506,166 +1508,28 @@ function handleBack() {
     }
 }
 
-// ========== 其他輔助函數 ==========
-function toggleInput(sid, iid) {
-    const s = document.getElementById(sid);
-    const i = document.getElementById(iid);
-    i.style.display = (s.value === 'NEW') ? 'block' : 'none';
-}
-
-function liveExchange() {
-    const c = document.getElementById('currency').value;
-    const p = parseFloat(document.getElementById('inputPrice').value) || 0;
-    const q = parseInt(document.getElementById('qty').value) || 1;
-    const total = (p * rates[c] * q).toFixed(2);
-    document.getElementById('exchangePreview').innerText = `總額: HKD ${total}`;
-}
-
-async function deleteCurrentItem() {
-    const idx = parseInt(document.getElementById('editIndex').value);
-    if (idx > -1 && confirm("確定刪除此藏品？")) {
-        let newList = [...merchList]; newList.splice(idx, 1);
-        merchList = newList;
-        try {
-            await commitToDB();
-        } catch (e) {
-            showModal("❌", "刪除失敗，無法儲存");
-            return;
-        }
-        renderSelects(); renderAll(); resetFormForNew();
-        switchTab('page-gallery', document.querySelectorAll('.nav-item')[0]);
-    }
-}
-
-function renderSelects() {
-    const fill = (id, list) => {
-        const s = document.getElementById(id);
-        const combined = [...list]; // 保持自定義順序
-        s.innerHTML = '<option value="">請選擇...</option>' + combined.map(x => `<option value="${x}">${x}</option>`).join('') + '<option value="NEW">+ 新增標籤</option>';
-    };
-    fill('workSelect', dict.works);
-    fill('roleSelect', dict.roles);
-    fill('typeSelect', dict.types);
-}
-
+// ========== 網格大小更新 ==========
 function updateGridSize(v) {
     document.documentElement.style.setProperty('--dynamic-grid', v + 'px');
     localStorage.setItem('archive_grid_size', v);
     isUpdatingGrid = true;
     document.querySelectorAll('.grid-range-slider').forEach(slider => slider.value = v);
     isUpdatingGrid = false;
+    
+    // 根據網格大小調整款式名稱字體
+    let patternSize = 12;
+    if (v <= 72) {
+        patternSize = 10;
+    } else if (v >= 109 && v < 170) {
+        patternSize = 13;
+    } else if (v >= 170) {
+        patternSize = 18;
+    }
+    document.documentElement.style.setProperty('--pattern-size', patternSize + 'px');
+    
     let scale = 1;
     if (v <= 106) scale = Math.max(0.7, v / 106);
     document.documentElement.style.setProperty('--info-scale', scale);
-}
-
-function updateCover(input) {
-    if (input.files && input.files[0]) {
-        const fr = new FileReader();
-        fr.onload = (e) => {
-            document.getElementById('cover-page').style.backgroundImage = `url(${e.target.result})`;
-            localStorage.setItem(COVER_KEY, e.target.result);
-        };
-        fr.readAsDataURL(input.files[0]);
-    }
-}
-
-function exportData() {
-    const data = JSON.stringify({ merchList, dict, cover: localStorage.getItem(COVER_KEY) });
-    const blob = new Blob([data], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = `archive_backup_${new Date().toISOString().slice(0, 10)}.json`;
-    a.click();
-}
-
-async function importData(input) {
-    const reader = new FileReader();
-    reader.onload = async (e) => {
-        try {
-            const data = JSON.parse(e.target.result);
-            merchList = data.merchList || [];
-            dict = data.dict || { works: [], roles: [], types: [] };
-            if (!dict.works) dict.works = [];
-            if (!dict.roles) dict.roles = [];
-            if (!dict.types) dict.types = [];
-            if (data.cover) localStorage.setItem(COVER_KEY, data.cover);
-            await commitToDB();
-            location.reload();
-        } catch (ex) { showModal("❌", "匯入檔案格式錯誤"); }
-    };
-    reader.readAsText(input.files[0]);
-}
-
-function renderStats() {
-    if (charts.monthly) charts.monthly.destroy();
-    if (charts.role) charts.role.destroy();
-    if (charts.roleCount) charts.roleCount.destroy();
-    if (charts.typeCount) charts.typeCount.destroy();
-
-    const statsList = merchList.filter(i => i.status !== '願望');
-    const totalExpense = statsList.reduce((sum, i) => sum + parseFloat(i.totalHkd || 0), 0).toFixed(2);
-
-    document.getElementById('totalCountSpan').innerText = merchList.length;
-    document.getElementById('totalExpenseSpan').innerText = `HKD ${totalExpense}`;
-
-    const colors = ['#6b7a63', '#acc1ad', '#a68b7c', '#d5cabd', '#e5ddd5', '#c2b2a3'];
-
-    const mData = {};
-    statsList.forEach(i => {
-        const d = new Date(i.timestamp);
-        const k = `${d.getFullYear()}/${d.getMonth() + 1}`;
-        mData[k] = (mData[k] || 0) + parseFloat(i.totalHkd);
-    });
-    charts.monthly = new Chart(document.getElementById('monthlyChart'), {
-        type: 'line',
-        data: { labels: Object.keys(mData), datasets: [{ label: 'HKD', data: Object.values(mData), borderColor: '#6b7a63', tension: 0.3 }] },
-        options: {
-            maintainAspectRatio: false,
-            responsive: true,
-            plugins: { datalabels: { display: true, align: 'bottom', offset: 10, formatter: (value) => '$' + parseInt(value), font: { size: 9, weight: 'bold' }, color: '#6b7a63' } }
-        }
-    });
-
-    const rData = {};
-    statsList.forEach(i => { rData[i.role] = (rData[i.role] || 0) + parseFloat(i.totalHkd); });
-    const rSorted = Object.entries(rData).sort((a, b) => b[1] - a[1]).slice(0, 3);
-    const rColors = ['#6b7a63', '#acc1ad', '#a68b7c'];
-    charts.role = new Chart(document.getElementById('roleChart'), {
-        type: 'bar',
-        data: { labels: rSorted.map(x => x[0]), datasets: [{ label: 'HKD', data: rSorted.map(x => x[1]), backgroundColor: rColors }] },
-        options: { indexAxis: 'y', maintainAspectRatio: false, responsive: true, plugins: { datalabels: { anchor: 'end', align: 'right', offset: 4, color: '#333', font: { weight: 'bold', size: 11 }, formatter: (value) => '$ ' + parseInt(value) } } }
-    });
-
-    const rcData = {};
-    statsList.forEach(i => { rcData[i.role] = (rcData[i.role] || 0) + 1; });
-    const rcSorted = Object.entries(rcData).sort((a, b) => b[1] - a[1]).slice(0, 3);
-    const rcColors = ['#6b7a63', '#acc1ad', '#a68b7c'];
-    charts.roleCount = new Chart(document.getElementById('roleCountChart'), {
-        type: 'bar',
-        data: { labels: rcSorted.map(x => x[0]), datasets: [{ label: '數量', data: rcSorted.map(x => x[1]), backgroundColor: rcColors }] },
-        options: { indexAxis: 'y', maintainAspectRatio: false, responsive: true, plugins: { datalabels: { anchor: 'end', align: 'right', offset: 4, color: '#333', font: { weight: 'bold', size: 11 }, formatter: (value) => value } } }
-    });
-
-    const tData = {};
-    statsList.forEach(i => { tData[i.type] = (tData[i.type] || 0) + 1; });
-    charts.typeCount = new Chart(document.getElementById('typeCountChart'), {
-        type: 'doughnut',
-        data: { labels: Object.keys(tData), datasets: [{ data: Object.values(tData), backgroundColor: colors }] },
-        options: { maintainAspectRatio: false, responsive: true, plugins: { datalabels: { color: '#fff', font: { weight: 'bold', size: 11 }, formatter: (value, context) => { const total = context.dataset.data.reduce((a,b)=>a+b,0); return (value / total * 100).toFixed(1) + '%'; } } } }
-    });
-
-    const rankBody = document.getElementById('roleRankBody');
-    if (rankBody) {
-        const topRoles = Object.entries(rData).sort((a,b)=>b[1]-a[1]).slice(0,3);
-        let html = '';
-        topRoles.forEach(([role, total], index) => {
-            const count = statsList.filter(i => i.role === role).length;
-            const className = index === 0 ? 'rank-1' : (index === 1 ? 'rank-2' : 'rank-3');
-            html += `<tr><td class="${className}">${role}</td><td>${count}</td><td>$ ${parseInt(total)}</td></tr>`;
-        });
-        rankBody.innerHTML = html;
-    }
 }
 
 // ========== 圖片處理 ==========
@@ -1723,9 +1587,11 @@ function updateZoomDisplay(index) {
     const item = currentZoomList[index];
     if (!item || !item.img) {
         document.getElementById('zoomInfo').style.display = 'none';
+        document.getElementById('zoomEditBtn').style.display = 'none';
         return;
     }
     document.getElementById('zoomInfo').style.display = 'block';
+    document.getElementById('zoomEditBtn').style.display = 'block';
     const img = document.getElementById('cropImage');
     if (cropper) {
         cropper.replace(item.img);
@@ -1757,6 +1623,7 @@ function openCropModal(imageSrc, callback, isZoom = false, item = null) {
     isZoomMode = isZoom;
 
     document.getElementById('cropConfirmBtn').style.display = isZoom ? 'none' : 'block';
+    document.getElementById('zoomEditBtn').style.display = isZoom ? 'block' : 'none';
     document.getElementById('zoomPrev').style.display = 'none';
     document.getElementById('zoomNext').style.display = 'none';
     document.getElementById('zoomInfo').style.display = isZoom ? 'block' : 'none';
@@ -1805,7 +1672,13 @@ function openCropModal(imageSrc, callback, isZoom = false, item = null) {
     };
 }
 
-// ========== 放大頁箭頭循環 ==========
+function editFromZoom() {
+    if (currentZoomList.length === 0 || currentZoomIndex === -1) return;
+    const originalIndex = currentZoomList[currentZoomIndex].originalIndex;
+    closeCropModal();
+    editItem(originalIndex);
+}
+
 function zoomPrev() {
     if (!currentZoomList || currentZoomList.length === 0) return;
     let newIndex = currentZoomIndex - 1;
@@ -2001,7 +1874,7 @@ document.getElementById('merchForm').onsubmit = async function (e) {
     }
 };
 
-// ========== renderAll ==========
+// ========== renderAll（無長按事件） ==========
 function renderAll() {
     const conf = { '現貨': 'readyList', '非現貨': 'waitList', '願望': 'wishList' };
     const srch = { '現貨': 'lib-search', '非現貨': 'wait-search', '願望': 'wish-search' };
@@ -2020,19 +1893,16 @@ function renderAll() {
             if (sortMode === 'date') return (b.timestamp - a.timestamp) * multi;
             if (sortMode === 'price') return (parseFloat(b.totalHkd) - parseFloat(a.totalHkd)) * multi;
             if (sortMode === 'name') {
-                // 按角色順序（dict.roles）
                 const roleOrderA = dict.roles.indexOf(a.role);
                 const roleOrderB = dict.roles.indexOf(b.role);
                 if (roleOrderA !== roleOrderB) {
                     return (roleOrderA - roleOrderB) * multi;
                 }
-                // 同角色下按類別順序（dict.types）
                 const typeOrderA = dict.types.indexOf(a.type);
                 const typeOrderB = dict.types.indexOf(b.type);
                 if (typeOrderA !== typeOrderB) {
                     return (typeOrderA - typeOrderB) * multi;
                 }
-                // 同角色同類別下按款式名稱
                 return a.pattern.localeCompare(b.pattern, 'zh-TW') * multi;
             }
             if (sortMode === 'qty') return (b.qty - a.qty) * multi;
@@ -2050,14 +1920,16 @@ function renderAll() {
             let unitPriceHKD = (parseFloat(i.price) * rates[i.currency]);
             let unitPriceStr = (unitPriceHKD % 1 === 0) ? unitPriceHKD.toString() : unitPriceHKD.toFixed(2);
 
+            const roleWithWork = i.work ? `${i.work} - ${i.role}` : i.role;
+
             let infoHtml;
             if (viewMode === 'grid') {
                 infoHtml = `
                     <div class="info">
-                        <div style="font-size:calc(9px * var(--info-scale,1)); color:var(--m-brown);">${i.role || ""} ${i.type ? '| ' + i.type : ""}</div>
-                        <div style="font-weight:bold; font-size:calc(12px * var(--info-scale,1)); margin:calc(4px * var(--info-scale,1)) 0;">${i.pattern || '無名'}</div>
+                        <div style="font-size:calc(9px * var(--info-scale,1)); color:var(--m-brown);">${roleWithWork} ${i.type ? '| ' + i.type : ""}</div>
+                        <div class="pattern-name">${i.pattern || '無名'}</div>
                         <div style="color:#999; font-size: calc(9px * var(--info-scale,1));">單價 $ ${unitPriceStr}</div>
-                        <div style="color:var(--m-deep-green); font-size: calc(13px * var(--info-scale,1)); font-weight:bold; margin-top: auto;">$ ${totalInt}</div>
+                        <div class="total-price">$ ${totalInt}</div>
                         ${noteHtml}
                     </div>
                     <div class="card-qty">x${i.qty}</div>
@@ -2065,10 +1937,10 @@ function renderAll() {
             } else if (viewMode === 'list') {
                 infoHtml = `
                     <div class="info">
-                        <div style="font-size:calc(9px * var(--info-scale,1)); color:var(--m-brown);">${i.role || ""} ${i.type ? '| ' + i.type : ""}</div>
-                        <div style="font-weight:bold; font-size:calc(12px * var(--info-scale,1)); margin:calc(4px * var(--info-scale,1)) 0;">${i.pattern || '無名'}</div>
+                        <div style="font-size:calc(9px * var(--info-scale,1)); color:var(--m-brown);">${roleWithWork} ${i.type ? '| ' + i.type : ""}</div>
+                        <div class="pattern-name">${i.pattern || '無名'}</div>
                         <div style="color:#999; font-size: calc(9px * var(--info-scale,1)); margin-bottom: 2px;">單價 $ ${unitPriceStr}</div>
-                        <div style="color:var(--m-deep-green); font-size: calc(13px * var(--info-scale,1)); font-weight:bold;">$ ${totalInt} <span style="color:#aaa;font-weight:normal;font-size:calc(9px * var(--info-scale,1));">x${i.qty}</span></div>
+                        <div class="total-price">$ ${totalInt} <span style="color:#aaa;font-weight:normal;font-size:calc(9px * var(--info-scale,1));">x${i.qty}</span></div>
                         ${noteHtml}
                     </div>
                 `;
@@ -2077,12 +1949,19 @@ function renderAll() {
             }
 
             card.innerHTML = imgHtml + infoHtml;
-            card.onclick = () => isBatchMode ? toggleSelectItem(i.originalIndex) : editItem(i.originalIndex);
-            handleLongPress(card, () => {
-                if (!isBatchMode && i.img) {
-                    zoomImage(i, filtered, status, idx);
+            
+            card.onclick = () => {
+                if (isBatchMode) {
+                    toggleSelectItem(i.originalIndex);
+                } else {
+                    if (i.img) {
+                        zoomImage(i, filtered, status, idx);
+                    } else {
+                        editItem(i.originalIndex);
+                    }
                 }
-            });
+            };
+            
             container.appendChild(card);
         });
         const cld = status === '現貨' ? 'lib-count' : (status === '非現貨' ? 'wait-count' : 'wish-count');
@@ -2092,13 +1971,163 @@ function renderAll() {
             countLabel.innerHTML = `<span>顯示:</span><span class="number">${filtered.length}/${total}</span>`;
         }
     });
-    // 重新渲染所有開啟的面板
     ['現貨', '非現貨', '願望'].forEach(status => {
         const panel = document.getElementById(getFilterPanelId(status));
         if (panel && panel.style.display === 'block') {
             renderFiltersInline(status, panel);
         }
     });
+}
+
+// ========== 其他輔助函數 ==========
+function toggleInput(sid, iid) {
+    const s = document.getElementById(sid);
+    const i = document.getElementById(iid);
+    i.style.display = (s.value === 'NEW') ? 'block' : 'none';
+}
+
+function liveExchange() {
+    const c = document.getElementById('currency').value;
+    const p = parseFloat(document.getElementById('inputPrice').value) || 0;
+    const q = parseInt(document.getElementById('qty').value) || 1;
+    const total = (p * rates[c] * q).toFixed(2);
+    document.getElementById('exchangePreview').innerText = `總額: HKD ${total}`;
+}
+
+async function deleteCurrentItem() {
+    const idx = parseInt(document.getElementById('editIndex').value);
+    if (idx > -1 && confirm("確定刪除此藏品？")) {
+        let newList = [...merchList]; newList.splice(idx, 1);
+        merchList = newList;
+        try {
+            await commitToDB();
+        } catch (e) {
+            showModal("❌", "刪除失敗，無法儲存");
+            return;
+        }
+        renderSelects(); renderAll(); resetFormForNew();
+        switchTab('page-gallery', document.querySelectorAll('.nav-item')[0]);
+    }
+}
+
+function renderSelects() {
+    const fill = (id, list) => {
+        const s = document.getElementById(id);
+        const combined = [...list];
+        s.innerHTML = '<option value="">請選擇...</option>' + combined.map(x => `<option value="${x}">${x}</option>`).join('') + '<option value="NEW">+ 新增標籤</option>';
+    };
+    fill('workSelect', dict.works);
+    fill('roleSelect', dict.roles);
+    fill('typeSelect', dict.types);
+}
+
+function updateCover(input) {
+    if (input.files && input.files[0]) {
+        const fr = new FileReader();
+        fr.onload = (e) => {
+            document.getElementById('cover-page').style.backgroundImage = `url(${e.target.result})`;
+            localStorage.setItem(COVER_KEY, e.target.result);
+        };
+        fr.readAsDataURL(input.files[0]);
+    }
+}
+
+function exportData() {
+    const data = JSON.stringify({ merchList, dict, cover: localStorage.getItem(COVER_KEY) });
+    const blob = new Blob([data], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = `archive_backup_${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+}
+
+async function importData(input) {
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+        try {
+            const data = JSON.parse(e.target.result);
+            merchList = data.merchList || [];
+            dict = data.dict || { works: [], roles: [], types: [] };
+            if (!dict.works) dict.works = [];
+            if (!dict.roles) dict.roles = [];
+            if (!dict.types) dict.types = [];
+            if (data.cover) localStorage.setItem(COVER_KEY, data.cover);
+            await commitToDB();
+            location.reload();
+        } catch (ex) { showModal("❌", "匯入檔案格式錯誤"); }
+    };
+    reader.readAsText(input.files[0]);
+}
+
+function renderStats() {
+    if (charts.monthly) charts.monthly.destroy();
+    if (charts.role) charts.role.destroy();
+    if (charts.roleCount) charts.roleCount.destroy();
+    if (charts.typeCount) charts.typeCount.destroy();
+
+    const statsList = merchList.filter(i => i.status !== '願望');
+    const totalExpense = statsList.reduce((sum, i) => sum + parseFloat(i.totalHkd || 0), 0).toFixed(2);
+
+    document.getElementById('totalCountSpan').innerText = merchList.length;
+    document.getElementById('totalExpenseSpan').innerText = `HKD ${totalExpense}`;
+
+    const colors = ['#6b7a63', '#acc1ad', '#a68b7c', '#d5cabd', '#e5ddd5', '#c2b2a3'];
+
+    const mData = {};
+    statsList.forEach(i => {
+        const d = new Date(i.timestamp);
+        const k = `${d.getFullYear()}/${d.getMonth() + 1}`;
+        mData[k] = (mData[k] || 0) + parseFloat(i.totalHkd);
+    });
+    charts.monthly = new Chart(document.getElementById('monthlyChart'), {
+        type: 'line',
+        data: { labels: Object.keys(mData), datasets: [{ label: 'HKD', data: Object.values(mData), borderColor: '#6b7a63', tension: 0.3 }] },
+        options: {
+            maintainAspectRatio: false,
+            responsive: true,
+            plugins: { datalabels: { display: true, align: 'bottom', offset: 10, formatter: (value) => '$' + parseInt(value), font: { size: 9, weight: 'bold' }, color: '#6b7a63' } }
+        }
+    });
+
+    const rData = {};
+    statsList.forEach(i => { rData[i.role] = (rData[i.role] || 0) + parseFloat(i.totalHkd); });
+    const rSorted = Object.entries(rData).sort((a, b) => b[1] - a[1]).slice(0, 3);
+    const rColors = ['#6b7a63', '#acc1ad', '#a68b7c'];
+    charts.role = new Chart(document.getElementById('roleChart'), {
+        type: 'bar',
+        data: { labels: rSorted.map(x => x[0]), datasets: [{ label: 'HKD', data: rSorted.map(x => x[1]), backgroundColor: rColors }] },
+        options: { indexAxis: 'y', maintainAspectRatio: false, responsive: true, plugins: { datalabels: { anchor: 'end', align: 'right', offset: 4, color: '#333', font: { weight: 'bold', size: 11 }, formatter: (value) => '$ ' + parseInt(value) } } }
+    });
+
+    const rcData = {};
+    statsList.forEach(i => { rcData[i.role] = (rcData[i.role] || 0) + 1; });
+    const rcSorted = Object.entries(rcData).sort((a, b) => b[1] - a[1]).slice(0, 3);
+    const rcColors = ['#6b7a63', '#acc1ad', '#a68b7c'];
+    charts.roleCount = new Chart(document.getElementById('roleCountChart'), {
+        type: 'bar',
+        data: { labels: rcSorted.map(x => x[0]), datasets: [{ label: '數量', data: rcSorted.map(x => x[1]), backgroundColor: rcColors }] },
+        options: { indexAxis: 'y', maintainAspectRatio: false, responsive: true, plugins: { datalabels: { anchor: 'end', align: 'right', offset: 4, color: '#333', font: { weight: 'bold', size: 11 }, formatter: (value) => value } } }
+    });
+
+    const tData = {};
+    statsList.forEach(i => { tData[i.type] = (tData[i.type] || 0) + 1; });
+    charts.typeCount = new Chart(document.getElementById('typeCountChart'), {
+        type: 'doughnut',
+        data: { labels: Object.keys(tData), datasets: [{ data: Object.values(tData), backgroundColor: colors }] },
+        options: { maintainAspectRatio: false, responsive: true, plugins: { datalabels: { color: '#fff', font: { weight: 'bold', size: 11 }, formatter: (value, context) => { const total = context.dataset.data.reduce((a,b)=>a+b,0); return (value / total * 100).toFixed(1) + '%'; } } } }
+    });
+
+    const rankBody = document.getElementById('roleRankBody');
+    if (rankBody) {
+        const topRoles = Object.entries(rData).sort((a,b)=>b[1]-a[1]).slice(0,3);
+        let html = '';
+        topRoles.forEach(([role, total], index) => {
+            const count = statsList.filter(i => i.role === role).length;
+            const className = index === 0 ? 'rank-1' : (index === 1 ? 'rank-2' : 'rank-3');
+            html += `<tr><td class="${className}">${role}</td><td>${count}</td><td>$ ${parseInt(total)}</td></tr>`;
+        });
+        rankBody.innerHTML = html;
+    }
 }
 
 // 啟動
