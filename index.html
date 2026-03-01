@@ -320,6 +320,12 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: 'PingFang HK', 'M
     font-weight: normal;
     margin-left: 4px;
 }
+/* 新增：原始幣種樣式（小字、灰色、非粗體） */
+.original-currency {
+    font-size: calc(9px * var(--info-scale,1));
+    color: #999;
+    font-weight: normal;
+}
 
 /* ========== 表單 ========== */
 .input-group { margin-bottom: 5px; }
@@ -1679,15 +1685,12 @@ function updateZoomDisplay(index) {
     let unitPriceHKD = (parseFloat(item.price) * rates[item.currency]);
     let unitPriceStr = (unitPriceHKD % 1 === 0) ? unitPriceHKD.toString() : unitPriceHKD.toFixed(2);
 
-    // 計算原始總價顯示
+    // 計算原始總價顯示（小字、灰色、非粗體）
     let originalDisplay = '';
     if (item.currency !== 'HKD') {
         let originalTotal = item.price * item.qty;
         let originalStr = (originalTotal % 1 === 0) ? originalTotal.toString() : originalTotal.toFixed(2);
-        let symbol = '';
-        if (item.currency === 'JPY') symbol = '¥';
-        else if (item.currency === 'RMB') symbol = 'RMB¥';
-        originalDisplay = ` (${symbol}${originalStr})`;
+        originalDisplay = ` (<span class="original-currency">${item.currency}${originalStr}</span>)`;
     }
 
     const infoDiv = document.getElementById('zoomInfo');
@@ -2048,15 +2051,12 @@ function renderAll() {
 
             const roleWithWork = i.work ? `${i.work} - ${i.role}` : i.role;
 
-            // 計算原始總價顯示
+            // 計算原始總價顯示（小字、灰色、非粗體）
             let originalDisplay = '';
             if (i.currency !== 'HKD') {
                 let originalTotal = i.price * i.qty;
                 let originalStr = (originalTotal % 1 === 0) ? originalTotal.toString() : originalTotal.toFixed(2);
-                let symbol = '';
-                if (i.currency === 'JPY') symbol = '¥';
-                else if (i.currency === 'RMB') symbol = 'RMB¥';
-                originalDisplay = ` (${symbol}${originalStr})`;
+                originalDisplay = ` (<span class="original-currency">${i.currency}${originalStr}</span>)`;
             }
 
             let infoHtml;
