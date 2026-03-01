@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Morandi Archive - v1.1.2</title>
+<title>Morandi Archive - v1.2.2</title>
 <!-- Cropper.js 樣式與腳本 -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
@@ -11,7 +11,7 @@
 <!-- Chart.js 數據標籤插件 -->
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0/dist/chartjs-plugin-datalabels.min.js"></script>
 <style>
-/* ========== 全域樣式 (與先前相同) ========== */
+/* ========== 全域樣式 ========== */
 :root {
     --m-deep-green: #6b7a63; --m-sage: #acc1ad; --m-brown: #a68b7c;
     --m-sand: #d5cabd; --m-clay: #e5ddd5; --bg: #f2efeb;
@@ -150,6 +150,29 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: 'PingFang HK', 'M
     margin-top: 15px;
     border: 1px solid var(--m-clay);
 }
+.filter-panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+.filter-panel-header .filter-title {
+    font-size: 14px;
+    font-weight: bold;
+    color: var(--m-brown);
+}
+.filter-panel-header .edit-order-btn {
+    background: var(--m-deep-green);
+    color: white;
+    border: none;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+    cursor: pointer;
+}
+.filter-panel-header .edit-order-btn.active {
+    background: var(--m-sage);
+}
 .filter-panel .filter-section { margin-bottom: 12px; }
 .filter-panel .filter-section-title {
     font-size: 13px;
@@ -174,23 +197,54 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: 'PingFang HK', 'M
     display: flex;
     flex-wrap: wrap;
     gap: 4px;
+    min-height: 30px;
+    position: relative;
 }
+/* 標籤樣式：縮小內邊距和圓角 */
 .filter-chip {
     background: var(--m-clay);
-    padding: 4px 10px;
-    border-radius: 14px;
-    font-size: 11px;
+    padding: 4px 8px;          /* 減小內邊距 */
+    border-radius: 12px;        /* 圓角縮小 */
+    font-size: 12px;
     cursor: pointer;
-    color: #5D3A1A;
+    color: white;
     user-select: none;
     transition: 0.2s;
     display: inline-block;
-    margin: 2px 0;
+    margin: 2px;
+    border: 2px solid transparent;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 .filter-chip.active {
     background: var(--m-sage);
     color: white;
+    border: 2px solid var(--m-deep-green);
     box-shadow: 0 0 0 2px var(--m-deep-green);
+}
+/* 拖拽時的樣式 */
+.filter-chip.dragging {
+    opacity: 0.5;
+    transform: scale(0.95);
+    cursor: grabbing;
+}
+.filter-row.sorting .filter-chip {
+    cursor: grab;
+}
+.filter-row.sorting .filter-chip:active {
+    cursor: grabbing;
+}
+/* 插入指示線 - 調整高度和樣式 */
+.insert-indicator {
+    position: absolute;
+    width: 4px;
+    height: 70%;               /* 相對行高 */
+    background: var(--m-deep-green);
+    border-radius: 2px;
+    top: 15%;                  /* 垂直置中 */
+    pointer-events: none;
+    z-index: 10;
+    transition: left 0.05s;
+    box-shadow: 0 0 4px var(--m-deep-green);
 }
 
 /* ========== 列表容器 ========== */
@@ -554,7 +608,7 @@ input, select, textarea {
         <div class="menu-btn" onclick="openPage('page-gallery')">進入藏品庫</div>
         <div class="menu-btn" onclick="triggerQuickUpload()">上載藏品</div>
     </div>
-    <div class="version-tag">v1.1.2</div>
+    <div class="version-tag">v1.2.2</div>
 </div>
 <input type="file" id="quickUploadInput" style="display:none;" accept="image/*" onchange="handleQuickUploadFile(this)">
 
@@ -591,9 +645,7 @@ input, select, textarea {
                 </div>
             </div>
             <div class="filter-panel" id="filter-panel-gallery" style="display: none;">
-                <div class="filter-section" data-section="work"></div>
-                <div class="filter-section" data-section="role"></div>
-                <div class="filter-section" data-section="type"></div>
+                <!-- 面板內容由 JavaScript 動態生成 -->
             </div>
         </div>
         <div id="readyList" class="list-container grid"></div>
@@ -630,9 +682,7 @@ input, select, textarea {
                 </div>
             </div>
             <div class="filter-panel" id="filter-panel-pending" style="display: none;">
-                <div class="filter-section" data-section="work"></div>
-                <div class="filter-section" data-section="role"></div>
-                <div class="filter-section" data-section="type"></div>
+                <!-- 面板內容由 JavaScript 動態生成 -->
             </div>
         </div>
         <div id="waitList" class="list-container grid"></div>
@@ -669,9 +719,7 @@ input, select, textarea {
                 </div>
             </div>
             <div class="filter-panel" id="filter-panel-wish" style="display: none;">
-                <div class="filter-section" data-section="work"></div>
-                <div class="filter-section" data-section="role"></div>
-                <div class="filter-section" data-section="type"></div>
+                <!-- 面板內容由 JavaScript 動態生成 -->
             </div>
         </div>
         <div id="wishList" class="list-container grid"></div>
@@ -888,6 +936,19 @@ let scrollPositions = {
     wish: 0
 };
 
+// 排序模式狀態
+let sortModeActive = {
+    gallery: false,
+    pending: false,
+    wish: false
+};
+
+// 拖拽相關變數
+let dragSource = null;
+let dragClone = null;
+let dragIndicator = null;
+let dragTargetRow = null;
+
 Chart.register(ChartDataLabels);
 
 document.getElementById('overlay').addEventListener('click', function() {
@@ -1070,6 +1131,9 @@ function toggleFilterPanel(status) {
         btn.innerText = '關閉';
         btn.classList.add('active');
     } else {
+        // 關閉時退出排序模式
+        const pageKey = status === '現貨' ? 'gallery' : (status === '非現貨' ? 'pending' : 'wish');
+        sortModeActive[pageKey] = false;
         panel.style.display = 'none';
         btn.innerText = '條件檢索';
         btn.classList.remove('active');
@@ -1083,20 +1147,36 @@ function getFilterPanelId(status) {
     return '';
 }
 
+function toggleSortMode(status) {
+    const pageKey = status === '現貨' ? 'gallery' : (status === '非現貨' ? 'pending' : 'wish');
+    sortModeActive[pageKey] = !sortModeActive[pageKey];
+    const panel = document.getElementById(getFilterPanelId(status));
+    renderFiltersInline(status, panel); // 重新渲染以更新按鈕和標籤行為
+}
+
 function renderFiltersInline(status, panel) {
-    const sections = panel.querySelectorAll('.filter-section');
+    const pageKey = status === '現貨' ? 'gallery' : (status === '非現貨' ? 'pending' : 'wish');
+    const isSorting = sortModeActive[pageKey];
+    
+    // 構建面板頭部
+    let headerHtml = `
+        <div class="filter-panel-header">
+            <span class="filter-title">篩選條件</span>
+            <button class="edit-order-btn ${isSorting ? 'active' : ''}" onclick="toggleSortMode('${status}')">
+                ${isSorting ? '完成排序' : '編輯順序'}
+            </button>
+        </div>
+    `;
+    
     const keys = ['work', 'role', 'type'];
-    keys.forEach((key, idx) => {
-        const section = sections[idx];
-        if (!section) return;
+    let sectionsHtml = '';
+    keys.forEach(key => {
         const list = dict[key + 's'] || [];
         const title = key === 'work' ? '作品' : (key === 'role' ? '角色' : '類別');
-        const tip = key === 'work' ? '長按編輯或刪除標籤' : '';
-        let titleHtml = `<div class="filter-section-title">${title}`;
-        if (tip) titleHtml += ` <span class="tip">${tip}</span>`;
-        titleHtml += '</div>';
+        const tip = key === 'work' ? '點擊篩選，長按編輯/刪除' : '點擊篩選，長按編輯/刪除';
+        let titleHtml = `<div class="filter-section-title">${title} <span class="tip">${tip}</span></div>`;
         
-        let rowHtml = '<div class="filter-row">';
+        let rowHtml = `<div class="filter-row" data-key="${key}" data-status="${status}">`;
         const totalCount = status ? merchList.filter(i => i.status === status).length : 0;
         const allActive = filters[key].length === 0 ? 'active' : '';
         rowHtml += `<div class="filter-chip ${allActive}" data-key="${key}" data-value="all">全部 (${totalCount})</div>`;
@@ -1108,37 +1188,203 @@ function renderFiltersInline(status, panel) {
         });
         rowHtml += '</div>';
         
-        section.innerHTML = titleHtml + rowHtml;
+        sectionsHtml += `<div class="filter-section">${titleHtml}${rowHtml}</div>`;
     });
     
+    panel.innerHTML = headerHtml + sectionsHtml;
+    
+    // 為所有 filter-chip 綁定事件
     panel.querySelectorAll('.filter-chip').forEach(chip => {
-        chip.addEventListener('click', (e) => {
-            const key = chip.dataset.key;
-            const value = chip.dataset.value;
-            if (value === 'all') {
-                filters[key] = [];
-            } else {
-                if (filters[key].includes(value)) {
-                    filters[key] = filters[key].filter(v => v !== value);
-                } else {
-                    filters[key] = [...filters[key], value];
-                }
-            }
-            renderAll();
-            renderFiltersInline(status, panel);
-        });
+        const key = chip.dataset.key;
+        const value = chip.dataset.value;
         
-        if (chip.dataset.value !== 'all') {
-            handleLongPress(chip, () => {
-                longPressedTag = { key: chip.dataset.key, value: chip.dataset.value };
-                const rect = chip.getBoundingClientRect();
-                const menu = document.getElementById('tagContextMenu');
-                menu.style.left = rect.left + 'px';
-                menu.style.top = rect.bottom + 'px';
-                menu.style.display = 'block';
+        if (isSorting && value !== 'all') {
+            // 排序模式下，標籤可拖曳
+            chip.setAttribute('draggable', 'true');
+            chip.addEventListener('dragstart', handleDragStart);
+            chip.addEventListener('dragend', handleDragEnd);
+            chip.addEventListener('dragover', handleDragOver);
+            chip.addEventListener('dragenter', handleDragEnter);
+            chip.addEventListener('dragleave', handleDragLeave);
+            chip.addEventListener('drop', handleDrop);
+        } else {
+            chip.removeAttribute('draggable');
+            chip.removeEventListener('dragstart', handleDragStart);
+            chip.removeEventListener('dragend', handleDragEnd);
+            chip.removeEventListener('dragover', handleDragOver);
+            chip.removeEventListener('dragenter', handleDragEnter);
+            chip.removeEventListener('dragleave', handleDragLeave);
+            chip.removeEventListener('drop', handleDrop);
+            
+            // 點擊事件：篩選
+            chip.addEventListener('click', (e) => {
+                if (value === 'all') {
+                    filters[key] = [];
+                } else {
+                    if (filters[key].includes(value)) {
+                        filters[key] = filters[key].filter(v => v !== value);
+                    } else {
+                        filters[key] = [...filters[key], value];
+                    }
+                }
+                renderAll();
+                // 重新渲染面板以更新選中狀態
+                renderFiltersInline(status, panel);
             });
+            
+            // 長按事件：編輯/刪除（僅非「全部」標籤）
+            if (value !== 'all') {
+                handleLongPress(chip, () => {
+                    longPressedTag = { key, value };
+                    const rect = chip.getBoundingClientRect();
+                    const menu = document.getElementById('tagContextMenu');
+                    menu.style.left = rect.left + 'px';
+                    menu.style.top = rect.bottom + 'px';
+                    menu.style.display = 'block';
+                });
+            }
         }
     });
+}
+
+// 拖拽事件處理函數
+function handleDragStart(e) {
+    const chip = e.target;
+    dragSource = chip;
+    e.dataTransfer.setData('text/plain', JSON.stringify({
+        key: chip.dataset.key,
+        value: chip.dataset.value,
+        status: chip.closest('.filter-row').dataset.status
+    }));
+    e.dataTransfer.effectAllowed = 'move';
+    chip.classList.add('dragging');
+}
+
+function handleDragEnd(e) {
+    const chip = e.target;
+    chip.classList.remove('dragging');
+    // 移除所有插入指示線
+    document.querySelectorAll('.insert-indicator').forEach(el => el.remove());
+    dragSource = null;
+}
+
+function handleDragOver(e) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    
+    const row = e.target.closest('.filter-row');
+    if (!row) return;
+    
+    // 顯示插入指示線
+    showInsertIndicator(e, row);
+}
+
+function handleDragEnter(e) {
+    e.preventDefault();
+}
+
+function handleDragLeave(e) {
+    // 不在此處移除指示線，避免閃爍
+}
+
+function handleDrop(e) {
+    e.preventDefault();
+    const target = e.target.closest('.filter-chip');
+    if (!target || target.dataset.value === 'all') return;
+    
+    const row = target.closest('.filter-row');
+    if (!row) return;
+    
+    // 獲取拖拽的數據
+    const dataStr = e.dataTransfer.getData('text/plain');
+    if (!dataStr) return;
+    const sourceData = JSON.parse(dataStr);
+    
+    const sourceKey = sourceData.key;
+    const sourceValue = sourceData.value;
+    const targetKey = target.dataset.key;
+    const targetValue = target.dataset.value;
+    
+    // 確保在同一類別內
+    if (sourceKey !== targetKey) return;
+    
+    const dictKey = sourceKey + 's';
+    const sourceIndex = dict[dictKey].indexOf(sourceValue);
+    const targetIndex = dict[dictKey].indexOf(targetValue);
+    
+    if (sourceIndex === -1 || targetIndex === -1) return;
+    
+    // 根據滑鼠位置決定插入到目標之前還是之後
+    const rect = target.getBoundingClientRect();
+    const mouseX = e.clientX;
+    const insertBefore = mouseX < rect.left + rect.width / 2;
+    
+    // 重新排序數組
+    const newArray = [...dict[dictKey]];
+    newArray.splice(sourceIndex, 1);
+    const newTargetIndex = newArray.indexOf(targetValue);
+    const insertPos = insertBefore ? newTargetIndex : newTargetIndex + 1;
+    newArray.splice(insertPos, 0, sourceValue);
+    
+    dict[dictKey] = newArray;
+    
+    // 保存到資料庫
+    commitToDB();
+    
+    // 重新渲染所有開啟的面板和藏品列表
+    ['現貨', '非現貨', '願望'].forEach(s => {
+        const p = document.getElementById(getFilterPanelId(s));
+        if (p && p.style.display === 'block') {
+            renderFiltersInline(s, p);
+        }
+    });
+    renderAll();
+    
+    // 移除插入指示線
+    document.querySelectorAll('.insert-indicator').forEach(el => el.remove());
+}
+
+function showInsertIndicator(e, row) {
+    // 移除舊指示線
+    document.querySelectorAll('.insert-indicator').forEach(el => el.remove());
+    
+    const chips = Array.from(row.querySelectorAll('.filter-chip:not([data-value="all"])'));
+    if (chips.length === 0) return;
+    
+    const mouseX = e.clientX;
+    let insertIndex = chips.length;
+    
+    for (let i = 0; i < chips.length; i++) {
+        const chip = chips[i];
+        const rect = chip.getBoundingClientRect();
+        if (mouseX < rect.left + rect.width / 2) {
+            insertIndex = i;
+            break;
+        }
+    }
+    
+    const indicator = document.createElement('div');
+    indicator.className = 'insert-indicator';
+    
+    if (insertIndex === 0) {
+        const firstChip = chips[0];
+        const rect = firstChip.getBoundingClientRect();
+        indicator.style.left = (rect.left - 2) + 'px';
+    } else if (insertIndex === chips.length) {
+        const lastChip = chips[chips.length - 1];
+        const rect = lastChip.getBoundingClientRect();
+        indicator.style.left = (rect.right - 2) + 'px';
+    } else {
+        const prevChip = chips[insertIndex - 1];
+        const nextChip = chips[insertIndex];
+        const prevRect = prevChip.getBoundingClientRect();
+        const nextRect = nextChip.getBoundingClientRect();
+        indicator.style.left = ((prevRect.right + nextRect.left) / 2 - 2) + 'px';
+    }
+    
+    indicator.style.top = (row.getBoundingClientRect().top + 5) + 'px';
+    indicator.style.height = (row.offsetHeight - 10) + 'px';
+    document.body.appendChild(indicator);
 }
 
 async function editTagFromMenu() {
@@ -1195,8 +1441,10 @@ function handleLongPress(element, callback) {
     const cancel = () => clearTimeout(timer);
     element.addEventListener('touchstart', start, { passive: true });
     element.addEventListener('touchend', cancel);
+    element.addEventListener('touchcancel', cancel);
     element.addEventListener('mousedown', start);
     element.addEventListener('mouseup', cancel);
+    element.addEventListener('mouseleave', cancel);
 }
 
 // ========== 頁面切換與滾動位置記憶 ==========
@@ -1284,7 +1532,7 @@ async function deleteCurrentItem() {
 function renderSelects() {
     const fill = (id, list) => {
         const s = document.getElementById(id);
-        const combined = [...list].sort();
+        const combined = [...list]; // 保持自定義順序
         s.innerHTML = '<option value="">請選擇...</option>' + combined.map(x => `<option value="${x}">${x}</option>`).join('') + '<option value="NEW">+ 新增標籤</option>';
     };
     fill('workSelect', dict.works);
@@ -1764,14 +2012,20 @@ function renderAll() {
             if (sortMode === 'date') return (b.timestamp - a.timestamp) * multi;
             if (sortMode === 'price') return (parseFloat(b.totalHkd) - parseFloat(a.totalHkd)) * multi;
             if (sortMode === 'name') {
-                // 先按角色排序，再按款式名稱排序
-                const roleA = a.role || '';
-                const roleB = b.role || '';
-                if (roleA !== roleB) {
-                    return roleA.localeCompare(roleB, 'zh-TW') * multi;
-                } else {
-                    return a.pattern.localeCompare(b.pattern, 'zh-TW') * multi;
+                // 按角色順序（dict.roles）
+                const roleOrderA = dict.roles.indexOf(a.role);
+                const roleOrderB = dict.roles.indexOf(b.role);
+                if (roleOrderA !== roleOrderB) {
+                    return (roleOrderA - roleOrderB) * multi;
                 }
+                // 同角色下按類別順序（dict.types）
+                const typeOrderA = dict.types.indexOf(a.type);
+                const typeOrderB = dict.types.indexOf(b.type);
+                if (typeOrderA !== typeOrderB) {
+                    return (typeOrderA - typeOrderB) * multi;
+                }
+                // 同角色同類別下按款式名稱
+                return a.pattern.localeCompare(b.pattern, 'zh-TW') * multi;
             }
             if (sortMode === 'qty') return (b.qty - a.qty) * multi;
             return 0;
@@ -1830,6 +2084,7 @@ function renderAll() {
             countLabel.innerHTML = `<span>顯示:</span><span class="number">${filtered.length}/${total}</span>`;
         }
     });
+    // 重新渲染所有開啟的面板
     ['現貨', '非現貨', '願望'].forEach(status => {
         const panel = document.getElementById(getFilterPanelId(status));
         if (panel && panel.style.display === 'block') {
