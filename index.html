@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Morandi Archive - v1.3.9</title>
+<title>Morandi Archive - v1.4.6</title>
 <!-- Cropper.js 樣式與腳本 -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
@@ -17,7 +17,7 @@
     --m-sand: #d5cabd; --m-clay: #e5ddd5; --bg: #f2efeb;
     --text: #4a4a4a; --radius: 8px; --dynamic-grid: 160px;
     --info-scale: 1;
-    --pattern-size: 12px;
+    --pattern-size: 13px;
 }
 body.theme-1 { --m-deep-green: #9DC8C8; --m-sage: #58C9B9; --m-brown: #519D9E; --m-sand: #D1B6E1; --m-clay: #519D9E; --bg: #f2efeb; --text: #4a4a4a; }
 body.theme-2 { --m-deep-green: #fe4365; --m-sage: #fc9d9a; --m-brown: #f9cdad; --m-sand: #c8c8a9; --m-clay: #fc9d9a; --bg: #faf0e6; --text: #4a3b2a; }
@@ -98,22 +98,54 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: 'PingFang HK', 'M
 .back-btn-header { font-size: 20px; cursor: pointer; color: var(--m-brown); width: 40px; position: absolute; left: 0; }
 .page-title { font-size: 18px; font-weight: bold; color: var(--m-deep-green); text-align: center; margin: 0 auto; }
 
-/* ========== 控制面板 ========== */
+/* ========== 控制面板 (固定，可折疊) ========== */
 .control-panel {
     background: #fff;
-    padding: 15px;
     border-radius: var(--radius);
     margin-bottom: 10px;
     border: 1px solid var(--m-clay);
     box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+    position: sticky;
+    top: 0;
+    z-index: 500;
+    background-color: #fff;
 }
+.panel-header {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    padding: 8px 15px;
+    cursor: pointer;
+    user-select: none;
+    border-bottom: 1px solid var(--m-clay);
+}
+.panel-header .collapse-btn {
+    background: none;
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
+    color: var(--m-brown);
+    padding: 0 5px;
+    transition: transform 0.2s;
+}
+.control-panel.collapsed .panel-content {
+    display: none;
+}
+.control-panel.collapsed .collapse-btn {
+    transform: rotate(180deg);
+}
+.panel-content {
+    padding: 15px;
+    transition: padding 0.2s;
+}
+/* 行距減少 */
 .symbol-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 12px;
+    margin-bottom: 8px;
     border-bottom: 1px solid #f0f0f0;
-    padding-bottom: 12px;
+    padding-bottom: 8px;
 }
 .symbol-group { display: flex; gap: 12px; color: #ccc; align-items: center; }
 .symbol-btn {
@@ -132,8 +164,8 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: 'PingFang HK', 'M
 .sort-qty svg { display: none; }
 .order-toggle { font-size: 11px; font-weight: bold; padding: 4px 10px; border: 1px solid #eee; border-radius: 6px; cursor: pointer; color: var(--m-brown); background: #fafafa; }
 .search-input {
-    margin-bottom: 12px;
-    padding: 10px 12px;
+    margin-bottom: 8px;
+    padding: 8px 12px;
     font-size: 12px;
     border: 1px solid #eee;
     background: #fafafa;
@@ -148,7 +180,7 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: 'PingFang HK', 'M
     background: #f9f9f9;
     border-radius: var(--radius);
     padding: 10px;
-    margin-top: 15px;
+    margin-top: 10px;
     border: 1px solid var(--m-clay);
 }
 .filter-panel-header {
@@ -253,8 +285,8 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: 'PingFang HK', 'M
 .list-container.list { display: flex; flex-direction: column; gap: 4px; }
 .list-container.list .item-card { min-height: 95px; height: auto; flex-direction: row; }
 .list-container.list .img-box { width: calc(var(--dynamic-grid) * 0.6); height: auto; aspect-ratio: 1; flex-shrink: 0; }
-.list-container.list .info { padding: calc(8px * var(--info-scale)) calc(6px * var(--info-scale)); overflow: hidden; }
-.list-container.list .note { display: block; font-size: calc(9px * var(--info-scale)); color: #999; margin-top: calc(4px * var(--info-scale)); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.list-container.list .info { padding: calc(6px * var(--info-scale)) calc(4px * var(--info-scale)); overflow: hidden; }
+.list-container.list .note { display: block; font-size: calc(9px * var(--info-scale)); color: #999; margin-top: calc(2px * var(--info-scale)); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .list-container.image { display: grid; grid-template-columns: repeat(auto-fill, minmax(var(--dynamic-grid), 1fr)); gap: 4px; }
 .list-container.image .item-card .info { display: none; }
 
@@ -291,40 +323,53 @@ body, html { margin: 0; padding: 0; height: 100%; font-family: 'PingFang HK', 'M
 }
 .img-box { width: 100%; aspect-ratio: 1; background: #f5f5f5; pointer-events: none; }
 .img-box img { width: 100%; height: 100%; object-fit: cover; }
+/* 數量移至右下角 */
 .card-qty {
     position: absolute;
-    bottom: 8px;
-    right: 10px;
-    font-size: calc(12px * var(--info-scale,1));
+    bottom: 4px;
+    right: 6px;
+    font-size: calc(18px * var(--info-scale,1));
     color: var(--m-deep-green);
     font-weight: bold;
     z-index: 2;
 }
-.info { padding: 10px; flex-grow: 1; overflow: hidden; pointer-events: none; display: flex; flex-direction: column; }
-.info .note { display: none; }
+.info { padding: 8px; flex-grow: 1; overflow: hidden; pointer-events: none; display: flex; flex-direction: column; }
+.info .note { display: block; font-size: calc(9px * var(--info-scale,1)); color: #999; margin-top: calc(2px * var(--info-scale,1)); }
 .pattern-name {
     font-weight: bold;
     font-size: var(--pattern-size);
-    line-height: 1.3;
-    margin: 4px 0;
+    line-height: 1.2;
+    margin: 2px 0 2px 0;
+    /* 多行省略 */
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    word-break: break-word;
 }
+/* 總價在底部 */
 .total-price {
     color: var(--m-deep-green);
-    font-size: calc(16px * var(--info-scale));
+    font-size: calc(18px * var(--info-scale));
     font-weight: bold;
-    margin-top: auto;
+    margin-top: 4px;
+    text-align: left;
 }
-.currency-tag {
-    font-size: calc(9px * var(--info-scale));
+/* 清單模式下價格區塊 */
+.list .price-block {
+    margin-top: 6px;
+}
+.unit-price {
+    color: #999;
+    font-size: calc(9px * var(--info-scale,1));
+    margin-bottom: 1px;
+}
+.original-currency {
+    font-size: calc(8px * var(--info-scale,1));
     color: #999;
     font-weight: normal;
     margin-left: 4px;
-}
-/* 原始幣種樣式（小字、灰色、非粗體） */
-.original-currency {
-    font-size: calc(9px * var(--info-scale,1));
-    color: #999;
-    font-weight: normal;
 }
 
 /* ========== 表單 ========== */
@@ -452,7 +497,7 @@ input, select, textarea {
 .zoom-nav.right { right: 10px; }
 .zoom-nav:hover { background: rgba(0,0,0,0.7); }
 
-/* 放大頁資訊區塊 - 新結構 */
+/* 放大頁資訊區塊 - 增加 gap */
 .zoom-info {
     padding: 8px;
     background: #fafafa;
@@ -461,19 +506,23 @@ input, select, textarea {
     color: var(--text);
     display: flex;
     flex-wrap: wrap;
-    gap: 6px;
+    gap: 10px;
     margin-top: 10px;
 }
 .zoom-info-item {
     flex: 1 1 auto;
     min-width: 0;
+    border: 1px solid var(--m-clay);
+    border-radius: 6px;
+    padding: 6px 8px;
+    background: transparent;
     display: flex;
     flex-direction: column;
     gap: 2px;
 }
 .zoom-info-row {
     display: flex;
-    gap: 6px;
+    gap: 10px;
     width: 100%;
     flex-wrap: nowrap;
 }
@@ -486,26 +535,16 @@ input, select, textarea {
     font-weight: 600;
     letter-spacing: 0.3px;
     text-transform: uppercase;
-    margin-left: 2px;
 }
 .zoom-value {
-    border: 1px solid var(--m-clay);
-    border-radius: 6px;
-    padding: 4px 6px;
-    background: transparent;
     font-weight: bold;
     color: var(--m-deep-green);
     font-size: 12px;
     line-height: 1.2;
-    width: 100%;
-    box-sizing: border-box;
-}
-.zoom-pattern-name .zoom-value {
-    font-size: 18px;
-    padding: 6px 8px;
+    word-break: break-word;
 }
 .original-currency {
-    font-size: 10px;
+    font-size: 9px;
     color: #999;
     font-weight: normal;
     margin-left: 4px;
@@ -554,6 +593,38 @@ input, select, textarea {
 .overview-item strong { display: block; color: var(--m-brown); font-size: 14px; margin-bottom: 8px; }
 .overview-item span { font-size: 28px; font-weight: bold; color: var(--m-deep-green); }
 #monthlyChart, #roleChart, #roleCountChart, #typeCountChart { height: 250px !important; width: 100%; }
+
+/* 多選統計卡片內的標籤行 */
+.multi-stats .filter-section {
+    margin-bottom: 10px;
+}
+.multi-stats .filter-section-title {
+    font-size: 12px;
+    font-weight: bold;
+    color: var(--m-brown);
+    margin-bottom: 5px;
+    border-left: 4px solid var(--m-sage);
+    padding-left: 6px;
+}
+.multi-stats .filter-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2px;
+    min-height: 28px;
+}
+.multi-stats .stats-result {
+    margin-top: 15px;
+    padding-top: 10px;
+    border-top: 1px dashed var(--m-clay);
+    font-size: 14px;
+    font-weight: bold;
+    color: var(--m-deep-green);
+    text-align: center;
+}
+.multi-stats .stats-result span {
+    font-size: 16px;
+    margin: 0 5px;
+}
 
 /* ========== 排名表格 ========== */
 .rank-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
@@ -694,7 +765,7 @@ input, select, textarea {
         <div class="menu-btn" onclick="openPage('page-gallery')">進入藏品庫</div>
         <div class="menu-btn" onclick="triggerQuickUpload()">上載藏品</div>
     </div>
-    <div class="version-tag">v1.3.9</div>
+    <div class="version-tag">v1.4.6</div>
 </div>
 <input type="file" id="quickUploadInput" style="display:none;" accept="image/*" onchange="handleQuickUploadFile(this)">
 
@@ -706,32 +777,37 @@ input, select, textarea {
             <div class="back-btn-header" onclick="handleBack()">←</div>
             <div class="page-title">館藏</div>
         </div>
-        <div class="control-panel">
-            <input type="text" class="search-input" id="lib-search" placeholder="搜尋款式或備註..." oninput="renderAll()">
-            <div class="symbol-row">
-                <div class="symbol-group">
-                    <span class="symbol-btn sort-date" onclick="setSort('date')"><svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg><span>時間</span></span>
-                    <span class="symbol-btn sort-price" onclick="setSort('price')"><svg viewBox="0 0 24 24"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 2.01-1.79 2.7-1.79 2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg><span>金額</span></span>
-                    <span class="symbol-btn sort-name" onclick="setSort('name')"><svg viewBox="0 0 24 24"><path d="M12.75 3h-1.5L6.5 14h1.5l1.12-3h5.75l1.12 3h1.5L12.75 3zm-3.13 6.5L12 3.25l2.38 6.25H9.62zM18 17H6v2h12v-2z"/></svg><span>名稱</span></span>
-                    <span class="symbol-btn sort-qty" onclick="setSort('qty')"><span>123</span><span>數量</span></span>
-                    <span class="order-toggle" onclick="toggleOrder()">↓</span>
-                </div>
-                <div class="symbol-group">
-                    <span class="symbol-btn view-grid" onclick="setView('grid')"><svg viewBox="0 0 24 24"><path d="M4 11h5V5H4v6zm0 7h5v-6H4v6zm7 0h5v-6h-5v6zm0-13v6h5V5h-5z"/></svg><span>網格</span></span>
-                    <span class="symbol-btn view-list" onclick="setView('list')"><svg viewBox="0 0 24 24"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zm0-10v2h14V7H7z"/></svg><span>清單</span></span>
-                    <span class="symbol-btn view-image" onclick="setView('image')"><svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg><span>圖片</span></span>
-                </div>
+        <div class="control-panel" id="panel-gallery">
+            <div class="panel-header" onclick="togglePanel('panel-gallery')">
+                <span class="collapse-btn" id="gallery-collapse-btn">▼</span>
             </div>
-            <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 10px;">
-                <div id="lib-count" class="count-tag" style="margin:0;"><span>顯示:</span><span class="number">0/0</span></div>
-                <input type="range" class="grid-range-slider" id="grid-size-slider" min="50" max="180" value="160" oninput="handleGridSliderInput(this)">
-                <div style="margin-left: auto; display: flex; gap: 10px;">
-                    <button class="filter-btn-bottom" id="filter-btn-gallery" onclick="toggleFilterPanel('現貨')">條件檢索</button>
-                    <span class="edit-toggle-btn" onclick="setBatchMode(true)">管理</span>
+            <div class="panel-content">
+                <input type="text" class="search-input" id="lib-search" placeholder="搜尋款式或備註..." oninput="renderAll()">
+                <div class="symbol-row">
+                    <div class="symbol-group">
+                        <span class="symbol-btn sort-date" onclick="setSort('date')"><svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg><span>時間</span></span>
+                        <span class="symbol-btn sort-price" onclick="setSort('price')"><svg viewBox="0 0 24 24"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 2.01-1.79 2.7-1.79 2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg><span>金額</span></span>
+                        <span class="symbol-btn sort-name" onclick="setSort('name')"><svg viewBox="0 0 24 24"><path d="M12.75 3h-1.5L6.5 14h1.5l1.12-3h5.75l1.12 3h1.5L12.75 3zm-3.13 6.5L12 3.25l2.38 6.25H9.62zM18 17H6v2h12v-2z"/></svg><span>名稱</span></span>
+                        <span class="symbol-btn sort-qty" onclick="setSort('qty')"><span>123</span><span>數量</span></span>
+                        <span class="order-toggle" onclick="toggleOrder()">↓</span>
+                    </div>
+                    <div class="symbol-group">
+                        <span class="symbol-btn view-grid" onclick="setView('grid')"><svg viewBox="0 0 24 24"><path d="M4 11h5V5H4v6zm0 7h5v-6H4v6zm7 0h5v-6h-5v6zm0-13v6h5V5h-5z"/></svg><span>網格</span></span>
+                        <span class="symbol-btn view-list" onclick="setView('list')"><svg viewBox="0 0 24 24"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zm0-10v2h14V7H7z"/></svg><span>清單</span></span>
+                        <span class="symbol-btn view-image" onclick="setView('image')"><svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg><span>圖片</span></span>
+                    </div>
                 </div>
-            </div>
-            <div class="filter-panel" id="filter-panel-gallery" style="display: none;">
-                <!-- 面板內容由 JavaScript 動態生成 -->
+                <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 10px;">
+                    <div id="lib-count" class="count-tag" style="margin:0;"><span>顯示:</span><span class="number">0/0</span></div>
+                    <input type="range" class="grid-range-slider" id="grid-size-slider" min="50" max="180" value="160" oninput="handleGridSliderInput(this)">
+                    <div style="margin-left: auto; display: flex; gap: 10px;">
+                        <button class="filter-btn-bottom" id="filter-btn-gallery" onclick="toggleFilterPanel('現貨')">條件檢索</button>
+                        <span class="edit-toggle-btn" onclick="setBatchMode(true)">管理</span>
+                    </div>
+                </div>
+                <div class="filter-panel" id="filter-panel-gallery" style="display: none;">
+                    <!-- 面板內容由 JavaScript 動態生成 -->
+                </div>
             </div>
         </div>
         <div id="readyList" class="list-container grid"></div>
@@ -743,32 +819,37 @@ input, select, textarea {
             <div class="back-btn-header" onclick="handleBack()">←</div>
             <div class="page-title">等候區</div>
         </div>
-        <div class="control-panel">
-            <input type="text" class="search-input" id="wait-search" placeholder="搜尋款式或備註..." oninput="renderAll()">
-            <div class="symbol-row">
-                <div class="symbol-group">
-                    <span class="symbol-btn sort-date" onclick="setSort('date')"><svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg><span>時間</span></span>
-                    <span class="symbol-btn sort-price" onclick="setSort('price')"><svg viewBox="0 0 24 24"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 2.01-1.79 2.7-1.79 2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg><span>金額</span></span>
-                    <span class="symbol-btn sort-name" onclick="setSort('name')"><svg viewBox="0 0 24 24"><path d="M12.75 3h-1.5L6.5 14h1.5l1.12-3h5.75l1.12 3h1.5L12.75 3zm-3.13 6.5L12 3.25l2.38 6.25H9.62zM18 17H6v2h12v-2z"/></svg><span>名稱</span></span>
-                    <span class="symbol-btn sort-qty" onclick="setSort('qty')"><span>123</span><span>數量</span></span>
-                    <span class="order-toggle" onclick="toggleOrder()">↓</span>
-                </div>
-                <div class="symbol-group">
-                    <span class="symbol-btn view-grid" onclick="setView('grid')"><svg viewBox="0 0 24 24"><path d="M4 11h5V5H4v6zm0 7h5v-6H4v6zm7 0h5v-6h-5v6zm0-13v6h5V5h-5z"/></svg><span>網格</span></span>
-                    <span class="symbol-btn view-list" onclick="setView('list')"><svg viewBox="0 0 24 24"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zm0-10v2h14V7H7z"/></svg><span>清單</span></span>
-                    <span class="symbol-btn view-image" onclick="setView('image')"><svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg><span>圖片</span></span>
-                </div>
+        <div class="control-panel" id="panel-pending">
+            <div class="panel-header" onclick="togglePanel('panel-pending')">
+                <span class="collapse-btn" id="pending-collapse-btn">▼</span>
             </div>
-            <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 10px;">
-                <div id="wait-count" class="count-tag" style="margin:0;"><span>顯示:</span><span class="number">0/0</span></div>
-                <input type="range" class="grid-range-slider" min="50" max="180" value="160" oninput="handleGridSliderInput(this)">
-                <div style="margin-left: auto; display: flex; gap: 10px;">
-                    <button class="filter-btn-bottom" id="filter-btn-pending" onclick="toggleFilterPanel('非現貨')">條件檢索</button>
-                    <span class="edit-toggle-btn" onclick="setBatchMode(true)">管理</span>
+            <div class="panel-content">
+                <input type="text" class="search-input" id="wait-search" placeholder="搜尋款式或備註..." oninput="renderAll()">
+                <div class="symbol-row">
+                    <div class="symbol-group">
+                        <span class="symbol-btn sort-date" onclick="setSort('date')"><svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg><span>時間</span></span>
+                        <span class="symbol-btn sort-price" onclick="setSort('price')"><svg viewBox="0 0 24 24"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 2.01-1.79 2.7-1.79 2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg><span>金額</span></span>
+                        <span class="symbol-btn sort-name" onclick="setSort('name')"><svg viewBox="0 0 24 24"><path d="M12.75 3h-1.5L6.5 14h1.5l1.12-3h5.75l1.12 3h1.5L12.75 3zm-3.13 6.5L12 3.25l2.38 6.25H9.62zM18 17H6v2h12v-2z"/></svg><span>名稱</span></span>
+                        <span class="symbol-btn sort-qty" onclick="setSort('qty')"><span>123</span><span>數量</span></span>
+                        <span class="order-toggle" onclick="toggleOrder()">↓</span>
+                    </div>
+                    <div class="symbol-group">
+                        <span class="symbol-btn view-grid" onclick="setView('grid')"><svg viewBox="0 0 24 24"><path d="M4 11h5V5H4v6zm0 7h5v-6H4v6zm7 0h5v-6h-5v6zm0-13v6h5V5h-5z"/></svg><span>網格</span></span>
+                        <span class="symbol-btn view-list" onclick="setView('list')"><svg viewBox="0 0 24 24"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zm0-10v2h14V7H7z"/></svg><span>清單</span></span>
+                        <span class="symbol-btn view-image" onclick="setView('image')"><svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg><span>圖片</span></span>
+                    </div>
                 </div>
-            </div>
-            <div class="filter-panel" id="filter-panel-pending" style="display: none;">
-                <!-- 面板內容由 JavaScript 動態生成 -->
+                <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 10px;">
+                    <div id="wait-count" class="count-tag" style="margin:0;"><span>顯示:</span><span class="number">0/0</span></div>
+                    <input type="range" class="grid-range-slider" min="50" max="180" value="160" oninput="handleGridSliderInput(this)">
+                    <div style="margin-left: auto; display: flex; gap: 10px;">
+                        <button class="filter-btn-bottom" id="filter-btn-pending" onclick="toggleFilterPanel('非現貨')">條件檢索</button>
+                        <span class="edit-toggle-btn" onclick="setBatchMode(true)">管理</span>
+                    </div>
+                </div>
+                <div class="filter-panel" id="filter-panel-pending" style="display: none;">
+                    <!-- 面板內容由 JavaScript 動態生成 -->
+                </div>
             </div>
         </div>
         <div id="waitList" class="list-container grid"></div>
@@ -780,32 +861,37 @@ input, select, textarea {
             <div class="back-btn-header" onclick="handleBack()">←</div>
             <div class="page-title">願望清單</div>
         </div>
-        <div class="control-panel">
-            <input type="text" class="search-input" id="wish-search" placeholder="搜尋款式或備註..." oninput="renderAll()">
-            <div class="symbol-row">
-                <div class="symbol-group">
-                    <span class="symbol-btn sort-date" onclick="setSort('date')"><svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg><span>時間</span></span>
-                    <span class="symbol-btn sort-price" onclick="setSort('price')"><svg viewBox="0 0 24 24"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 2.01-1.79 2.7-1.79 2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg><span>金額</span></span>
-                    <span class="symbol-btn sort-name" onclick="setSort('name')"><svg viewBox="0 0 24 24"><path d="M12.75 3h-1.5L6.5 14h1.5l1.12-3h5.75l1.12 3h1.5L12.75 3zm-3.13 6.5L12 3.25l2.38 6.25H9.62zM18 17H6v2h12v-2z"/></svg><span>名稱</span></span>
-                    <span class="symbol-btn sort-qty" onclick="setSort('qty')"><span>123</span><span>數量</span></span>
-                    <span class="order-toggle" onclick="toggleOrder()">↓</span>
-                </div>
-                <div class="symbol-group">
-                    <span class="symbol-btn view-grid" onclick="setView('grid')"><svg viewBox="0 0 24 24"><path d="M4 11h5V5H4v6zm0 7h5v-6H4v6zm7 0h5v-6h-5v6zm0-13v6h5V5h-5z"/></svg><span>網格</span></span>
-                    <span class="symbol-btn view-list" onclick="setView('list')"><svg viewBox="0 0 24 24"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zm0-10v2h14V7H7z"/></svg><span>清單</span></span>
-                    <span class="symbol-btn view-image" onclick="setView('image')"><svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg><span>圖片</span></span>
-                </div>
+        <div class="control-panel" id="panel-wish">
+            <div class="panel-header" onclick="togglePanel('panel-wish')">
+                <span class="collapse-btn" id="wish-collapse-btn">▼</span>
             </div>
-            <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 10px;">
-                <div id="wish-count" class="count-tag" style="margin:0;"><span>顯示:</span><span class="number">0/0</span></div>
-                <input type="range" class="grid-range-slider" min="50" max="180" value="160" oninput="handleGridSliderInput(this)">
-                <div style="margin-left: auto; display: flex; gap: 10px;">
-                    <button class="filter-btn-bottom" id="filter-btn-wish" onclick="toggleFilterPanel('願望')">條件檢索</button>
-                    <span class="edit-toggle-btn" onclick="setBatchMode(true)">管理</span>
+            <div class="panel-content">
+                <input type="text" class="search-input" id="wish-search" placeholder="搜尋款式或備註..." oninput="renderAll()">
+                <div class="symbol-row">
+                    <div class="symbol-group">
+                        <span class="symbol-btn sort-date" onclick="setSort('date')"><svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg><span>時間</span></span>
+                        <span class="symbol-btn sort-price" onclick="setSort('price')"><svg viewBox="0 0 24 24"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 2.01-1.79 2.7-1.79 2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg><span>金額</span></span>
+                        <span class="symbol-btn sort-name" onclick="setSort('name')"><svg viewBox="0 0 24 24"><path d="M12.75 3h-1.5L6.5 14h1.5l1.12-3h5.75l1.12 3h1.5L12.75 3zm-3.13 6.5L12 3.25l2.38 6.25H9.62zM18 17H6v2h12v-2z"/></svg><span>名稱</span></span>
+                        <span class="symbol-btn sort-qty" onclick="setSort('qty')"><span>123</span><span>數量</span></span>
+                        <span class="order-toggle" onclick="toggleOrder()">↓</span>
+                    </div>
+                    <div class="symbol-group">
+                        <span class="symbol-btn view-grid" onclick="setView('grid')"><svg viewBox="0 0 24 24"><path d="M4 11h5V5H4v6zm0 7h5v-6H4v6zm7 0h5v-6h-5v6zm0-13v6h5V5h-5z"/></svg><span>網格</span></span>
+                        <span class="symbol-btn view-list" onclick="setView('list')"><svg viewBox="0 0 24 24"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zm0-10v2h14V7H7z"/></svg><span>清單</span></span>
+                        <span class="symbol-btn view-image" onclick="setView('image')"><svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg><span>圖片</span></span>
+                    </div>
                 </div>
-            </div>
-            <div class="filter-panel" id="filter-panel-wish" style="display: none;">
-                <!-- 面板內容由 JavaScript 動態生成 -->
+                <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 10px;">
+                    <div id="wish-count" class="count-tag" style="margin:0;"><span>顯示:</span><span class="number">0/0</span></div>
+                    <input type="range" class="grid-range-slider" min="50" max="180" value="160" oninput="handleGridSliderInput(this)">
+                    <div style="margin-left: auto; display: flex; gap: 10px;">
+                        <button class="filter-btn-bottom" id="filter-btn-wish" onclick="toggleFilterPanel('願望')">條件檢索</button>
+                        <span class="edit-toggle-btn" onclick="setBatchMode(true)">管理</span>
+                    </div>
+                </div>
+                <div class="filter-panel" id="filter-panel-wish" style="display: none;">
+                    <!-- 面板內容由 JavaScript 動態生成 -->
+                </div>
             </div>
         </div>
         <div id="wishList" class="list-container grid"></div>
@@ -901,6 +987,11 @@ input, select, textarea {
         <div class="stat-card">
             <div class="stat-title">類別數量分佈</div>
             <canvas id="typeCountChart"></canvas>
+        </div>
+        <!-- 新增多選統計卡片 -->
+        <div class="stat-card multi-stats" id="stats-tag-panel">
+            <div class="stat-title">多選統計</div>
+            <!-- 由 JS 動態生成標籤行和結果 -->
         </div>
     </div>
 
@@ -1012,6 +1103,9 @@ let merchList = [], dict = { works: [], roles: [], types: [] };
 let filters = { work: [], role: [], type: [] };
 let sortMode = 'date', sortDesc = true, viewMode = 'grid', charts = {};
 let isBatchMode = false, selectedIndices = [];
+
+// 多選統計的選中狀態
+let statsSelected = { work: [], role: [], type: [] };
 
 let cropper = null;
 let pendingCropImage = null;
@@ -1226,6 +1320,17 @@ function updateToolUI() {
     document.querySelectorAll('.sort-' + sortMode).forEach(b => b.classList.add('active'));
     document.querySelectorAll('.view-' + viewMode).forEach(b => b.classList.add('active'));
     document.querySelectorAll('.order-toggle').forEach(b => b.innerText = sortDesc ? "↓" : "↑");
+}
+
+// ========== 折疊控制面板 ==========
+function togglePanel(panelId) {
+    const panel = document.getElementById(panelId);
+    panel.classList.toggle('collapsed');
+    const btnId = panelId.replace('panel-', '') + '-collapse-btn';
+    const btn = document.getElementById(btnId);
+    if (btn) {
+        btn.innerText = panel.classList.contains('collapsed') ? '▶' : '▼';
+    }
 }
 
 // ========== 內聯篩選面板函數 ==========
@@ -1605,18 +1710,18 @@ function updateGridSize(v) {
     document.querySelectorAll('.grid-range-slider').forEach(slider => slider.value = v);
     isUpdatingGrid = false;
     
-    let patternSize = 12;
+    let patternSize = 13;
     if (v <= 72) {
-        patternSize = 10;
+        patternSize = 11;
     } else if (v >= 109 && v < 170) {
-        patternSize = 13;
+        patternSize = 14;
     } else if (v >= 170) {
         patternSize = 18;
     }
     document.documentElement.style.setProperty('--pattern-size', patternSize + 'px');
     
-    let scale = 1;
-    if (v <= 106) scale = Math.max(0.7, v / 106);
+    // 讓縮放最小為 0.5，確保總價最小 9px (18px * 0.5 = 9px)
+    let scale = Math.max(0.5, v / 160);
     document.documentElement.style.setProperty('--info-scale', scale);
 }
 
@@ -1730,7 +1835,7 @@ function updateZoomDisplay(index) {
 
     const infoDiv = document.getElementById('zoomInfo');
     infoDiv.innerHTML = `
-        <div class="zoom-info-item zoom-pattern-name">
+        <div class="zoom-info-item">
             <div class="zoom-label">柄圖名稱</div>
             <div class="zoom-value">${item.pattern || '無'}</div>
         </div>
@@ -2052,6 +2157,100 @@ async function deleteItemByIndex(idx) {
     // 此函數不再使用，保留僅供參考
 }
 
+// ========== 多選統計相關函數 ==========
+function renderStatsTagPanel() {
+    const panel = document.getElementById('stats-tag-panel');
+    if (!panel) return;
+    
+    const statsList = merchList.filter(i => i.status !== '願望'); // 排除願望
+    
+    const keys = ['work', 'role', 'type'];
+    const titles = { work: '作品', role: '角色', type: '類別' };
+    
+    let html = '';
+    keys.forEach(key => {
+        const list = dict[key + 's'] || [];
+        html += `<div class="filter-section">`;
+        html += `<div class="filter-section-title">${titles[key]}</div>`;
+        html += `<div class="filter-row" data-stats-key="${key}">`;
+        
+        // 全部按鈕（清除該分類所有選取）
+        const allActive = statsSelected[key].length === 0 ? 'active' : '';
+        html += `<div class="filter-chip ${allActive}" data-stats-key="${key}" data-stats-value="all">全部</div>`;
+        
+        list.forEach(item => {
+            const count = statsList.filter(i => i[key] === item).length;
+            const active = statsSelected[key].includes(item) ? 'active' : '';
+            html += `<div class="filter-chip ${active}" data-stats-key="${key}" data-stats-value="${item}">${item} (${count})</div>`;
+        });
+        html += `</div></div>`;
+    });
+    
+    html += `<div class="stats-result" id="stats-result">總數量: <span id="stats-total-qty">0</span> | 總金額: HKD <span id="stats-total-amount">0.00</span></div>`;
+    panel.innerHTML = `<div class="stat-title">多選統計</div>` + html;
+    
+    // 綁定點擊事件
+    panel.querySelectorAll('.filter-chip').forEach(chip => {
+        chip.addEventListener('click', (e) => {
+            const key = chip.dataset.statsKey;
+            const value = chip.dataset.statsValue;
+            if (value === 'all') {
+                // 點擊全部：清除該分類所有選取
+                statsSelected[key] = [];
+            } else {
+                // 切換選中狀態
+                if (statsSelected[key].includes(value)) {
+                    statsSelected[key] = statsSelected[key].filter(v => v !== value);
+                } else {
+                    statsSelected[key] = [...statsSelected[key], value];
+                }
+            }
+            // 重新渲染標籤樣式
+            renderStatsTagPanel(); // 簡單重新生成，會保留 statsSelected 狀態
+            updateStatsResult();
+        });
+    });
+    
+    updateStatsResult();
+}
+
+function updateStatsResult() {
+    const statsList = merchList.filter(i => i.status !== '願望');
+    let totalQty = 0;
+    let totalAmount = 0;
+    
+    // 判斷物品是否符合任一選中標籤（並集）
+    statsList.forEach(item => {
+        let match = false;
+        
+        // 檢查作品
+        if (statsSelected.work.length > 0 && statsSelected.work.includes(item.work)) {
+            match = true;
+        }
+        // 檢查角色
+        if (!match && statsSelected.role.length > 0 && statsSelected.role.includes(item.role)) {
+            match = true;
+        }
+        // 檢查類別
+        if (!match && statsSelected.type.length > 0 && statsSelected.type.includes(item.type)) {
+            match = true;
+        }
+        
+        // 如果沒有任何選中標籤，則不匹配
+        if (statsSelected.work.length === 0 && statsSelected.role.length === 0 && statsSelected.type.length === 0) {
+            match = false;
+        }
+        
+        if (match) {
+            totalQty += item.qty || 0;
+            totalAmount += parseFloat(item.totalHkd || 0);
+        }
+    });
+    
+    document.getElementById('stats-total-qty').innerText = totalQty;
+    document.getElementById('stats-total-amount').innerText = totalAmount.toFixed(2);
+}
+
 // ========== renderAll（長按卡片進入批量模式） ==========
 function renderAll() {
     const conf = { '現貨': 'readyList', '非現貨': 'waitList', '願望': 'wishList' };
@@ -2110,25 +2309,30 @@ function renderAll() {
 
             let infoHtml;
             if (viewMode === 'grid') {
+                // 網格模式：總價在左下角（透過 .total-price 已設定靠左），數量在右下角，備註在柄圖下
                 infoHtml = `
                     <div class="info">
-                        <div style="font-size:calc(9px * var(--info-scale,1)); color:var(--m-brown);">${roleWithWork} ${i.type ? '| ' + i.type : ""}</div>
-                        <div class="pattern-name">${i.pattern || '無名'}</div>
-                        <div style="color:#999; font-size: calc(9px * var(--info-scale,1));">單價 $ ${unitPriceStr}</div>
+                        <div style="font-size:calc(10px * var(--info-scale,1)); color:var(--m-brown); margin-bottom:2px;">${roleWithWork} ${i.type ? '| ' + i.type : ""}</div>
+                        <div class="pattern-name" style="margin:0 0 2px 0;">${i.pattern || '無名'}</div>
+                        ${i.note ? `<div class="note">📝 ${i.note}</div>` : ''}
+                        <div style="color:#999; font-size: calc(9px * var(--info-scale,1)); margin:2px 0 1px 0;">單價 $ ${unitPriceStr}</div>
                         <div class="total-price">$ ${totalInt} ${originalDisplay}</div>
-                        ${i.note ? `<div class="note" style="font-size:calc(9px * var(--info-scale,1)); margin-top:calc(4px * var(--info-scale,1));">📝 ${i.note}</div>` : ''}
                     </div>
                     <div class="card-qty">x${i.qty}</div>
                 `;
             } else if (viewMode === 'list') {
+                // 清單模式：單價和總價放在底部，備註在上方
                 infoHtml = `
                     <div class="info">
-                        <div style="font-size:calc(9px * var(--info-scale,1)); color:var(--m-brown);">${roleWithWork} ${i.type ? '| ' + i.type : ""}</div>
-                        <div class="pattern-name">${i.pattern || '無名'}</div>
-                        <div style="color:#999; font-size: calc(9px * var(--info-scale,1)); margin-bottom: 2px;">單價 $ ${unitPriceStr}</div>
-                        <div class="total-price">$ ${totalInt} ${originalDisplay} <span style="color:#aaa;font-weight:normal;font-size:calc(9px * var(--info-scale,1));">x${i.qty}</span></div>
-                        ${i.note ? `<div class="note" style="font-size:calc(9px * var(--info-scale,1)); margin-top:calc(4px * var(--info-scale,1));">📝 ${i.note}</div>` : ''}
+                        <div style="font-size:calc(10px * var(--info-scale,1)); color:var(--m-brown); margin-bottom:2px;">${roleWithWork} ${i.type ? '| ' + i.type : ""}</div>
+                        <div class="pattern-name" style="margin:0 0 2px 0;">${i.pattern || '無名'}</div>
+                        ${i.note ? `<div class="note">📝 ${i.note}</div>` : ''}
+                        <div class="price-block">
+                            <div class="unit-price">單價 $ ${unitPriceStr}</div>
+                            <div class="total-price">$ ${totalInt} ${originalDisplay}</div>
+                        </div>
                     </div>
+                    <div class="card-qty">x${i.qty}</div>
                 `;
             } else {
                 infoHtml = '';
@@ -2326,6 +2530,9 @@ function renderStats() {
         });
         rankBody.innerHTML = html;
     }
+
+    // 渲染多選統計面板
+    renderStatsTagPanel();
 }
 
 // 啟動
