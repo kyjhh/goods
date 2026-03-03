@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Morandi Archive - v1.4.6</title>
+<title>Morandi Archive - v1.4.7</title>
 <!-- Cropper.js 樣式與腳本 -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
@@ -765,7 +765,7 @@ input, select, textarea {
         <div class="menu-btn" onclick="openPage('page-gallery')">進入藏品庫</div>
         <div class="menu-btn" onclick="triggerQuickUpload()">上載藏品</div>
     </div>
-    <div class="version-tag">v1.4.6</div>
+    <div class="version-tag">v1.4.7</div>
 </div>
 <input type="file" id="quickUploadInput" style="display:none;" accept="image/*" onchange="handleQuickUploadFile(this)">
 
@@ -2219,29 +2219,15 @@ function updateStatsResult() {
     let totalQty = 0;
     let totalAmount = 0;
     
-    // 判斷物品是否符合任一選中標籤（並集）
     statsList.forEach(item => {
-        let match = false;
+        // 作品條件：如果作品有選中，則必須匹配；否則通過
+        const workMatch = statsSelected.work.length === 0 || statsSelected.work.includes(item.work);
+        // 角色條件
+        const roleMatch = statsSelected.role.length === 0 || statsSelected.role.includes(item.role);
+        // 類別條件
+        const typeMatch = statsSelected.type.length === 0 || statsSelected.type.includes(item.type);
         
-        // 檢查作品
-        if (statsSelected.work.length > 0 && statsSelected.work.includes(item.work)) {
-            match = true;
-        }
-        // 檢查角色
-        if (!match && statsSelected.role.length > 0 && statsSelected.role.includes(item.role)) {
-            match = true;
-        }
-        // 檢查類別
-        if (!match && statsSelected.type.length > 0 && statsSelected.type.includes(item.type)) {
-            match = true;
-        }
-        
-        // 如果沒有任何選中標籤，則不匹配
-        if (statsSelected.work.length === 0 && statsSelected.role.length === 0 && statsSelected.type.length === 0) {
-            match = false;
-        }
-        
-        if (match) {
+        if (workMatch && roleMatch && typeMatch) {
             totalQty += item.qty || 0;
             totalAmount += parseFloat(item.totalHkd || 0);
         }
