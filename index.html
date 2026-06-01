@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Morandi Archive - v1.5.3</title>
+<title>Morandi Archive - v1.5.7</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -32,7 +32,11 @@ body.theme-2 { --m-deep-green: #fe4365; --m-sage: #fc9d9a; --m-brown: #f9cdad; -
 body.theme-3 { --m-deep-green: #D499B9; --m-sage: #9055A2; --m-brown: #2E294E; --m-sand: #011638; --m-clay: #2E294E; --bg: #f5f9ff; --text: #2c3e50; }
 body.theme-4 { --m-deep-green: #67D5B5; --m-sage: #EE7785; --m-brown: #C89EC4; --m-sand: #84B1ED; --m-clay: #C89EC4; --bg: #fff7f2; --text: #5e4b46; }
 body.theme-5 { --m-deep-green: #a3c9c7; --m-sage: #cb7575; --m-brown: #ef9e9f; --m-sand: #353848; --m-clay: #cb7575; --bg: #ecf7f0; --text: #1f3a2b; }
-body.theme-5 .grid-range-slider { background: var(--m-brown); filter: brightness(1.3); }
+body.theme-6 { --m-deep-green: #FFB6C1; --m-sage: #FFC0CB; --m-brown: #FF69B4; --m-sand: #DB7093; --m-clay: #FF1493; --bg: #fff0f5; --text: #8B008B; }
+body.theme-7 { --m-deep-green: #FFD700; --m-sage: #FFA500; --m-brown: #FF8C00; --m-sand: #FF7F50; --m-clay: #FF6347; --bg: #FFFFE0; --text: #8B4513; }
+body.theme-8 { --m-deep-green: #7B68EE; --m-sage: #9370DB; --m-brown: #8A2BE2; --m-sand: #BA55D3; --m-clay: #DA70D6; --bg: #F8F4FF; --text: #4B0082; }
+body.theme-9 { --m-deep-green: #20B2AA; --m-sage: #48D1CC; --m-brown: #00CED1; --m-sand: #5F9EA0; --m-clay: #2E8B57; --bg: #F0FFF0; --text: #006400; }
+body.theme-10 { --m-deep-green: #CD5C5C; --m-sage: #F08080; --m-brown: #FA8072; --m-sand: #E9967A; --m-clay: #FFA07A; --bg: #FFF5F5; --text: #A52A2A; }
 
 /* ========== 動畫 ========== */
 @keyframes fadeIn {
@@ -727,8 +731,8 @@ input, select, textarea {
     backdrop-filter: blur(2px);
 }
 .theme-strip {
-    width: 120px;
-    height: 40px;
+    width: 100px;
+    height: 36px;
     display: flex;
     border-radius: 8px;
     overflow: hidden;
@@ -738,13 +742,31 @@ input, select, textarea {
 }
 .theme-strip:hover { transform: scale(1.05); }
 .theme-strip div { flex: 1; height: 100%; }
-.theme-row { display: flex; gap: 15px; justify-content: center; margin: 20px 0; flex-wrap: wrap; }
-/* 進階篩選行內樣式 */
+.theme-row { display: flex; gap: 10px; justify-content: center; margin: 20px 0; flex-wrap: wrap; }
 .advanced-filter-row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; flex-wrap: wrap; }
 .advanced-filter-row label { font-size: 11px; color: var(--m-brown); }
 .advanced-filter-row input { width: 100px; padding: 4px; }
 .color-picker-row { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
 .color-label { width: 80px; font-size: 12px; font-weight: bold; }
+.filter-row-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin-top: 10px;
+}
+.filter-row-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+}
+.filter-row-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: auto;
+}
 </style>
 </head>
 <body class="theme-1">
@@ -792,7 +814,7 @@ input, select, textarea {
         <div class="menu-btn" onclick="openPage('page-gallery')">進入藏品庫</div>
         <div class="menu-btn" onclick="triggerQuickUpload()">上載藏品</div>
     </div>
-    <div class="version-tag">v1.5.3</div>
+    <div class="version-tag">v1.5.7</div>
 </div>
 <input type="file" id="quickUploadInput" style="display:none;" accept="image/*" onchange="handleQuickUploadFile(this)">
 
@@ -823,10 +845,12 @@ input, select, textarea {
                         <span class="symbol-btn view-image" onclick="setView('image')"><svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg><span>圖片</span></span>
                     </div>
                 </div>
-                <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 10px;">
-                    <div id="lib-count" class="count-tag" style="margin:0;"><span>顯示:</span><span class="number">0/0</span></div>
-                    <input type="range" class="grid-range-slider" id="grid-size-slider" min="50" max="180" value="160" oninput="handleGridSliderInput(this)">
-                    <div style="margin-left: auto; display: flex; gap: 10px;">
+                <div class="filter-row-buttons">
+                    <div class="filter-row-left">
+                        <div id="lib-count" class="count-tag" style="margin:0;"><span>顯示:</span><span class="number">0/0</span></div>
+                        <input type="range" class="grid-range-slider" id="grid-size-slider" min="50" max="180" value="160" oninput="handleGridSliderInput(this)">
+                    </div>
+                    <div class="filter-row-right">
                         <button class="filter-btn-bottom" id="filter-btn-gallery" onclick="toggleFilterPanel('現貨')">條件檢索</button>
                         <button class="filter-btn-bottom" id="toggle-advanced-btn" onclick="toggleAdvancedFilter('gallery')">進階篩選</button>
                         <span class="edit-toggle-btn" onclick="setBatchMode(true)">管理</span>
@@ -870,10 +894,12 @@ input, select, textarea {
                         <span class="symbol-btn view-image" onclick="setView('image')"><svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg><span>圖片</span></span>
                     </div>
                 </div>
-                <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 10px;">
-                    <div id="wait-count" class="count-tag" style="margin:0;"><span>顯示:</span><span class="number">0/0</span></div>
-                    <input type="range" class="grid-range-slider" min="50" max="180" value="160" oninput="handleGridSliderInput(this)">
-                    <div style="margin-left: auto; display: flex; gap: 10px;">
+                <div class="filter-row-buttons">
+                    <div class="filter-row-left">
+                        <div id="wait-count" class="count-tag" style="margin:0;"><span>顯示:</span><span class="number">0/0</span></div>
+                        <input type="range" class="grid-range-slider" min="50" max="180" value="160" oninput="handleGridSliderInput(this)">
+                    </div>
+                    <div class="filter-row-right">
                         <button class="filter-btn-bottom" id="filter-btn-pending" onclick="toggleFilterPanel('非現貨')">條件檢索</button>
                         <button class="filter-btn-bottom" onclick="toggleAdvancedFilter('pending')">進階篩選</button>
                         <span class="edit-toggle-btn" onclick="setBatchMode(true)">管理</span>
@@ -917,10 +943,12 @@ input, select, textarea {
                         <span class="symbol-btn view-image" onclick="setView('image')"><svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg><span>圖片</span></span>
                     </div>
                 </div>
-                <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 10px;">
-                    <div id="wish-count" class="count-tag" style="margin:0;"><span>顯示:</span><span class="number">0/0</span></div>
-                    <input type="range" class="grid-range-slider" min="50" max="180" value="160" oninput="handleGridSliderInput(this)">
-                    <div style="margin-left: auto; display: flex; gap: 10px;">
+                <div class="filter-row-buttons">
+                    <div class="filter-row-left">
+                        <div id="wish-count" class="count-tag" style="margin:0;"><span>顯示:</span><span class="number">0/0</span></div>
+                        <input type="range" class="grid-range-slider" min="50" max="180" value="160" oninput="handleGridSliderInput(this)">
+                    </div>
+                    <div class="filter-row-right">
                         <button class="filter-btn-bottom" id="filter-btn-wish" onclick="toggleFilterPanel('願望')">條件檢索</button>
                         <button class="filter-btn-bottom" onclick="toggleAdvancedFilter('wish')">進階篩選</button>
                         <span class="edit-toggle-btn" onclick="setBatchMode(true)">管理</span>
@@ -1010,7 +1038,7 @@ input, select, textarea {
         <div class="stat-card">
             <div class="stat-title">角色排名 (前三)</div>
             <table class="rank-table">
-                <thead><tr><th>角色</th><th>數量</th><th>總額</th></tr></thead>
+                <thead><tr><th>角色</th><th>數量</th><th>總額</th></td></thead>
                 <tbody id="roleRankBody"><tr><td colspan="3">載入中...</td></tr>
                 </tbody>
             </table>
@@ -1038,6 +1066,11 @@ input, select, textarea {
                 <div class="theme-strip" onclick="setTheme(3)"><div style="background: #D499B9;"></div><div style="background: #9055A2;"></div><div style="background: #2E294E;"></div><div style="background: #011638;"></div></div>
                 <div class="theme-strip" onclick="setTheme(4)"><div style="background: #67D5B5;"></div><div style="background: #EE7785;"></div><div style="background: #C89EC4;"></div><div style="background: #84B1ED;"></div></div>
                 <div class="theme-strip" onclick="setTheme(5)"><div style="background: #a3c9c7;"></div><div style="background: #cb7575;"></div><div style="background: #ef9e9f;"></div><div style="background: #353848;"></div></div>
+                <div class="theme-strip" onclick="setTheme(6)"><div style="background: #FFB6C1;"></div><div style="background: #FFC0CB;"></div><div style="background: #FF69B4;"></div><div style="background: #DB7093;"></div></div>
+                <div class="theme-strip" onclick="setTheme(7)"><div style="background: #FFD700;"></div><div style="background: #FFA500;"></div><div style="background: #FF8C00;"></div><div style="background: #FF7F50;"></div></div>
+                <div class="theme-strip" onclick="setTheme(8)"><div style="background: #7B68EE;"></div><div style="background: #9370DB;"></div><div style="background: #8A2BE2;"></div><div style="background: #BA55D3;"></div></div>
+                <div class="theme-strip" onclick="setTheme(9)"><div style="background: #20B2AA;"></div><div style="background: #48D1CC;"></div><div style="background: #00CED1;"></div><div style="background: #5F9EA0;"></div></div>
+                <div class="theme-strip" onclick="setTheme(10)"><div style="background: #CD5C5C;"></div><div style="background: #F08080;"></div><div style="background: #FA8072;"></div><div style="background: #E9967A;"></div></div>
             </div>
             <hr style="margin: 20px 0;">
             <div class="stat-title">即時匯率 (自動更新)</div>
@@ -1127,7 +1160,7 @@ const LAST_INPUT_KEY = 'archive_last_input';
 const DEFAULT_WORKS = ['作品1', '作品2'];
 const DEFAULT_TYPES = ['襟','色紙','掛件','立牌','拍立得'];
 const GRID_SIZES = [50,72,109,170,180];
-let rates = { HKD:1, RMB:1.1, JPY:0.053 };
+let rates = { HKD: 1, RMB: 1.1, JPY: 0.053 };
 
 let merchList = [], dict = { works:[], roles:[], types:[] };
 let filters = { work:[], role:[], type:[] };
@@ -1143,9 +1176,9 @@ let scrollTargetCard = { gallery: null, pending: null, wish: null };
 let sortModeActive = { gallery:false, pending:false, wish:false };
 let dragSource = null, isProcessingFile = false;
 let advancedFilterVisible = { gallery:false, pending:false, wish:false };
-let isFormDirty = false; // 離開提醒用
+let isFormDirty = false;
 
-// ========== 名稱排序輔助函數（先比數字、再比字母）==========
+// ========== 名稱排序輔助函數 ==========
 function comparePatternNumberFirst(pa, pb) {
     const matchA = pa.match(/^(\d+)([A-Za-z]*)/);
     const matchB = pb.match(/^(\d+)([A-Za-z]*)/);
@@ -1163,17 +1196,24 @@ async function fetchLiveRates() {
     try {
         const response = await fetch('https://api.exchangerate-api.com/v4/latest/HKD');
         const data = await response.json();
-        rates = { HKD:1, RMB:data.rates.CNY, JPY:data.rates.JPY };
+        rates = { 
+            HKD: 1, 
+            RMB: data.rates.CNY,
+            JPY: 1 / data.rates.JPY
+        };
         localStorage.setItem('live_rates', JSON.stringify(rates));
         localStorage.setItem('rates_last_update', Date.now());
-        document.getElementById('rate-rmb-display').innerHTML = `RMB: ${rates.RMB.toFixed(4)}`;
-        document.getElementById('rate-jpy-display').innerHTML = `JPY: ${rates.JPY.toFixed(4)}`;
+        document.getElementById('rate-rmb-display').innerHTML = `RMB: ${rates.RMB.toFixed(4)} (100RMB = ${(100 * rates.RMB).toFixed(2)} HKD)`;
+        document.getElementById('rate-jpy-display').innerHTML = `JPY: ${rates.JPY.toFixed(4)} (100JPY = ${(100 * rates.JPY).toFixed(2)} HKD)`;
         document.getElementById('rate-status').innerHTML = '✓ 匯率已更新';
         showModal("💰", "匯率已更新");
         renderAll();
     } catch(e) {
         console.warn('匯率更新失敗', e);
-        document.getElementById('rate-status').innerHTML = '⚠️ 更新失敗，使用預設匯率';
+        rates = { HKD: 1, RMB: 1.1, JPY: 0.053 };
+        document.getElementById('rate-rmb-display').innerHTML = `RMB: ${rates.RMB.toFixed(4)} (100RMB = ${(100 * rates.RMB).toFixed(2)} HKD) 備用`;
+        document.getElementById('rate-jpy-display').innerHTML = `JPY: ${rates.JPY.toFixed(4)} (100JPY = 5.30 HKD) 備用`;
+        document.getElementById('rate-status').innerHTML = '⚠️ 使用備用匯率';
     }
 }
 function initRates() {
@@ -1184,8 +1224,10 @@ function initRates() {
     } else {
         fetchLiveRates();
     }
-    document.getElementById('rate-rmb-display').innerHTML = `RMB: ${rates.RMB.toFixed(4)}`;
-    document.getElementById('rate-jpy-display').innerHTML = `JPY: ${rates.JPY.toFixed(4)}`;
+    if (document.getElementById('rate-rmb-display')) {
+        document.getElementById('rate-rmb-display').innerHTML = `RMB: ${rates.RMB.toFixed(4)} (100RMB = ${(100 * rates.RMB).toFixed(2)} HKD)`;
+        document.getElementById('rate-jpy-display').innerHTML = `JPY: ${rates.JPY.toFixed(4)} (100JPY = ${(100 * rates.JPY).toFixed(2)} HKD)`;
+    }
 }
 
 Chart.register(ChartDataLabels);
@@ -1200,6 +1242,7 @@ function setTheme(themeNum) {
     document.body.classList.add('theme-' + themeNum);
     localStorage.setItem('selected_theme', 'theme-' + themeNum);
     updateChartColors();
+    renderStats();
 }
 
 function isValidImageBase64(str) { return str && typeof str === 'string' && str.startsWith('data:image') && str.length > 100; }
@@ -1245,13 +1288,11 @@ async function init() {
         const menu = document.getElementById('tagContextMenu');
         if (menu && menu.style.display === 'block' && !menu.contains(e.target)) menu.style.display = 'none';
     });
-    // 表單變動監聽（離開提醒）
     const form = document.getElementById('merchForm');
     if (form) {
         form.addEventListener('input', () => { isFormDirty = true; });
         form.addEventListener('change', () => { isFormDirty = true; });
     }
-    // 設定每6小時自動更新匯率
     setInterval(fetchLiveRates, 21600000);
 }
 
@@ -1573,7 +1614,6 @@ function handleLongPress(element, callback) {
     element.addEventListener('mouseleave',cancel);
 }
 
-// 記錄當前頁面頂部可見的第一個卡片ID
 function recordScrollTarget(pageId) {
     let containerId = '';
     if (pageId === 'page-gallery') containerId = 'readyList';
@@ -1607,7 +1647,6 @@ function recordScrollTarget(pageId) {
     }
 }
 
-// 滾動到之前記錄的卡片位置
 function restoreScrollTarget(pageId) {
     let targetId = null;
     if (pageId === 'page-gallery') targetId = scrollTargetCard.gallery;
@@ -1624,11 +1663,8 @@ function restoreScrollTarget(pageId) {
 }
 
 function switchTab(id, btn) {
-    // 離開前檢查是否有未儲存變更
     if (isFormDirty && document.querySelector('.page.active')?.id === 'page-recent' && id !== 'page-recent') {
-        if (!confirm('有未儲存的變更，確定要離開嗎？')) {
-            return;
-        }
+        if (!confirm('有未儲存的變更，確定要離開嗎？')) return;
         isFormDirty = false;
     }
     const activePage = document.querySelector('.page.active')?.id;
@@ -1672,14 +1708,6 @@ function switchTab(id, btn) {
                 else if (id === 'page-wish') window.scrollTo(0, scrollPositions.wish);
             }
         }, 200);
-        setTimeout(() => {
-            const restoredAgain2 = restoreScrollTarget(id);
-            if (!restoredAgain2) {
-                if (id === 'page-gallery') window.scrollTo(0, scrollPositions.gallery);
-                else if (id === 'page-pending') window.scrollTo(0, scrollPositions.pending);
-                else if (id === 'page-wish') window.scrollTo(0, scrollPositions.wish);
-            }
-        }, 1000);
     } else {
         window.scrollTo(0,0);
     }
@@ -1696,9 +1724,7 @@ function openPage(id) {
 function handleBack() {
     const activePage = document.querySelector('.page.active')?.id;
     if (activePage === 'page-recent') {
-        if (isFormDirty && !confirm('有未儲存的變更，確定要離開嗎？')) {
-            return;
-        }
+        if (isFormDirty && !confirm('有未儲存的變更，確定要離開嗎？')) return;
         isFormDirty = false;
         if (lastActivePageBeforeEdit) switchTab(lastActivePageBeforeEdit, document.querySelector('.nav-item'));
         else switchTab('page-gallery', document.querySelectorAll('.nav-item')[0]);
@@ -1775,8 +1801,8 @@ function updateZoomDisplay(index) {
     if (cropper) cropper.replace(item.img);
     else img.src = item.img;
     const totalInt = parseInt(parseFloat(item.totalHkd));
-    let unitPriceHKD = parseFloat(item.price)*rates[item.currency];
-    let unitPriceStr = (unitPriceHKD%1===0)?unitPriceHKD.toString():unitPriceHKD.toFixed(2);
+    let unitPriceHKD = parseFloat(item.price) * (rates[item.currency] || 1);
+    let unitPriceStr = (unitPriceHKD % 1 === 0) ? unitPriceHKD.toString() : unitPriceHKD.toFixed(2);
     let originalDisplay = '';
     if (item.currency !== 'HKD') {
         let originalTotal = item.price * item.qty;
@@ -1910,9 +1936,12 @@ function resetFormForNew() {
     isFormDirty = false;
 }
 
-document.getElementById('merchForm').onsubmit = async function(e) {
+// ========== 表單提交（新增時留在新增頁，編輯時返回）==========
+document.getElementById('merchForm').addEventListener('submit', async function(e) {
     e.preventDefault();
     const editIdx = parseInt(document.getElementById('editIndex').value);
+    const isEditMode = (editIdx > -1);
+    
     if (document.activeElement) document.activeElement.blur();
     const getV = (sid, iid, dk) => {
         let sVal = document.getElementById(sid).value;
@@ -1930,7 +1959,7 @@ document.getElementById('merchForm').onsubmit = async function(e) {
     const pattern = document.getElementById('pattern').value;
     const note = document.getElementById('note').value;
     const done = async (imgBase64) => {
-        let finalImg = imgBase64 || pendingCropImage || (editIdx>-1 ? merchList[editIdx].img : null);
+        let finalImg = imgBase64 || pendingCropImage || (isEditMode ? merchList[editIdx].img : null);
         if (finalImg && !isValidImageBase64(finalImg)) finalImg = null;
         const data = {
             work, role, type, status, pattern, note,
@@ -1940,11 +1969,15 @@ document.getElementById('merchForm').onsubmit = async function(e) {
             price: parseFloat(document.getElementById('inputPrice').value),
             totalHkd: document.getElementById('exchangePreview').innerText.replace('總額: HKD ',''),
             img: finalImg,
-            timestamp: (editIdx>-1) ? merchList[editIdx].timestamp : Date.now()
+            timestamp: isEditMode ? merchList[editIdx].timestamp : Date.now()
         };
         let newList;
-        if (editIdx>-1) { newList = [...merchList]; newList[editIdx]=data; }
-        else newList = [...merchList, data];
+        if (isEditMode) { 
+            newList = [...merchList]; 
+            newList[editIdx] = data; 
+        } else { 
+            newList = [...merchList, data]; 
+        }
         merchList = newList;
         try {
             let maxSize=800, quality=0.9;
@@ -1958,28 +1991,36 @@ document.getElementById('merchForm').onsubmit = async function(e) {
                         const compressed = await compressImage(data.img, maxSize, quality);
                         if (isValidImageBase64(compressed)) data.img = compressed;
                         else data.img = null;
-                        newList[editIdx>-1 ? editIdx : newList.length-1] = data;
+                        newList[isEditMode ? editIdx : newList.length-1] = data;
                         merchList = newList;
                     }
                 }
             }
         } catch(e) {
-            if (e.name === 'QuotaExceededError' || e.code === 22) {
-                showModal("💾", "儲存空間不足，請先備份資料後刪除部分藏品，或匯出後清除瀏覽器資料再重新匯入。");
-            } else {
-                showModal("❌", "圖片過大，即使極致壓縮仍無法儲存，請選擇更小的圖片 (建議小於 2MB)。");
-            }
+            showModal("❌", "儲存失敗，圖片可能過大");
             return;
         }
         const lastInput = { work:data.work, role:data.role, type:data.type, status:data.status, currency:data.currency, pattern:data.pattern, note:data.note };
         localStorage.setItem(LAST_INPUT_KEY, JSON.stringify(lastInput));
         pendingCropImage = null;
         document.getElementById('pendingImageNote').style.display = 'none';
-        renderSelects(); renderAll(); resetFormForNew();
-        let targetPage = lastActivePageBeforeEdit;
-        if (!targetPage || targetPage === 'page-recent') targetPage = 'page-gallery';
-        switchTab(targetPage, document.querySelector('.nav-item.active'));
-        showModal("✨", editIdx>-1 ? "更新成功" : "已存入庫");
+        renderSelects(); renderAll(); 
+        
+        if (isEditMode) {
+            // 編輯模式：返回原本頁面
+            resetFormForNew();
+            let targetPage = lastActivePageBeforeEdit;
+            if (!targetPage || targetPage === 'page-recent') targetPage = 'page-gallery';
+            switchTab(targetPage, document.querySelector('.nav-item.active'));
+            showModal("✨", "更新成功");
+        } else {
+            // 新增模式：只清空圖片，留在新增頁，不跳轉
+            document.getElementById('imgFile').value = '';
+            pendingCropImage = null;
+            document.getElementById('pendingImageNote').style.display = 'none';
+            // 保留表單其他內容，讓使用者可以繼續新增
+            showModal("✨", "已存入庫，可繼續新增");
+        }
         isFormDirty = false;
     };
     const f = document.getElementById('imgFile').files[0];
@@ -1990,7 +2031,7 @@ document.getElementById('merchForm').onsubmit = async function(e) {
         fr.onerror = ()=>{ showModal("❌","讀取失敗"); };
         fr.readAsDataURL(f);
     } else done(null);
-};
+});
 
 async function deleteCurrentItem() {
     const idx = parseInt(document.getElementById('editIndex').value);
@@ -2126,14 +2167,16 @@ function renderStats() {
     const totalExpense = statsList.reduce((s,i)=>s+parseFloat(i.totalHkd||0),0).toFixed(2);
     document.getElementById('totalCountSpan').innerText = merchList.length;
     document.getElementById('totalExpenseSpan').innerText = `HKD ${totalExpense}`;
-    const colors = ['#6b7a63','#acc1ad','#a68b7c','#d5cabd','#e5ddd5'];
+    const style = getComputedStyle(document.body);
+    const themeColors = [style.getPropertyValue('--m-deep-green').trim(), style.getPropertyValue('--m-sage').trim(), style.getPropertyValue('--m-brown').trim(), style.getPropertyValue('--m-sand').trim(), style.getPropertyValue('--m-clay').trim()];
+    const colors = themeColors.every(c=>c) ? themeColors : ['#6b7a63','#acc1ad','#a68b7c','#d5cabd','#e5ddd5'];
     const mData = {};
     statsList.forEach(i=>{ const d=new Date(i.timestamp); const k=`${d.getFullYear()}/${d.getMonth()+1}`; mData[k]=(mData[k]||0)+parseFloat(i.totalHkd); });
     charts.monthly = new Chart(document.getElementById('monthlyChart'), { type:'line', data:{ labels:Object.keys(mData), datasets:[{ label:'HKD', data:Object.values(mData), borderColor:colors[0], tension:0.3 }] }, options:{ maintainAspectRatio:false, responsive:true, plugins:{ datalabels:{ display:true, align:'bottom', offset:10, formatter:(v)=>'$'+parseInt(v), font:{ size:9, weight:'bold' }, color:'#6b7a63' } } } });
     const rData = {};
     statsList.forEach(i=>{ rData[i.role] = (rData[i.role]||0)+parseFloat(i.totalHkd); });
     const rSorted = Object.entries(rData).sort((a,b)=>b[1]-a[1]).slice(0,3);
-    charts.role = new Chart(document.getElementById('roleChart'), { type:'bar', data:{ labels:rSorted.map(x=>x[0]), datasets:[{ label:'HKD', data:rSorted.map(x=>x[1]), backgroundColor:['#6b7a63','#acc1ad','#a68b7c'] }] }, options:{ indexAxis:'y', maintainAspectRatio:false, responsive:true, plugins:{ datalabels:{ anchor:'end', align:'right', offset:4, color:'#333', font:{ weight:'bold', size:11 }, formatter:(v)=>'$ '+parseInt(v) } } } });
+    charts.role = new Chart(document.getElementById('roleChart'), { type:'bar', data:{ labels:rSorted.map(x=>x[0]), datasets:[{ label:'HKD', data:rSorted.map(x=>x[1]), backgroundColor:[colors[0], colors[1], colors[2]] }] }, options:{ indexAxis:'y', maintainAspectRatio:false, responsive:true, plugins:{ datalabels:{ anchor:'end', align:'right', offset:4, color:'#333', font:{ weight:'bold', size:11 }, formatter:(v)=>'$ '+parseInt(v) } } } });
     const tData = {};
     statsList.forEach(i=>{ tData[i.type] = (tData[i.type]||0)+1; });
     charts.typeCount = new Chart(document.getElementById('typeCountChart'), { type:'doughnut', data:{ labels:Object.keys(tData), datasets:[{ data:Object.values(tData), backgroundColor:colors }] }, options:{ maintainAspectRatio:false, responsive:true, plugins:{ datalabels:{ color:'#fff', font:{ weight:'bold', size:11 }, formatter:(v,ctx)=>{ const total=ctx.dataset.data.reduce((a,b)=>a+b,0); return (v/total*100).toFixed(1)+'%'; } } } } });
@@ -2221,10 +2264,11 @@ function toggleInput(sid, iid) {
 
 function liveExchange() {
     const c = document.getElementById('currency').value;
-    const p = parseFloat(document.getElementById('inputPrice').value)||0;
-    const q = parseInt(document.getElementById('qty').value)||1;
-    const total = (p * rates[c] * q).toFixed(2);
-    document.getElementById('exchangePreview').innerText = `總額: HKD ${total}`;
+    const p = parseFloat(document.getElementById('inputPrice').value) || 0;
+    const q = parseInt(document.getElementById('qty').value) || 1;
+    const rate = rates[c] || 1;
+    const total = (p * rate * q).toFixed(2);
+    document.getElementById('exchangePreview').innerHTML = `總額: HKD ${total}`;
 }
 
 function toggleAdvancedFilter(page) {
@@ -2264,6 +2308,7 @@ function applyCustomColors() {
     localStorage.setItem('custom_colors', JSON.stringify({ deep, sage, brown, sand, clay }));
     updateChartColors();
     renderAll();
+    renderStats();
 }
 
 function resetDefaultColors() {
@@ -2275,6 +2320,7 @@ function resetDefaultColors() {
     localStorage.removeItem('custom_colors');
     updateChartColors();
     renderAll();
+    renderStats();
 }
 
 function loadCustomColors() {
@@ -2345,8 +2391,8 @@ function renderAll() {
             card.className = `item-card ${isBatchMode && selectedIndices.includes(i.originalIndex) ? 'selected' : ''}`;
             const imgHtml = `<div class="img-box"><img src="${i.img||''}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27%23ccc%27%3E%3Cpath d=%27M4 4h3l2-2h6l2 2h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zm8 3a5 5 0 1 0 0 10 5 5 0 0 0 0-10zm0 2a3 3 0 1 1 0 6 3 3 0 0 1 0-6z%27/%3E%3C/svg%3E'; this.style.objectFit='contain'; this.style.backgroundColor='#f0f0f0';"></div>`;
             const totalInt = parseInt(parseFloat(i.totalHkd));
-            let unitPriceHKD = parseFloat(i.price)*rates[i.currency];
-            let unitPriceStr = (unitPriceHKD%1===0)?unitPriceHKD.toString():unitPriceHKD.toFixed(2);
+            let unitPriceHKD = parseFloat(i.price) * (rates[i.currency] || 1);
+            let unitPriceStr = (unitPriceHKD % 1 === 0) ? unitPriceHKD.toString() : unitPriceHKD.toFixed(2);
             const roleWithWork = i.work ? `${i.work} - ${i.role}` : i.role;
             let originalDisplay = '';
             if (i.currency !== 'HKD') {
