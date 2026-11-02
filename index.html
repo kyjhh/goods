@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Morandi Archive - v1.5.8</title>
+<title>Morandi Archive - v1.5.9</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -768,7 +768,7 @@ input, select, textarea {
     margin-left: auto;
 }
 
-/* ========== 新增：封面拍照按鈕 ========== */
+/* ========== 封面拍照按鈕 ========== */
 .cover-camera-btn {
     position: absolute;
     top: 20px;
@@ -789,7 +789,7 @@ input, select, textarea {
 }
 .cover-camera-btn:active { transform: scale(0.92); }
 
-/* ========== 新增：表單拍照按鈕 ========== */
+/* ========== 表單拍照按鈕 ========== */
 .camera-photo-btn {
     background: var(--m-sage);
     color: white;
@@ -844,13 +844,11 @@ input, select, textarea {
 </div>
 
 <div id="cover-page">
-    <!-- 封面左上：上傳背景圖 -->
     <div class="cover-upload-btn" onclick="document.getElementById('coverInput').click()">
         <svg viewBox="0 0 24 24" width="20" height="20" fill="var(--m-deep-green)"><path d="M4 4h3l2-2h6l2 2h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zm8 3a5 5 0 1 0 0 10 5 5 0 0 0 0-10zm0 2a3 3 0 1 1 0 6 3 3 0 0 1 0-6z"/></svg>
     </div>
     <input type="file" id="coverInput" style="display:none;" accept="image/*" onchange="updateCover(this)">
 
-    <!-- 封面右上：直接拍照上傳藏品 -->
     <div class="cover-camera-btn" onclick="triggerCoverCamera()" title="拍照上傳藏品">
         <svg viewBox="0 0 24 24" width="24" height="24" fill="var(--m-deep-green)"><path d="M12 15.2a3.2 3.2 0 1 1 0-6.4 3.2 3.2 0 0 1 0 6.4zM9 2L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9zm3 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/></svg>
     </div>
@@ -860,10 +858,9 @@ input, select, textarea {
         <div class="menu-btn" onclick="openPage('page-gallery')">進入藏品庫</div>
         <div class="menu-btn" onclick="triggerQuickUpload()">上載藏品</div>
     </div>
-    <div class="version-tag">v1.5.8</div>
+    <div class="version-tag">v1.5.9</div>
 </div>
 <input type="file" id="quickUploadInput" style="display:none;" accept="image/*" onchange="handleQuickUploadFile(this)">
-<!-- 封面拍照專用 input -->
 <input type="file" id="coverCameraInput" style="display:none;" accept="image/*" capture="environment" onchange="handleCoverCameraFile(this)">
 
 <div class="main-content" id="main-content">
@@ -1064,7 +1061,6 @@ input, select, textarea {
                 <button type="button" id="delBtn" class="btn-main" style="background:#cc9999; display:none;" onclick="deleteCurrentItem()">刪除單項藏品</button>
             </form>
         </div>
-        <!-- 表單拍照專用 input -->
         <input type="file" id="formCameraInput" style="display:none;" accept="image/*" capture="environment" onchange="handleFormCameraFile(this)">
     </div>
 
@@ -1230,6 +1226,31 @@ let sortModeActive = { gallery:false, pending:false, wish:false };
 let dragSource = null, isProcessingFile = false;
 let advancedFilterVisible = { gallery:false, pending:false, wish:false };
 let isFormDirty = false;
+
+// ========== 記憶體友善：降採樣 ==========
+function downscaleImage(base64, maxDim = 1600) {
+    return new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () => {
+            try {
+                let w = img.width, h = img.height;
+                if (w > h && w > maxDim) { h = Math.round(h * maxDim / w); w = maxDim; }
+                else if (h >= w && h > maxDim) { w = Math.round(w * maxDim / h); h = maxDim; }
+                const canvas = document.createElement('canvas');
+                canvas.width = w; canvas.height = h;
+                canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+                resolve(canvas.toDataURL('image/jpeg', 0.85));
+            } catch (e) { resolve(base64); }
+        };
+        img.onerror = () => resolve(base64);
+        img.src = base64;
+    });
+}
+
+// 低階機型判斷：deviceMemory < 4 或無法判斷時保守處理
+function isLowMemoryDevice() {
+    return (navigator.deviceMemory && navigator.deviceMemory < 4);
+}
 
 // ========== 名稱排序輔助函數 ==========
 function comparePatternNumberFirst(pa, pb) {
@@ -1789,103 +1810,85 @@ function handleBack() {
 
 function triggerQuickUpload() { lastActivePageBeforeEdit = 'page-gallery'; document.getElementById('quickUploadInput').click(); }
 
-function handleQuickUploadFile(input) {
+// ========== 記憶體友善的圖片處理共用函數 ==========
+async function processImageFile(file, onReady, maxDim = 1600) {
     if (isProcessingFile) return;
-    const file = input.files[0];
     if (!file) return;
-    if (file.size > 10*1024*1024) { showModal("❌","圖片過大"); input.value=''; return; }
+    if (file.size > 20*1024*1024) { showModal("❌","圖片過大"); return; }
     isProcessingFile = true;
     const reader = new FileReader();
-    reader.onload = (e) => {
-        isProcessingFile = false;
-        openCropModal(e.target.result, async (croppedBase64) => {
-            if (!isValidImageBase64(croppedBase64)) { showModal("❌","圖片無效"); return; }
-            pendingCropImage = await compressImage(croppedBase64,800,0.9);
-            document.getElementById('pendingImageNote').style.display = 'block';
-            resetFormForNew();
-            openPage('page-recent');
-        }, false);
+    reader.onload = async (e) => {
+        try {
+            // 先降採樣，避免 Cropper 處理原始大圖
+            const small = await downscaleImage(e.target.result, maxDim);
+            // 低階機型：跳過 Cropper，直接壓縮存圖
+            if (isLowMemoryDevice()) {
+                const compressed = await compressImage(small, 800, 0.8);
+                if (onReady) onReady(compressed, true);
+                return;
+            }
+            // 正常流程：進 Cropper 裁剪
+            openCropModal(small, async (croppedBase64) => {
+                if (!isValidImageBase64(croppedBase64)) { showModal("❌","圖片無效"); return; }
+                const compressed = await compressImage(croppedBase64, 800, 0.9);
+                if (onReady) onReady(compressed, false);
+            }, false);
+        } finally {
+            isProcessingFile = false;
+        }
     };
-    reader.onerror = () => { isProcessingFile=false; showModal("❌","讀取失敗"); };
+    reader.onerror = () => { isProcessingFile = false; showModal("❌","讀取失敗"); };
     reader.readAsDataURL(file);
-    input.value = '';
 }
 
-// ========== 新增：封面拍照上傳邏輯 ==========
+function handleQuickUploadFile(input) {
+    const file = input.files[0];
+    input.value = '';
+    processImageFile(file, async (compressed) => {
+        pendingCropImage = compressed;
+        document.getElementById('pendingImageNote').style.display = 'block';
+        resetFormForNew();
+        openPage('page-recent');
+    });
+}
+
+function handleImageFileSelect(input) {
+    const file = input.files[0];
+    input.value = '';
+    processImageFile(file, async (compressed) => {
+        pendingCropImage = compressed;
+        document.getElementById('pendingImageNote').style.display = 'block';
+    });
+}
+
 function triggerCoverCamera() {
-    // 在 iOS/Android 上 capture="environment" 會直接打開後置攝像頭
     document.getElementById('coverCameraInput').click();
 }
 
 function handleCoverCameraFile(input) {
-    if (isProcessingFile) return;
     const file = input.files[0];
-    if (!file) return;
-    if (file.size > 10*1024*1024) { showModal("❌","圖片過大"); input.value=''; return; }
-    isProcessingFile = true;
-    const reader = new FileReader();
-    reader.onload = (e) => {
-        isProcessingFile = false;
-        openCropModal(e.target.result, async (croppedBase64) => {
-            if (!isValidImageBase64(croppedBase64)) { showModal("❌","圖片無效"); return; }
-            pendingCropImage = await compressImage(croppedBase64,800,0.9);
-            document.getElementById('pendingImageNote').style.display = 'block';
-            // 重置表單並進入新增頁，帶入剛剛拍的照片
-            resetFormForNew();
-            lastActivePageBeforeEdit = 'page-gallery';
-            openPage('page-recent');
-            showModal("📷", "照片已準備，填寫資料後儲存");
-        }, false);
-    };
-    reader.onerror = () => { isProcessingFile=false; showModal("❌","讀取失敗"); };
-    reader.readAsDataURL(file);
     input.value = '';
+    processImageFile(file, async (compressed) => {
+        pendingCropImage = compressed;
+        document.getElementById('pendingImageNote').style.display = 'block';
+        resetFormForNew();
+        lastActivePageBeforeEdit = 'page-gallery';
+        openPage('page-recent');
+        showModal("📷", "照片已準備，填寫資料後儲存");
+    });
 }
 
-// ========== 新增：表單內拍照上傳 ==========
 function triggerFormCamera() {
     document.getElementById('formCameraInput').click();
 }
 
 function handleFormCameraFile(input) {
-    if (isProcessingFile) return;
     const file = input.files[0];
-    if (!file) return;
-    if (file.size > 10*1024*1024) { showModal("❌","圖片過大"); input.value=''; return; }
-    isProcessingFile = true;
-    const reader = new FileReader();
-    reader.onload = (e) => {
-        isProcessingFile = false;
-        openCropModal(e.target.result, async (croppedBase64) => {
-            if (!isValidImageBase64(croppedBase64)) { showModal("❌","圖片無效"); return; }
-            pendingCropImage = await compressImage(croppedBase64,800,0.9);
-            document.getElementById('pendingImageNote').style.display = 'block';
-            input.value = '';
-        }, false);
-    };
-    reader.onerror = () => { isProcessingFile=false; showModal("❌","讀取失敗"); };
-    reader.readAsDataURL(file);
-}
-
-// ========== 原有圖片選擇邏輯 ==========
-function handleImageFileSelect(input) {
-    if (isProcessingFile) return;
-    const file = input.files[0];
-    if (!file) return;
-    if (file.size > 10*1024*1024) { showModal("❌","圖片過大"); input.value=''; return; }
-    isProcessingFile = true;
-    const reader = new FileReader();
-    reader.onload = (e) => {
-        isProcessingFile = false;
-        openCropModal(e.target.result, async (croppedBase64) => {
-            if (!isValidImageBase64(croppedBase64)) { showModal("❌","圖片無效"); return; }
-            pendingCropImage = await compressImage(croppedBase64,800,0.9);
-            document.getElementById('pendingImageNote').style.display = 'block';
-            input.value = '';
-        }, false);
-    };
-    reader.onerror = () => { isProcessingFile=false; showModal("❌","讀取失敗"); };
-    reader.readAsDataURL(file);
+    input.value = '';
+    processImageFile(file, async (compressed) => {
+        pendingCropImage = compressed;
+        document.getElementById('pendingImageNote').style.display = 'block';
+    });
 }
 
 function clearSelectedImage() {
@@ -1956,7 +1959,7 @@ function openCropModal(imageSrc, callback, isZoom=false, item=null) {
     document.getElementById('cropConfirmBtn').onclick = function(){
         if (!cropper || isZoomMode) return;
         try {
-            const canvas = cropper.getCroppedCanvas({ width:800, height:800 });
+            const canvas = cropper.getCroppedCanvas({ width:800, height:800, imageSmoothingQuality:'high' });
             const croppedBase64 = canvas.toDataURL('image/jpeg',0.9);
             if (cropCallback) cropCallback(croppedBase64);
             closeCropModal();
@@ -1993,6 +1996,7 @@ function closeCropModal() {
         modal.style.display = 'none';
         document.getElementById('overlay').style.display = 'none';
         if (cropper) { cropper.destroy(); cropper=null; }
+        document.getElementById('cropImage').src = '';
         cropCallback = null;
         isZoomMode = false;
         currentZoomIndex = -1;
@@ -2132,9 +2136,13 @@ document.getElementById('merchForm').addEventListener('submit', async function(e
     };
     const f = document.getElementById('imgFile').files[0];
     if (f) {
-        if (f.size>10*1024*1024) { showModal("❌","圖片過大"); return; }
+        if (f.size>20*1024*1024) { showModal("❌","圖片過大"); return; }
         const fr = new FileReader();
-        fr.onload = async ()=>{ const compressed = await compressImage(fr.result,800,0.9); done(compressed); };
+        fr.onload = async ()=>{ 
+            const small = await downscaleImage(fr.result, 1600);
+            const compressed = await compressImage(small,800,0.9); 
+            done(compressed); 
+        };
         fr.onerror = ()=>{ showModal("❌","讀取失敗"); };
         fr.readAsDataURL(f);
     } else done(null);
@@ -2170,12 +2178,27 @@ function renderSelects() {
 
 function updateCover(input) {
     if (input.files && input.files[0]) {
+        const file = input.files[0];
+        input.value = '';
+        if (file.size > 20*1024*1024) { showModal("❌","封面圖片過大"); return; }
         const fr = new FileReader();
-        fr.onload = (e) => {
-            document.getElementById('cover-page').style.backgroundImage = `url(${e.target.result})`;
-            localStorage.setItem(COVER_KEY, e.target.result);
+        fr.onload = async (e) => {
+            try {
+                // 封面背景也先降採樣，避免 localStorage 爆掉
+                const small = await downscaleImage(e.target.result, 1200);
+                document.getElementById('cover-page').style.backgroundImage = `url(${small})`;
+                try {
+                    localStorage.setItem(COVER_KEY, small);
+                } catch(storageErr) {
+                    // localStorage 滿了：只顯示不存
+                    console.warn('封面圖太大，未能存入 localStorage', storageErr);
+                }
+            } catch(err) {
+                showModal("❌","封面處理失敗");
+            }
         };
-        fr.readAsDataURL(input.files[0]);
+        fr.onerror = () => showModal("❌","讀取失敗");
+        fr.readAsDataURL(file);
     }
 }
 
