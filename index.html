@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Morandi Archive - v1.5.9</title>
+<title>Morandi Archive - v1.6.0</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -858,7 +858,7 @@ input, select, textarea {
         <div class="menu-btn" onclick="openPage('page-gallery')">進入藏品庫</div>
         <div class="menu-btn" onclick="triggerQuickUpload()">上載藏品</div>
     </div>
-    <div class="version-tag">v1.5.9</div>
+    <div class="version-tag">v1.6.0</div>
 </div>
 <input type="file" id="quickUploadInput" style="display:none;" accept="image/*" onchange="handleQuickUploadFile(this)">
 <input type="file" id="coverCameraInput" style="display:none;" accept="image/*" capture="environment" onchange="handleCoverCameraFile(this)">
@@ -1227,9 +1227,36 @@ let dragSource = null, isProcessingFile = false;
 let advancedFilterVisible = { gallery:false, pending:false, wish:false };
 let isFormDirty = false;
 
-// ========== 記憶體友善：降採樣 ==========
-function downscaleImage(base64, maxDim = 1600) {
-    return new Promise((resolve) => {
+// ========== 記憶體友善圖片處理 v2 ==========
+// 直接用 createObjectURL + Image + canvas 縮圖，避免 FileReader base64 峰值
+function fileToDownscaledBase64(file, maxDim = 1000, quality = 0.7) {
+    return new Promise((resolve, reject) => {
+        // 優先使用 createImageBitmap（背景執行緒解碼，最省記憶體）
+        if (typeof createImageBitmap === 'function') {
+            createImageBitmap(file).then((bitmap) => {
+                try {
+                    let w = bitmap.width, h = bitmap.height;
+                    if (w > h && w > maxDim) { h = Math.round(h * maxDim / w); w = maxDim; }
+                    else if (h >= w && h > maxDim) { w = Math.round(w * maxDim / h); h = maxDim; }
+                    const canvas = document.createElement('canvas');
+                    canvas.width = w; canvas.height = h;
+                    canvas.getContext('2d').drawImage(bitmap, 0, 0, w, h);
+                    if (bitmap.close) bitmap.close();
+                    resolve(canvas.toDataURL('image/jpeg', quality));
+                } catch (err) { reject(err); }
+            }).catch(() => {
+                // 回退到 objectURL 路徑
+                fallbackDownscale(file, maxDim, quality).then(resolve).catch(reject);
+            });
+        } else {
+            fallbackDownscale(file, maxDim, quality).then(resolve).catch(reject);
+        }
+    });
+}
+
+function fallbackDownscale(file, maxDim, quality) {
+    return new Promise((resolve, reject) => {
+        const url = URL.createObjectURL(file);
         const img = new Image();
         img.onload = () => {
             try {
@@ -1239,15 +1266,18 @@ function downscaleImage(base64, maxDim = 1600) {
                 const canvas = document.createElement('canvas');
                 canvas.width = w; canvas.height = h;
                 canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-                resolve(canvas.toDataURL('image/jpeg', 0.85));
-            } catch (e) { resolve(base64); }
+                URL.revokeObjectURL(url);
+                resolve(canvas.toDataURL('image/jpeg', quality));
+            } catch (err) {
+                URL.revokeObjectURL(url);
+                reject(err);
+            }
         };
-        img.onerror = () => resolve(base64);
-        img.src = base64;
+        img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('圖片解碼失敗')); };
+        img.src = url;
     });
 }
 
-// 低階機型判斷：deviceMemory < 4 或無法判斷時保守處理
 function isLowMemoryDevice() {
     return (navigator.deviceMemory && navigator.deviceMemory < 4);
 }
@@ -1810,35 +1840,35 @@ function handleBack() {
 
 function triggerQuickUpload() { lastActivePageBeforeEdit = 'page-gallery'; document.getElementById('quickUploadInput').click(); }
 
-// ========== 記憶體友善的圖片處理共用函數 ==========
-async function processImageFile(file, onReady, maxDim = 1600) {
+// ========== 共用圖片處理入口 ==========
+// 直接從 File 縮圖，不經過 FileReader，避免 base64 峰值
+async function processImageFile(file, onReady) {
     if (isProcessingFile) return;
     if (!file) return;
     if (file.size > 20*1024*1024) { showModal("❌","圖片過大"); return; }
     isProcessingFile = true;
-    const reader = new FileReader();
-    reader.onload = async (e) => {
-        try {
-            // 先降採樣，避免 Cropper 處理原始大圖
-            const small = await downscaleImage(e.target.result, maxDim);
-            // 低階機型：跳過 Cropper，直接壓縮存圖
-            if (isLowMemoryDevice()) {
-                const compressed = await compressImage(small, 800, 0.8);
-                if (onReady) onReady(compressed, true);
-                return;
-            }
-            // 正常流程：進 Cropper 裁剪
-            openCropModal(small, async (croppedBase64) => {
-                if (!isValidImageBase64(croppedBase64)) { showModal("❌","圖片無效"); return; }
-                const compressed = await compressImage(croppedBase64, 800, 0.9);
-                if (onReady) onReady(compressed, false);
-            }, false);
-        } finally {
-            isProcessingFile = false;
+    try {
+        // 先降到 1000px / quality 0.7（藏品縮圖足夠）
+        const smallBase64 = await fileToDownscaledBase64(file, 1000, 0.7);
+        // 低階機：跳過 Cropper，直接再壓一次到 800px / 0.7
+        if (isLowMemoryDevice()) {
+            const compressed = await compressImage(smallBase64, 800, 0.7);
+            if (onReady) onReady(compressed);
+            return;
         }
-    };
-    reader.onerror = () => { isProcessingFile = false; showModal("❌","讀取失敗"); };
-    reader.readAsDataURL(file);
+        // 正常流程：Cropper 裁剪
+        openCropModal(smallBase64, async (croppedBase64) => {
+            if (!isValidImageBase64(croppedBase64)) { showModal("❌","圖片無效"); return; }
+            // 裁剪後再壓到 800px / 0.7
+            const compressed = await compressImage(croppedBase64, 800, 0.7);
+            if (onReady) onReady(compressed);
+        }, false);
+    } catch (err) {
+        console.error('圖片處理失敗', err);
+        showModal("❌","圖片處理失敗");
+    } finally {
+        isProcessingFile = false;
+    }
 }
 
 function handleQuickUploadFile(input) {
@@ -1960,7 +1990,7 @@ function openCropModal(imageSrc, callback, isZoom=false, item=null) {
         if (!cropper || isZoomMode) return;
         try {
             const canvas = cropper.getCroppedCanvas({ width:800, height:800, imageSmoothingQuality:'high' });
-            const croppedBase64 = canvas.toDataURL('image/jpeg',0.9);
+            const croppedBase64 = canvas.toDataURL('image/jpeg',0.7);
             if (cropCallback) cropCallback(croppedBase64);
             closeCropModal();
         } catch(e) { showModal("❌","裁剪失敗"); }
@@ -2050,7 +2080,7 @@ function resetFormForNew() {
     isFormDirty = false;
 }
 
-// ========== 表單提交（新增時留在新增頁，編輯時返回）==========
+// ========== 表單提交 ==========
 document.getElementById('merchForm').addEventListener('submit', async function(e) {
     e.preventDefault();
     const editIdx = parseInt(document.getElementById('editIndex').value);
@@ -2094,7 +2124,7 @@ document.getElementById('merchForm').addEventListener('submit', async function(e
         }
         merchList = newList;
         try {
-            let maxSize=800, quality=0.9;
+            let maxSize=800, quality=0.7;
             for (let attempt=0; attempt<8; attempt++) {
                 try { await commitToDB(); break; }
                 catch(e) {
@@ -2137,14 +2167,13 @@ document.getElementById('merchForm').addEventListener('submit', async function(e
     const f = document.getElementById('imgFile').files[0];
     if (f) {
         if (f.size>20*1024*1024) { showModal("❌","圖片過大"); return; }
-        const fr = new FileReader();
-        fr.onload = async ()=>{ 
-            const small = await downscaleImage(fr.result, 1600);
-            const compressed = await compressImage(small,800,0.9); 
-            done(compressed); 
-        };
-        fr.onerror = ()=>{ showModal("❌","讀取失敗"); };
-        fr.readAsDataURL(f);
+        try {
+            const small = await fileToDownscaledBase64(f, 1000, 0.7);
+            const compressed = await compressImage(small, 800, 0.7);
+            done(compressed);
+        } catch(err) {
+            showModal("❌","圖片處理失敗");
+        }
     } else done(null);
 });
 
@@ -2181,24 +2210,19 @@ function updateCover(input) {
         const file = input.files[0];
         input.value = '';
         if (file.size > 20*1024*1024) { showModal("❌","封面圖片過大"); return; }
-        const fr = new FileReader();
-        fr.onload = async (e) => {
+        (async () => {
             try {
-                // 封面背景也先降採樣，避免 localStorage 爆掉
-                const small = await downscaleImage(e.target.result, 1200);
+                const small = await fileToDownscaledBase64(file, 1200, 0.7);
                 document.getElementById('cover-page').style.backgroundImage = `url(${small})`;
                 try {
                     localStorage.setItem(COVER_KEY, small);
                 } catch(storageErr) {
-                    // localStorage 滿了：只顯示不存
                     console.warn('封面圖太大，未能存入 localStorage', storageErr);
                 }
             } catch(err) {
                 showModal("❌","封面處理失敗");
             }
-        };
-        fr.onerror = () => showModal("❌","讀取失敗");
-        fr.readAsDataURL(file);
+        })();
     }
 }
 
