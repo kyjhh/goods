@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Morandi Archive - v1.5.7</title>
+<title>Morandi Archive - v1.5.8</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -767,6 +767,45 @@ input, select, textarea {
     gap: 8px;
     margin-left: auto;
 }
+
+/* ========== 新增：封面拍照按鈕 ========== */
+.cover-camera-btn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: rgba(255, 255, 255, 0.5);
+    backdrop-filter: blur(5px);
+    border-radius: 50%;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 2100;
+    border: 1px solid rgba(255,255,255,0.4);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    transition: 0.2s;
+}
+.cover-camera-btn:active { transform: scale(0.92); }
+
+/* ========== 新增：表單拍照按鈕 ========== */
+.camera-photo-btn {
+    background: var(--m-sage);
+    color: white;
+    border: none;
+    border-radius: var(--radius);
+    padding: 6px 10px;
+    font-size: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    white-space: nowrap;
+    transition: 0.2s;
+    font-weight: bold;
+}
+.camera-photo-btn:active { transform: scale(0.95); background: var(--m-deep-green); }
 </style>
 </head>
 <body class="theme-1">
@@ -805,18 +844,27 @@ input, select, textarea {
 </div>
 
 <div id="cover-page">
+    <!-- 封面左上：上傳背景圖 -->
     <div class="cover-upload-btn" onclick="document.getElementById('coverInput').click()">
         <svg viewBox="0 0 24 24" width="20" height="20" fill="var(--m-deep-green)"><path d="M4 4h3l2-2h6l2 2h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zm8 3a5 5 0 1 0 0 10 5 5 0 0 0 0-10zm0 2a3 3 0 1 1 0 6 3 3 0 0 1 0-6z"/></svg>
     </div>
     <input type="file" id="coverInput" style="display:none;" accept="image/*" onchange="updateCover(this)">
+
+    <!-- 封面右上：直接拍照上傳藏品 -->
+    <div class="cover-camera-btn" onclick="triggerCoverCamera()" title="拍照上傳藏品">
+        <svg viewBox="0 0 24 24" width="24" height="24" fill="var(--m-deep-green)"><path d="M12 15.2a3.2 3.2 0 1 1 0-6.4 3.2 3.2 0 0 1 0 6.4zM9 2L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9zm3 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/></svg>
+    </div>
+
     <div class="cover-menu">
         <h4 style="text-align:center; font-weight:400; letter-spacing:6px; margin-bottom:25px; color: var(--m-deep-green);">M.ARCHIVE</h4>
         <div class="menu-btn" onclick="openPage('page-gallery')">進入藏品庫</div>
         <div class="menu-btn" onclick="triggerQuickUpload()">上載藏品</div>
     </div>
-    <div class="version-tag">v1.5.7</div>
+    <div class="version-tag">v1.5.8</div>
 </div>
 <input type="file" id="quickUploadInput" style="display:none;" accept="image/*" onchange="handleQuickUploadFile(this)">
+<!-- 封面拍照專用 input -->
+<input type="file" id="coverCameraInput" style="display:none;" accept="image/*" capture="environment" onchange="handleCoverCameraFile(this)">
 
 <div class="main-content" id="main-content">
     <!-- 館藏頁 -->
@@ -1004,6 +1052,10 @@ input, select, textarea {
                     <label class="input-label">藏品照片</label>
                     <div class="photo-wrapper">
                         <input type="file" id="imgFile" accept="image/*" onchange="handleImageFileSelect(this)">
+                        <button type="button" class="camera-photo-btn" onclick="triggerFormCamera()" title="直接拍照上傳">
+                            <svg viewBox="0 0 24 24" width="14" height="14" fill="white"><path d="M12 15.2a3.2 3.2 0 1 1 0-6.4 3.2 3.2 0 0 1 0 6.4zM9 2L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9zm3 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/></svg>
+                            拍照
+                        </button>
                         <button type="button" class="clear-photo-btn" onclick="clearSelectedImage()" title="清除圖片">✕</button>
                     </div>
                     <div id="pendingImageNote" class="image-pending-note" style="display: none;">📷 已準備裁剪圖片，可繼續選擇其他檔案覆蓋</div>
@@ -1012,6 +1064,8 @@ input, select, textarea {
                 <button type="button" id="delBtn" class="btn-main" style="background:#cc9999; display:none;" onclick="deleteCurrentItem()">刪除單項藏品</button>
             </form>
         </div>
+        <!-- 表單拍照專用 input -->
+        <input type="file" id="formCameraInput" style="display:none;" accept="image/*" capture="environment" onchange="handleFormCameraFile(this)">
     </div>
 
     <!-- 數據統計頁 -->
@@ -1038,9 +1092,8 @@ input, select, textarea {
         <div class="stat-card">
             <div class="stat-title">角色排名 (前三)</div>
             <table class="rank-table">
-                <thead><tr><th>角色</th><th>數量</th><th>總額</th></td></thead>
-                <tbody id="roleRankBody"><tr><td colspan="3">載入中...</td></tr>
-                </tbody>
+                <thead><tr><th>角色</th><th>數量</th><th>總額</th></tr></thead>
+                <tbody id="roleRankBody"><tr><td colspan="3">載入中...</td></tr></tbody>
             </table>
         </div>
         <div class="stat-card">
@@ -1758,6 +1811,63 @@ function handleQuickUploadFile(input) {
     input.value = '';
 }
 
+// ========== 新增：封面拍照上傳邏輯 ==========
+function triggerCoverCamera() {
+    // 在 iOS/Android 上 capture="environment" 會直接打開後置攝像頭
+    document.getElementById('coverCameraInput').click();
+}
+
+function handleCoverCameraFile(input) {
+    if (isProcessingFile) return;
+    const file = input.files[0];
+    if (!file) return;
+    if (file.size > 10*1024*1024) { showModal("❌","圖片過大"); input.value=''; return; }
+    isProcessingFile = true;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        isProcessingFile = false;
+        openCropModal(e.target.result, async (croppedBase64) => {
+            if (!isValidImageBase64(croppedBase64)) { showModal("❌","圖片無效"); return; }
+            pendingCropImage = await compressImage(croppedBase64,800,0.9);
+            document.getElementById('pendingImageNote').style.display = 'block';
+            // 重置表單並進入新增頁，帶入剛剛拍的照片
+            resetFormForNew();
+            lastActivePageBeforeEdit = 'page-gallery';
+            openPage('page-recent');
+            showModal("📷", "照片已準備，填寫資料後儲存");
+        }, false);
+    };
+    reader.onerror = () => { isProcessingFile=false; showModal("❌","讀取失敗"); };
+    reader.readAsDataURL(file);
+    input.value = '';
+}
+
+// ========== 新增：表單內拍照上傳 ==========
+function triggerFormCamera() {
+    document.getElementById('formCameraInput').click();
+}
+
+function handleFormCameraFile(input) {
+    if (isProcessingFile) return;
+    const file = input.files[0];
+    if (!file) return;
+    if (file.size > 10*1024*1024) { showModal("❌","圖片過大"); input.value=''; return; }
+    isProcessingFile = true;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        isProcessingFile = false;
+        openCropModal(e.target.result, async (croppedBase64) => {
+            if (!isValidImageBase64(croppedBase64)) { showModal("❌","圖片無效"); return; }
+            pendingCropImage = await compressImage(croppedBase64,800,0.9);
+            document.getElementById('pendingImageNote').style.display = 'block';
+            input.value = '';
+        }, false);
+    };
+    reader.onerror = () => { isProcessingFile=false; showModal("❌","讀取失敗"); };
+    reader.readAsDataURL(file);
+}
+
+// ========== 原有圖片選擇邏輯 ==========
 function handleImageFileSelect(input) {
     if (isProcessingFile) return;
     const file = input.files[0];
@@ -2007,18 +2117,15 @@ document.getElementById('merchForm').addEventListener('submit', async function(e
         renderSelects(); renderAll(); 
         
         if (isEditMode) {
-            // 編輯模式：返回原本頁面
             resetFormForNew();
             let targetPage = lastActivePageBeforeEdit;
             if (!targetPage || targetPage === 'page-recent') targetPage = 'page-gallery';
             switchTab(targetPage, document.querySelector('.nav-item.active'));
             showModal("✨", "更新成功");
         } else {
-            // 新增模式：只清空圖片，留在新增頁，不跳轉
             document.getElementById('imgFile').value = '';
             pendingCropImage = null;
             document.getElementById('pendingImageNote').style.display = 'none';
-            // 保留表單其他內容，讓使用者可以繼續新增
             showModal("✨", "已存入庫，可繼續新增");
         }
         isFormDirty = false;
