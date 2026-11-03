@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Morandi Archive - v1.6.4</title>
+<title>Morandi Archive - v1.6.5</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -244,16 +244,6 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
 /* ========== 表單拍照按鈕 ========== */
 .camera-photo-btn { background: var(--m-sage); color: white; border: none; border-radius: var(--radius); padding: 6px 10px; font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 4px; white-space: nowrap; transition: 0.2s; font-weight: bold; }
 .camera-photo-btn:active { transform: scale(0.95); background: var(--m-deep-green); }
-
-/* ========== 自訂相機預覽 ========== */
-#customCameraModal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 20000; display: none; flex-direction: column; align-items: center; justify-content: center; }
-#customCameraModal.open { display: flex; }
-#cameraVideo { width: 100%; max-height: 70vh; object-fit: contain; background: #000; }
-.camera-controls { display: flex; gap: 30px; padding: 25px; align-items: center; justify-content: center; width: 100%; box-sizing: border-box; }
-.camera-shutter { width: 70px; height: 70px; border-radius: 50%; background: #fff; border: 4px solid var(--m-sage); cursor: pointer; box-shadow: 0 2px 10px rgba(255,255,255,0.3); }
-.camera-cancel { width: 50px; height: 50px; border-radius: 50%; background: rgba(255,255,255,0.15); color: #fff; border: 1px solid rgba(255,255,255,0.4); font-size: 22px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-#cameraError { color: #fff; padding: 20px; text-align: center; font-size: 14px; display: none; }
-#cameraFocusTip { color: rgba(255,255,255,0.7); font-size: 12px; text-align: center; padding: 6px 20px; }
 </style>
 </head>
 <body class="theme-1">
@@ -270,18 +260,6 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
     <div id="modal-icon" style="font-size: 40px; margin-bottom: 15px; color: var(--m-deep-green);"></div>
     <div id="modal-text" style="font-weight: bold; font-size: 16px;">操作成功</div>
     <button class="btn-main" onclick="closeModal()" style="margin-top: 25px;">確定</button>
-</div>
-
-<!-- 自訂相機預覽彈窗 -->
-<div id="customCameraModal">
-    <video id="cameraVideo" autoplay playsinline muted></video>
-    <div id="cameraError"></div>
-    <div id="cameraFocusTip">輕觸畫面可重新對焦</div>
-    <div class="camera-controls">
-        <button class="camera-cancel" onclick="closeCustomCamera()">✕</button>
-        <button class="camera-shutter" onclick="captureFromCamera()"></button>
-        <div style="width:50px;"></div>
-    </div>
 </div>
 
 <div class="crop-modal" id="cropModal">
@@ -309,7 +287,8 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
     </div>
     <input type="file" id="coverInput" style="display:none;" accept="image/*" onchange="updateCover(this)">
 
-    <div class="cover-camera-btn" onclick="openCustomCamera('cover')" title="拍照上傳藏品">
+    <!-- 封面拍照：直接調用系統相機 -->
+    <div class="cover-camera-btn" onclick="document.getElementById('coverCameraInputFallback').click()" title="拍照上傳藏品">
         <svg viewBox="0 0 24 24" width="24" height="24" fill="var(--m-deep-green)"><path d="M12 15.2a3.2 3.2 0 1 1 0-6.4 3.2 3.2 0 0 1 0 6.4zM9 2L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9zm3 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/></svg>
     </div>
 
@@ -318,10 +297,10 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
         <div class="menu-btn" onclick="openPage('page-gallery')">進入藏品庫</div>
         <div class="menu-btn" onclick="triggerQuickUpload()">上載藏品</div>
     </div>
-    <div class="version-tag">v1.6.4</div>
+    <div class="version-tag">v1.6.5</div>
 </div>
 <input type="file" id="quickUploadInput" style="display:none;" accept="image/*" onchange="handleQuickUploadFile(this)">
-<!-- 回退用的 capture input -->
+<!-- 系統相機 input（封面 / 表單共用） -->
 <input type="file" id="coverCameraInputFallback" style="display:none;" accept="image/*" capture="environment" onchange="handleFallbackCameraFile(this,'cover')">
 <input type="file" id="formCameraInputFallback" style="display:none;" accept="image/*" capture="environment" onchange="handleFallbackCameraFile(this,'form')">
 
@@ -511,7 +490,8 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
                     <label class="input-label">藏品照片</label>
                     <div class="photo-wrapper">
                         <input type="file" id="imgFile" accept="image/*" onchange="handleImageFileSelect(this)">
-                        <button type="button" class="camera-photo-btn" onclick="openCustomCamera('form')" title="直接拍照上傳">
+                        <!-- 表單拍照：直接調用系統相機 -->
+                        <button type="button" class="camera-photo-btn" onclick="document.getElementById('formCameraInputFallback').click()" title="直接拍照上傳">
                             <svg viewBox="0 0 24 24" width="14" height="14" fill="white"><path d="M12 15.2a3.2 3.2 0 1 1 0-6.4 3.2 3.2 0 0 1 0 6.4zM9 2L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9zm3 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/></svg>
                             拍照
                         </button>
@@ -682,141 +662,20 @@ let isZoomMode = false, currentZoomIndex = -1, currentZoomList = [], currentZoom
 let longPressedTag = { key:null, value:null };
 let isUpdatingGrid = false, lastActivePageBeforeEdit = 'page-gallery';
 let scrollPositions = { gallery:0, pending:0, wish:0 };
-let scrollTargetCard = { gallery: null, pending: null, wish: null };
+let scrollTargetCard = { gallery: null, pending:null, wish:null };
 let sortModeActive = { gallery:false, pending:false, wish:false };
 let dragSource = null, isProcessingFile = false;
 let advancedFilterVisible = { gallery:false, pending:false, wish:false };
 let isFormDirty = false;
 
-// ========== 自訂相機（已修正對焦） ==========
-let cameraStream = null;
-let cameraTrack = null;
-let cameraTarget = null;
-
-async function openCustomCamera(target) {
-    cameraTarget = target;
-    const modal = document.getElementById('customCameraModal');
-    const video = document.getElementById('cameraVideo');
-    const errDiv = document.getElementById('cameraError');
-    errDiv.style.display = 'none';
-    modal.classList.add('open');
-
-    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        closeCustomCamera();
-        if (target === 'cover') document.getElementById('coverCameraInputFallback').click();
-        else document.getElementById('formCameraInputFallback').click();
-        return;
-    }
-
-    try {
-        // 先用 1920x1080 取得 stream（S24 在此解析度下對焦正常）
-        const stream = await navigator.mediaDevices.getUserMedia({
-            video: {
-                facingMode: { ideal: 'environment' },
-                width: { ideal: 1920 },
-                height: { ideal: 1080 }
-            },
-            audio: false
-        });
-        cameraStream = stream;
-        cameraTrack = stream.getVideoTracks()[0];
-        video.srcObject = stream;
-        await video.play().catch(()=>{});
-
-        // 設定連續自動對焦（S24 Chrome 支援）
-        try {
-            const caps = cameraTrack.getCapabilities ? cameraTrack.getCapabilities() : {};
-            const constraints = {};
-            if (caps.focusMode && caps.focusMode.includes('continuous')) {
-                constraints.focusMode = 'continuous';
-            } else if (caps.focusMode && caps.focusMode.includes('single-shot')) {
-                constraints.focusMode = 'single-shot';
-            }
-            if (caps.exposureMode && caps.exposureMode.includes('continuous')) {
-                constraints.exposureMode = 'continuous';
-            }
-            if (caps.whiteBalanceMode && caps.whiteBalanceMode.includes('continuous')) {
-                constraints.whiteBalanceMode = 'continuous';
-            }
-            if (Object.keys(constraints).length > 0) {
-                await cameraTrack.applyConstraints(constraints);
-            }
-        } catch (focusErr) {
-            console.warn('對焦設定失敗（可忽略）', focusErr);
-        }
-
-        // 點擊 video 觸發一次單次對焦
-        video.onclick = async () => {
-            if (!cameraTrack) return;
-            try {
-                const caps = cameraTrack.getCapabilities ? cameraTrack.getCapabilities() : {};
-                if (caps.focusMode && caps.focusMode.includes('single-shot')) {
-                    await cameraTrack.applyConstraints({ focusMode: 'single-shot' });
-                }
-            } catch(e) {}
-        };
-
-    } catch (err) {
-        console.warn('相機開啟失敗', err);
-        errDiv.style.display = 'block';
-        errDiv.innerText = '無法開啟相機，將改用系統相機。';
-        setTimeout(() => {
-            closeCustomCamera();
-            if (target === 'cover') document.getElementById('coverCameraInputFallback').click();
-            else document.getElementById('formCameraInputFallback').click();
-        }, 800);
-    }
-}
-
-function closeCustomCamera() {
-    const modal = document.getElementById('customCameraModal');
-    modal.classList.remove('open');
-    if (cameraStream) {
-        cameraStream.getTracks().forEach(t => t.stop());
-        cameraStream = null;
-        cameraTrack = null;
-    }
-    const video = document.getElementById('cameraVideo');
-    video.srcObject = null;
-    video.onclick = null;
-}
-
-function captureFromCamera() {
-    const video = document.getElementById('cameraVideo');
-    if (!video.videoWidth) { showModal("❌","相機未就緒"); return; }
-    // 從 1920x1080 畫面取出，縮到 800px 存圖
-    const maxDim = 800;
-    let w = video.videoWidth, h = video.videoHeight;
-    if (w > h && w > maxDim) { h = Math.round(h * maxDim / w); w = maxDim; }
-    else if (h >= w && h > maxDim) { w = Math.round(w * maxDim / h); h = maxDim; }
-    const canvas = document.createElement('canvas');
-    canvas.width = w; canvas.height = h;
-    canvas.getContext('2d').drawImage(video, 0, 0, w, h);
-    const dataUrl = canvas.toDataURL('image/jpeg', 0.72);
-    canvas.width = 0; canvas.height = 0;
-    const target = cameraTarget;
-    closeCustomCamera();
-    handleCameraCaptureResult(dataUrl, target);
-}
-
-function handleCameraCaptureResult(dataUrl, target) {
-    pendingCropImage = dataUrl;
-    document.getElementById('pendingImageNote').style.display = 'block';
-    if (target === 'cover') {
-        resetFormForNew();
-        lastActivePageBeforeEdit = 'page-gallery';
-        openPage('page-recent');
-        showModal("📷", "照片已準備，填寫資料後儲存");
-    } else {
-        showModal("📷", "照片已準備，填寫資料後儲存");
-    }
-}
-
+// ========== 系統相機拍照處理（封面 / 表單） ==========
+// 系統相機會自動對焦，拍完後此函數負責縮圖並存入 pendingCropImage
 function handleFallbackCameraFile(input, target) {
     const file = input.files[0];
     input.value = '';
     if (!file) return;
-    if (file.size > 4*1024*1024) { showModal("⚠️", "照片過大，請改用相冊選擇或重拍"); return; }
+    // 放寬到 8MB，避免 S24 高畫質照片被拒
+    if (file.size > 8*1024*1024) { showModal("⚠️", "照片過大，請改用相冊選擇或重拍"); return; }
     const url = URL.createObjectURL(file);
     const img = new Image();
     img.onload = () => {
@@ -830,7 +689,16 @@ function handleFallbackCameraFile(input, target) {
         const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
         canvas.width = 0; canvas.height = 0;
         URL.revokeObjectURL(url);
-        handleCameraCaptureResult(dataUrl, target);
+        pendingCropImage = dataUrl;
+        document.getElementById('pendingImageNote').style.display = 'block';
+        if (target === 'cover') {
+            resetFormForNew();
+            lastActivePageBeforeEdit = 'page-gallery';
+            openPage('page-recent');
+            showModal("📷", "照片已準備，填寫資料後儲存");
+        } else {
+            showModal("📷", "照片已準備，填寫資料後儲存");
+        }
     };
     img.onerror = () => { URL.revokeObjectURL(url); showModal("❌","讀取失敗"); };
     img.src = url;
