@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Morandi Archive - v1.6.3</title>
+<title>Morandi Archive - v1.6.4</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -39,14 +39,8 @@ body.theme-9 { --m-deep-green: #20B2AA; --m-sage: #48D1CC; --m-brown: #00CED1; -
 body.theme-10 { --m-deep-green: #CD5C5C; --m-sage: #F08080; --m-brown: #FA8072; --m-sand: #E9967A; --m-clay: #FFA07A; --bg: #FFF5F5; --text: #A52A2A; }
 
 /* ========== 動畫 ========== */
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-@keyframes fadeOut {
-    from { opacity: 1; transform: translateY(0); }
-    to { opacity: 0; transform: translateY(-10px); }
-}
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes fadeOut { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(-10px); } }
 .item-card { animation: fadeIn 0.3s ease-out; }
 .item-card.removing { animation: fadeOut 0.2s ease-out forwards; }
 .filter-panel { transition: all 0.3s ease; }
@@ -259,6 +253,7 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
 .camera-shutter { width: 70px; height: 70px; border-radius: 50%; background: #fff; border: 4px solid var(--m-sage); cursor: pointer; box-shadow: 0 2px 10px rgba(255,255,255,0.3); }
 .camera-cancel { width: 50px; height: 50px; border-radius: 50%; background: rgba(255,255,255,0.15); color: #fff; border: 1px solid rgba(255,255,255,0.4); font-size: 22px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 #cameraError { color: #fff; padding: 20px; text-align: center; font-size: 14px; display: none; }
+#cameraFocusTip { color: rgba(255,255,255,0.7); font-size: 12px; text-align: center; padding: 6px 20px; }
 </style>
 </head>
 <body class="theme-1">
@@ -281,6 +276,7 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
 <div id="customCameraModal">
     <video id="cameraVideo" autoplay playsinline muted></video>
     <div id="cameraError"></div>
+    <div id="cameraFocusTip">輕觸畫面可重新對焦</div>
     <div class="camera-controls">
         <button class="camera-cancel" onclick="closeCustomCamera()">✕</button>
         <button class="camera-shutter" onclick="captureFromCamera()"></button>
@@ -322,7 +318,7 @@ input, select, textarea { width: 100%; padding: 6px; border-radius: var(--radius
         <div class="menu-btn" onclick="openPage('page-gallery')">進入藏品庫</div>
         <div class="menu-btn" onclick="triggerQuickUpload()">上載藏品</div>
     </div>
-    <div class="version-tag">v1.6.3</div>
+    <div class="version-tag">v1.6.4</div>
 </div>
 <input type="file" id="quickUploadInput" style="display:none;" accept="image/*" onchange="handleQuickUploadFile(this)">
 <!-- 回退用的 capture input -->
@@ -692,11 +688,12 @@ let dragSource = null, isProcessingFile = false;
 let advancedFilterVisible = { gallery:false, pending:false, wish:false };
 let isFormDirty = false;
 
-// ========== 自訂相機 ==========
+// ========== 自訂相機（已修正對焦） ==========
 let cameraStream = null;
+let cameraTrack = null;
 let cameraTarget = null;
 
-function openCustomCamera(target) {
+async function openCustomCamera(target) {
     cameraTarget = target;
     const modal = document.getElementById('customCameraModal');
     const video = document.getElementById('cameraVideo');
@@ -711,14 +708,55 @@ function openCustomCamera(target) {
         return;
     }
 
-    navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 1280 } },
-        audio: false
-    }).then(stream => {
+    try {
+        // 先用 1920x1080 取得 stream（S24 在此解析度下對焦正常）
+        const stream = await navigator.mediaDevices.getUserMedia({
+            video: {
+                facingMode: { ideal: 'environment' },
+                width: { ideal: 1920 },
+                height: { ideal: 1080 }
+            },
+            audio: false
+        });
         cameraStream = stream;
+        cameraTrack = stream.getVideoTracks()[0];
         video.srcObject = stream;
-        video.play().catch(()=>{});
-    }).catch(err => {
+        await video.play().catch(()=>{});
+
+        // 設定連續自動對焦（S24 Chrome 支援）
+        try {
+            const caps = cameraTrack.getCapabilities ? cameraTrack.getCapabilities() : {};
+            const constraints = {};
+            if (caps.focusMode && caps.focusMode.includes('continuous')) {
+                constraints.focusMode = 'continuous';
+            } else if (caps.focusMode && caps.focusMode.includes('single-shot')) {
+                constraints.focusMode = 'single-shot';
+            }
+            if (caps.exposureMode && caps.exposureMode.includes('continuous')) {
+                constraints.exposureMode = 'continuous';
+            }
+            if (caps.whiteBalanceMode && caps.whiteBalanceMode.includes('continuous')) {
+                constraints.whiteBalanceMode = 'continuous';
+            }
+            if (Object.keys(constraints).length > 0) {
+                await cameraTrack.applyConstraints(constraints);
+            }
+        } catch (focusErr) {
+            console.warn('對焦設定失敗（可忽略）', focusErr);
+        }
+
+        // 點擊 video 觸發一次單次對焦
+        video.onclick = async () => {
+            if (!cameraTrack) return;
+            try {
+                const caps = cameraTrack.getCapabilities ? cameraTrack.getCapabilities() : {};
+                if (caps.focusMode && caps.focusMode.includes('single-shot')) {
+                    await cameraTrack.applyConstraints({ focusMode: 'single-shot' });
+                }
+            } catch(e) {}
+        };
+
+    } catch (err) {
         console.warn('相機開啟失敗', err);
         errDiv.style.display = 'block';
         errDiv.innerText = '無法開啟相機，將改用系統相機。';
@@ -727,7 +765,7 @@ function openCustomCamera(target) {
             if (target === 'cover') document.getElementById('coverCameraInputFallback').click();
             else document.getElementById('formCameraInputFallback').click();
         }, 800);
-    });
+    }
 }
 
 function closeCustomCamera() {
@@ -736,22 +774,25 @@ function closeCustomCamera() {
     if (cameraStream) {
         cameraStream.getTracks().forEach(t => t.stop());
         cameraStream = null;
+        cameraTrack = null;
     }
     const video = document.getElementById('cameraVideo');
     video.srcObject = null;
+    video.onclick = null;
 }
 
 function captureFromCamera() {
     const video = document.getElementById('cameraVideo');
     if (!video.videoWidth) { showModal("❌","相機未就緒"); return; }
-    const maxDim = 640;
+    // 從 1920x1080 畫面取出，縮到 800px 存圖
+    const maxDim = 800;
     let w = video.videoWidth, h = video.videoHeight;
     if (w > h && w > maxDim) { h = Math.round(h * maxDim / w); w = maxDim; }
     else if (h >= w && h > maxDim) { w = Math.round(w * maxDim / h); h = maxDim; }
     const canvas = document.createElement('canvas');
     canvas.width = w; canvas.height = h;
     canvas.getContext('2d').drawImage(video, 0, 0, w, h);
-    const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+    const dataUrl = canvas.toDataURL('image/jpeg', 0.72);
     canvas.width = 0; canvas.height = 0;
     const target = cameraTarget;
     closeCustomCamera();
@@ -860,12 +901,11 @@ function comparePatternNumberFirst(pa, pb) {
     return pa.localeCompare(pb,'zh-TW');
 }
 
-// ========== 匯率自動更新（已修正方向：1 RMB > 1 HKD） ==========
+// ========== 匯率自動更新（1 RMB ≈ 1.08 HKD） ==========
 async function fetchLiveRates() {
     try {
         const response = await fetch('https://api.exchangerate-api.com/v4/latest/HKD');
         const data = await response.json();
-        // 1 HKD = data.rates.CNY CNY，所以 1 RMB = 1 / data.rates.CNY HKD
         rates = {
             HKD: 1,
             RMB: 1 / data.rates.CNY,
@@ -892,12 +932,8 @@ function initRates() {
     const saved = localStorage.getItem('live_rates');
     if (saved && last && (Date.now() - parseInt(last) < 21600000)) {
         const parsed = JSON.parse(saved);
-        // 若舊快取的 RMB < 1，代表是舊版錯誤資料，強制更新
-        if (parsed.RMB && parsed.RMB >= 1) {
-            rates = parsed;
-        } else {
-            fetchLiveRates();
-        }
+        if (parsed.RMB && parsed.RMB >= 1) rates = parsed;
+        else fetchLiveRates();
     } else {
         fetchLiveRates();
     }
